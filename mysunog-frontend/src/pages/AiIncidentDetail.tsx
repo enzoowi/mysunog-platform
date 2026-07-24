@@ -18,7 +18,6 @@ import type { AiIncident, AiIncidentStatusHistory } from '../types/ai-incident.t
 import { PRIORITY_CONFIG, STATUS_CONFIG, GROWTH_CONFIG } from '../types/ai-incident.types';
 import { useAuth } from '../hooks/useAuth';
 
-const API_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
 // ── Time helpers ─────────────────────────────────────────────────────────────
 

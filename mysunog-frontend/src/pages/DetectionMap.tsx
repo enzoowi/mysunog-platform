@@ -7,8 +7,6 @@ import { ArrowLeft, Map as MapIcon, Eye, Flame, Wind, Filter } from 'lucide-reac
 import 'leaflet/dist/leaflet.css';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
-
 // Fix default Leaflet marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({

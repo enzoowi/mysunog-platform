@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Users, Search, RefreshCw, KeyRound, AlertCircle,
-  CheckCircle, XCircle, Shield, User, ChevronDown, UserX, Plus,
+  CheckCircle, XCircle, User, ChevronDown, UserX, Plus,
 } from 'lucide-react';
 
 type UserRecord = {
