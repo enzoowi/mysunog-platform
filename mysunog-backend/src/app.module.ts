@@ -31,6 +31,7 @@ import { EmailAlertsModule } from './email-alerts/email-alerts.module';
       database: process.env.DB_DATABASE,
       autoLoadEntities: true,
       synchronize: true,
+      ssl: process.env.DB_HOST !== 'localhost' ? { rejectUnauthorized: false } : false,
     }),
     UsersModule,
     AuthModule,
