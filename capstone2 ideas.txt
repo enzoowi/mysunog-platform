@@ -1,0 +1,7 @@
+base don sa finile na fsic/fsec application, kaya ng ai mag identify kung approve ba or reject and kaya mag bigay ng suggestion on pano ma approve
+
+kaya mag image recognition sa government id at bplo assessment slip
+
+manage users + forgot password + view password eye icon
+
+sa account creation, mag eemail kung naapprove na yung account creation

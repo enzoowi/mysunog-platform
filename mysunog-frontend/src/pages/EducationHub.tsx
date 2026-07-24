@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { BookOpen, ShieldCheck, Droplets, AlertTriangle, Home, BookMarked, Inbox } from 'lucide-react';
+import { BookOpen, ShieldCheck, Droplets, AlertTriangle, Home, BookMarked, Inbox, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
 
 type Content = {
   id: number;
@@ -33,8 +33,9 @@ export default function EducationHub() {
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBanner() {
@@ -57,6 +58,13 @@ export default function EducationHub() {
       .finally(() => setLoading(false));
   }, [selectedCategory]);
 
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [selectedCategory, contents.length]);
+
+  const handlePrev = () => setCurrentIndex((prev) => Math.max(0, prev - 1));
+  const handleNext = () => setCurrentIndex((prev) => Math.min(contents.length - 1, prev + 1));
+
   return (
     <div className="w-full">
       {bannerUrl && (
@@ -73,67 +81,197 @@ export default function EducationHub() {
       
       <div className="max-w-6xl mx-auto px-4 md:px-0">
         {!bannerUrl && (
-          <>
-            <div className="flex items-center gap-3 mb-2">
-              <BookMarked className="w-8 h-8 text-blue-700" />
-              <h2 className="text-2xl font-bold text-gray-800">Fire Safety Education Hub</h2>
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+              <BookMarked className="w-3.5 h-3.5" /> Learning Center
             </div>
-            <p className="text-gray-600 mb-6">Learn how to stay safe and prevent fires in your community.</p>
-          </>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Fire Safety Education Hub</h2>
+            <p className="text-gray-500 mt-2 text-lg">Learn how to stay safe and prevent fires in your community.</p>
+          </div>
         )}
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        <button onClick={() => setSelectedCategory('')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition ${!selectedCategory ? 'bg-orange-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-          All
-        </button>
-        {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-          <button key={key} onClick={() => setSelectedCategory(key)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition flex items-center gap-2 ${selectedCategory === key ? 'bg-orange-600 text-white [&>svg]:text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-            {CATEGORY_ICONS[key]} {label}
+        {/* Enhanced Category Pills */}
+        <div className="flex flex-wrap gap-2 mb-8 justify-center md:justify-start">
+          <button onClick={() => setSelectedCategory('')}
+            className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 shadow-sm hover:shadow-md ${!selectedCategory ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:scale-105' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+            All Topics
           </button>
-        ))}
+          {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+            <button key={key} onClick={() => setSelectedCategory(key)}
+              className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow-md ${selectedCategory === key ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white [&>svg]:text-white hover:scale-105' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+              {CATEGORY_ICONS[key]} {label}
+            </button>
+          ))}
+        </div>
+
+        {loading && (
+          <div className="w-full h-[500px] bg-gray-100 rounded-3xl animate-pulse"></div>
+        )}
+
+        {!loading && contents.length === 0 && (
+          <div className="bg-white border border-gray-100 rounded-3xl p-12 text-center flex flex-col items-center justify-center shadow-sm">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+              <Inbox className="w-10 h-10 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">No Content Yet</h3>
+            <p className="text-gray-500">Check back later for educational resources.</p>
+          </div>
+        )}
+
+        {!loading && contents.length > 0 && (
+          <div className="relative w-full h-[600px] flex items-center justify-center overflow-hidden py-4">
+            
+            {/* Left Navigation Arrow */}
+            <button 
+              onClick={handlePrev}
+              disabled={currentIndex === 0}
+              className={`absolute left-0 md:left-4 z-30 p-3 rounded-full bg-white/90 backdrop-blur shadow-lg border border-gray-100 transition-all ${currentIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-gray-50 hover:scale-105'}`}
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-700" />
+            </button>
+
+            {contents.map((c, index) => {
+              const offset = index - currentIndex;
+              
+              let translateX = '0%';
+              let scale = 'scale-100';
+              let opacity = 'opacity-100';
+              let blur = 'blur-none';
+              let zIndex = 20;
+              let pointerEvents = 'pointer-events-auto';
+
+              if (offset === 0) {
+                translateX = '0%';
+              } else if (offset === -1) {
+                translateX = '-85%';
+                scale = 'scale-[0.85]';
+                opacity = 'opacity-40';
+                blur = 'blur-[2px]';
+                zIndex = 10;
+                pointerEvents = 'pointer-events-auto cursor-pointer';
+              } else if (offset === 1) {
+                translateX = '85%';
+                scale = 'scale-[0.85]';
+                opacity = 'opacity-40';
+                blur = 'blur-[2px]';
+                zIndex = 10;
+                pointerEvents = 'pointer-events-auto cursor-pointer';
+              } else {
+                translateX = offset > 0 ? '150%' : '-150%';
+                scale = 'scale-75';
+                opacity = 'opacity-0';
+                blur = 'blur-md';
+                zIndex = 0;
+                pointerEvents = 'pointer-events-none';
+              }
+
+              // Apply md: overrides purely in className or adjust here
+              // Since tailwind handles media queries natively but we are using inline style for translateX,
+              // we can use CSS variables or just let React handle a standard value.
+              // We'll stick to fixed percentage for simplicity, 85% works well on both.
+
+              return (
+                <div 
+                  key={c.id}
+                  className={`absolute w-full max-w-sm md:max-w-md h-full transition-all duration-700 ease-[cubic-bezier(0.25,1,0.5,1)] ${scale} ${opacity} ${blur} ${pointerEvents}`}
+                  style={{ transform: `translateX(${translateX})`, zIndex }}
+                  onClick={() => {
+                     if (offset === -1) handlePrev();
+                     else if (offset === 1) handleNext();
+                  }}
+                >
+                  <div className={`w-full h-full border-0 rounded-[2rem] overflow-hidden bg-white flex flex-col transition-all duration-500 ${offset === 0 ? 'shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-gray-900/5' : 'shadow-lg'}`}>
+                    {c.imageUrl ? (
+                      <div 
+                        className="w-full h-64 md:h-72 shrink-0 overflow-hidden bg-slate-900 flex items-center justify-center relative group cursor-zoom-in"
+                        onClick={(e) => { e.stopPropagation(); setLightboxImage(`${BACKEND_URL}${c.imageUrl}`); }}
+                      >
+                        <img src={`${BACKEND_URL}${c.imageUrl}`} alt={c.title} className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-110" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-md rounded-full p-3 shadow-2xl border border-white/30">
+                            <ZoomIn className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        {/* Category Badge over image */}
+                        <div className="absolute top-4 left-4">
+                          <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
+                            <span className="scale-75">{CATEGORY_ICONS[c.category] || <BookOpen className="w-5 h-5 text-blue-600" />}</span>
+                            <span className="text-[10px] font-bold text-gray-800 uppercase tracking-widest">{CATEGORY_LABELS[c.category] || c.category}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                       <div className="w-full h-48 shrink-0 bg-gradient-to-br from-orange-100 to-red-50 flex items-center justify-center p-6 text-center border-b border-gray-100">
+                         <div className="flex flex-col items-center gap-3">
+                           <div className="p-4 bg-white rounded-full shadow-sm">{CATEGORY_ICONS[c.category] || <BookOpen className="w-8 h-8 text-blue-600" />}</div>
+                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{CATEGORY_LABELS[c.category] || c.category}</span>
+                         </div>
+                       </div>
+                    )}
+                    <div className="p-6 md:p-8 flex flex-col flex-1 overflow-y-auto custom-scrollbar bg-white">
+                      <h3 className="font-extrabold text-gray-900 text-xl md:text-2xl mb-4 leading-tight shrink-0">{c.title}</h3>
+                      <div className="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+                        {c.content}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Right Navigation Arrow */}
+            <button 
+              onClick={handleNext}
+              disabled={currentIndex === contents.length - 1}
+              className={`absolute right-0 md:right-4 z-30 p-3 rounded-full bg-white/90 backdrop-blur shadow-lg border border-gray-100 transition-all ${currentIndex === contents.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-gray-50 hover:scale-105'}`}
+            >
+              <ChevronRight className="w-6 h-6 text-gray-700" />
+            </button>
+            
+          </div>
+        )}
       </div>
+      
+      {/* Optional Custom Scrollbar Styles */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #cbd5e1; 
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: #94a3b8; 
+        }
+      `}</style>
 
-      {loading && <p>Loading content...</p>}
-
-      {!loading && contents.length === 0 && (
-        <div className="text-center py-12 text-gray-400 flex flex-col items-center">
-          <Inbox className="w-12 h-12 text-gray-300 mb-3" />
-          <p>No education content available yet.</p>
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setLightboxImage(null)}
+        >
+          <div className="relative max-w-5xl w-full max-h-[90vh] flex items-center justify-center">
+            <button
+              className="absolute -top-4 -right-4 z-10 bg-white rounded-full p-2 shadow-xl hover:bg-gray-100 transition"
+              onClick={() => setLightboxImage(null)}
+            >
+              <X className="w-5 h-5 text-gray-700" />
+            </button>
+            <img
+              src={lightboxImage}
+              alt="Full view"
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
         </div>
       )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {contents.map((c) => (
-          <div key={c.id}
-            className="border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-lg transition cursor-pointer flex flex-col"
-            onClick={() => setExpandedId(expandedId === c.id ? null : c.id)}>
-              
-            {c.imageUrl && (
-              <div className="w-full h-40 overflow-hidden bg-gray-100">
-                <img src={`${BACKEND_URL}${c.imageUrl}`} alt={c.title} className="w-full h-full object-cover" />
-              </div>
-            )}
-            <div className="p-5 flex flex-col flex-1">
-              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-50">
-                {CATEGORY_ICONS[c.category] || <BookOpen className="w-4 h-4 text-blue-600" />}
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{CATEGORY_LABELS[c.category] || c.category}</span>
-              </div>
-              <h3 className="font-bold text-gray-800 text-lg mb-2 leading-tight">{c.title}</h3>
-              <p className="text-sm text-gray-600 flex-1 relative">
-                {expandedId === c.id ? c.content : c.content.substring(0, 120) + (c.content.length > 120 ? '...' : '')}
-              </p>
-              {c.content.length > 120 && (
-                <div className="mt-3 text-orange-600 text-sm font-bold flex items-center gap-1">
-                  {expandedId === c.id ? 'Show less' : 'Read more'}
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-      </div>
     </div>
   );
 }

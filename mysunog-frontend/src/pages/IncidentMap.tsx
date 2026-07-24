@@ -26,12 +26,6 @@ const stationIcon = new L.Icon({
     iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
 });
 
-const hotspotIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
-});
-
 type Incident = {
     id: number; incidentDate: string; incidentTime: string; barangay: string;
     cause?: string; latitude: number; longitude: number; estimatedDamage?: number;
@@ -39,36 +33,59 @@ type Incident = {
 };
 
 type Hydrant = { id: number; name: string; lat: number; lng: number; description?: string; photoUrl?: string; };
-type Hotspot = { id: number; barangay: string; lat: number; lng: number; riskLevel: string; description?: string; photoUrl?: string; };
 type Station = { id: number; name: string; lat: number; lng: number; contact?: string; photoUrl?: string; };
 
 export default function IncidentMap() {
     const [incidents, setIncidents] = useState<Incident[]>([]);
     const [hydrants, setHydrants] = useState<Hydrant[]>([]);
-    const [hotspots, setHotspots] = useState<Hotspot[]>([]);
     const [stations, setStations] = useState<Station[]>([]);
     const [loading, setLoading] = useState(true);
 
     const [selectedBarangay, setSelectedBarangay] = useState('All');
     const [showHydrants, setShowHydrants] = useState(true);
     const [showStations, setShowStations] = useState(true);
-    const [showHotspots, setShowHotspots] = useState(true);
     const [showIncidents, setShowIncidents] = useState(true);
+    const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
+        async function fetchUserRole() {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const res = await api.get('/auth/me');
+                // Show incident markers only for BFP personnel (staff and admin)
+                if (res.data.role === 'admin' || res.data.role === 'bfp_staff') {
+                    setIsAdmin(true);
+                }
+            }
+        } catch {
+            // Ignore
+        }
+    }
+        fetchUserRole();
+
         async function fetchAll() {
             setLoading(true);
             try {
-                const [inc, hyd, hot, stn] = await Promise.all([
-                    api.get('/incidents'),
+                // Fetch map assets for all users
+                const [hyd, stn] = await Promise.all([
                     api.get('/map/hydrants'),
-                    api.get('/map/hotspots'),
                     api.get('/map/stations')
                 ]);
-                setIncidents(inc.data);
                 setHydrants(hyd.data);
-                setHotspots(hot.data);
                 setStations(stn.data);
+
+                // Incident data is confidential — only fetch for BFP personnel
+                const token = localStorage.getItem('token');
+                if (token) {
+                    try {
+                        const inc = await api.get('/incidents');
+                        setIncidents(inc.data);
+                    } catch {
+                        // Not authorized or not BFP personnel — leave incidents empty
+                    }
+                }
             } catch (error) {
                 console.error(error);
             } finally {
@@ -93,9 +110,9 @@ export default function IncidentMap() {
         <div className="p-6 max-w-7xl mx-auto">
             <div className="flex items-center gap-3 mb-2">
                 <MapIcon className="w-8 h-8 text-blue-700" />
-                <h2 className="text-2xl font-bold text-gray-800">Interactive Incident Map</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Interactive Community Map</h2>
             </div>
-            <p className="text-gray-600 mb-4">Visualize fire incidents, hydrants, hotspots, and BFP stations in Malvar.</p>
+            <p className="text-gray-600 mb-4">Visualize {isAdmin ? 'fire incidents, ' : ''}hydrants, and BFP stations in Malvar.</p>
 
             <div className="flex flex-wrap gap-4 mb-4 items-center">
                 <div>
@@ -106,14 +123,12 @@ export default function IncidentMap() {
                     </select>
                 </div>
 
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={showIncidents} onChange={(e) => setShowIncidents(e.target.checked)} />
-                    🔴 Incidents ({filteredIncidents.length})
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={showHotspots} onChange={(e) => setShowHotspots(e.target.checked)} />
-                    🟠 Hotspots
-                </label>
+                {isAdmin && (
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={showIncidents} onChange={(e) => setShowIncidents(e.target.checked)} />
+                        🔴 Incidents ({filteredIncidents.length})
+                    </label>
+                )}
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={showHydrants} onChange={(e) => setShowHydrants(e.target.checked)} />
                     🔵 Hydrants
@@ -128,33 +143,22 @@ export default function IncidentMap() {
                 <p>Loading map data...</p>
             ) : (
                 <MapContainer center={defaultCenter} zoom={13}
+                    maxBounds={[[13.98, 121.08], [14.10, 121.25]]} minZoom={13}
                     style={{ height: '550px', width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
                     <TileLayer
                         attribution='&copy; OpenStreetMap contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
-                    {/* Admin Hotspots */}
-                    {showHotspots && hotspots.map((hs) => (
-                        <Marker key={`hot-${hs.id}`} position={[Number(hs.lat), Number(hs.lng)]} icon={hotspotIcon}>
-                            <Popup>
-                                {hs.photoUrl && <img src={`${BACKEND_URL}${hs.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2" />}
-                                <strong>{hs.barangay}</strong><br />
-                                <span className="capitalize">{hs.riskLevel} Risk</span><br />
-                                <span className="text-xs text-gray-500">{hs.description}</span>
-                            </Popup>
-                        </Marker>
-                    ))}
-
                     {/* Incident markers */}
-                    {showIncidents && filteredIncidents.map((incident) => (
+                    {isAdmin && showIncidents && filteredIncidents.map((incident) => (
                         <CircleMarker key={`inc-${incident.id}`}
                             center={[Number(incident.latitude), Number(incident.longitude)]}
                             radius={6}
                             pathOptions={{ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.8 }}>
                             <Popup>
                                 <div style={{ minWidth: '200px' }}>
-                                    {incident.photoUrl && <img src={`${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2" />}
+                                    {incident.photoUrl && <img src={`${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${incident.photoUrl}`)} />}
                                     <p><strong>Barangay:</strong> {incident.barangay}</p>
                                     <p><strong>Date:</strong> {incident.incidentDate}</p>
                                     <p><strong>Time:</strong> {incident.incidentTime}</p>
@@ -169,7 +173,7 @@ export default function IncidentMap() {
                     {showHydrants && hydrants.map((h) => (
                         <Marker key={`hyd-${h.id}`} position={[Number(h.lat), Number(h.lng)]} icon={hydrantIcon}>
                             <Popup>
-                                {h.photoUrl && <img src={`${BACKEND_URL}${h.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2" />}
+                                {h.photoUrl && <img src={`${BACKEND_URL}${h.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${h.photoUrl}`)} />}
                                 <div className="flex items-center gap-1 mb-1">
                                     <Droplet className="w-4 h-4 text-blue-500" />
                                     <strong>{h.name}</strong>
@@ -183,7 +187,7 @@ export default function IncidentMap() {
                     {showStations && stations.map((s) => (
                         <Marker key={`stn-${s.id}`} position={[Number(s.lat), Number(s.lng)]} icon={stationIcon}>
                             <Popup>
-                                {s.photoUrl && <img src={`${BACKEND_URL}${s.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2" />}
+                                {s.photoUrl && <img src={`${BACKEND_URL}${s.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${s.photoUrl}`)} />}
                                 <div className="flex items-center gap-1 mb-1">
                                     <ShieldPlus className="w-4 h-4 text-green-600" />
                                     <strong>{s.name}</strong>
@@ -198,11 +202,22 @@ export default function IncidentMap() {
             {/* Legend */}
             <div className="mt-4 bg-white border rounded-xl p-4 flex flex-wrap gap-6 text-sm">
                 <span className="font-semibold">Legend:</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500 inline-block" /> Fire Incident</span>
-                <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block" /> Hotspot</span>
+                {isAdmin && (
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500 inline-block" /> Fire Incident</span>
+                )}
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block" /> Fire Hydrant</span>
                 <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500 inline-block" /> BFP Station</span>
             </div>
+
+            {/* Full Screen Image Modal */}
+            {fullImageUrl && (
+                <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4" onClick={() => setFullImageUrl(null)}>
+                    <button className="absolute top-6 right-6 text-white hover:text-gray-300 p-2 bg-black/50 rounded-full transition" onClick={() => setFullImageUrl(null)}>
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <img src={fullImageUrl} className="max-w-full max-h-[90vh] rounded-lg shadow-2xl object-contain cursor-default" onClick={(e) => e.stopPropagation()} alt="Full screen preview" />
+                </div>
+            )}
         </div>
     );
 }

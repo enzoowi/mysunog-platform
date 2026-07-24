@@ -11,6 +11,7 @@ import { User } from '../users/user.entity';
 export enum InspectionStatus {
   PENDING = 'pending',
   APPROVED = 'approved',
+  ISSUED = 'issued',
   COMPLETED = 'completed',
   REJECTED = 'rejected',
 }
@@ -23,20 +24,26 @@ export class Inspection {
   @ManyToOne(() => User, { eager: true })
   requestedBy: User;
 
-  @Column()
-  address: string;
+  @Column({ default: '' })
+  businessName: string;
+
+  @Column({ default: '' })
+  houseNumber: string;
+
+  @Column({ default: '' })
+  streetName: string;
+
+  @Column({ default: '' })
+  subdivision: string;
 
   @Column()
   barangay: string;
 
-  @Column()
-  preferredDate: string;
-
-  @Column()
-  preferredTime: string;
-
   @Column({ nullable: true })
   description?: string;
+
+  @Column({ nullable: true })
+  bploSlipUrl?: string;
 
   @Column({
     type: 'enum',
@@ -53,6 +60,9 @@ export class Inspection {
 
   @Column({ nullable: true })
   scheduledTime?: string;
+
+  @Column({ nullable: true })
+  certificateUrl?: string;
 
   @CreateDateColumn()
   createdAt: Date;

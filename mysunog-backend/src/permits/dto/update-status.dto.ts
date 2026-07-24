@@ -8,4 +8,8 @@ export class UpdatePermitStatusDto {
   @IsOptional()
   @IsString()
   adminRemarks?: string;
+
+  @IsOptional()
+  @IsString()
+  inspectionDate?: string;
 }

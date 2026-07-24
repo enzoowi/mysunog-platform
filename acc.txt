@@ -1,0 +1,7 @@
+*PARA MAOPEN SA PHONE
+http://192.168.254.201:3000
+http://192.168.254.201:5173
+
+*ADMIN ACC
+Email: admin@bfp.gov.ph
+Password: admin123

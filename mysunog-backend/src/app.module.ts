@@ -5,18 +5,19 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { PermitsModule } from './permits/permits.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { IncidentsModule } from './incidents/incidents.module';
 import { ChatbotModule } from './chatbot/chatbot.module';
-import { InspectionsModule } from './inspections/inspections.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { EducationModule } from './education/education.module';
-import { HazardsModule } from './hazards/hazards.module';
 import { HotlinesModule } from './hotlines/hotlines.module';
 import { ReportsModule } from './reports/reports.module';
 import { SiteImagesModule } from './site-images/site-images.module';
 import { MapAssetsModule } from './map-assets/map-assets.module';
+import { DetectionModule } from './detection/detection.module';
+import { RiskMapModule } from './risk-map/risk-map.module';
+import { AiIncidentsModule } from './ai-incidents/ai-incidents.module';
+import { EmailAlertsModule } from './email-alerts/email-alerts.module';
 
 @Module({
   imports: [
@@ -33,18 +34,19 @@ import { MapAssetsModule } from './map-assets/map-assets.module';
     }),
     UsersModule,
     AuthModule,
-    PermitsModule,
     NotificationsModule,
     IncidentsModule,
     ChatbotModule,
-    InspectionsModule,
     AlertsModule,
     EducationModule,
-    HazardsModule,
     HotlinesModule,
     ReportsModule,
     SiteImagesModule,
     MapAssetsModule,
+    DetectionModule,
+    RiskMapModule,
+    AiIncidentsModule,
+    EmailAlertsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

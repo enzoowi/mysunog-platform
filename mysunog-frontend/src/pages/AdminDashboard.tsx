@@ -4,9 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import {
   Flame, Coins, BarChart2, UserX, Hospital, Timer,
-  ClipboardList, Search, BellRing, BookOpen, AlertOctagon,
-  Users, Image as ImageIcon, MapPin, PhoneCall, LineChart, Map as MapIcon,
-  Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home
+  BellRing, BookOpen, ShieldCheck,
+  Users, Image as ImageIcon, MapPin, PhoneCall, LineChart,
+  Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home, Map, Eye
 } from 'lucide-react';
 
 type DashboardSummary = {
@@ -35,14 +35,25 @@ type ResponsePerf = {
   }>;
 };
 
+type Period = 'weekly' | 'monthly' | 'annually';
+
+const PERIOD_LABELS: Record<Period, string> = {
+  weekly: 'Past 7 Days',
+  monthly: 'Past 30 Days',
+  annually: `Year ${new Date().getFullYear()}`,
+};
+
 export default function AdminDashboard() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [responsePerf, setResponsePerf] = useState<ResponsePerf | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [authorized, setAuthorized] = useState(false);
+  const [period, setPeriod] = useState<Period>('annually');
+  const [userRole, setUserRole] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Check if user is admin
+  // Check if user is admin or bfp_staff
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -51,7 +62,9 @@ export default function AdminDashboard() {
     }
     api.get('/auth/me')
       .then((res) => {
-        if (res.data.role === 'admin') {
+        const role = res.data.role;
+        if (role === 'admin' || role === 'bfp_staff') {
+          setUserRole(role);
           setAuthorized(true);
         } else {
           alert('Access denied. Only BFP personnel can view the admin dashboard.');
@@ -65,8 +78,9 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!authorized) return;
+    // Initial load: fetch both summary and response performance
     Promise.all([
-      api.get('/incidents/dashboard-summary'),
+      api.get(`/incidents/dashboard-summary?period=${period}`),
       api.get('/incidents/response-performance'),
     ])
       .then(([summaryRes, perfRes]) => {
@@ -75,7 +89,17 @@ export default function AdminDashboard() {
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
-  }, [authorized]);
+  }, [authorized]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Re-fetch summary when period changes (after initial load)
+  useEffect(() => {
+    if (!authorized || loading) return;
+    setStatsLoading(true);
+    api.get(`/incidents/dashboard-summary?period=${period}`)
+      .then((res) => setSummary(res.data))
+      .catch((err) => console.error(err))
+      .finally(() => setStatsLoading(false));
+  }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return <div className="p-6">Loading admin dashboard...</div>;
 
@@ -89,19 +113,21 @@ export default function AdminDashboard() {
   ];
 
   const adminLinks = [
-    { label: 'Manage Permits', path: '/admin/permits', icon: <ClipboardList className="w-6 h-6" /> },
-    { label: 'Manage Inspections', path: '/admin/inspections', icon: <Search className="w-6 h-6" /> },
-    { label: 'Manage Alerts', path: '/admin/alerts', icon: <BellRing className="w-6 h-6" /> },
-    { label: 'Manage Education', path: '/admin/education', icon: <BookOpen className="w-6 h-6" /> },
-    { label: 'Review Hazards', path: '/admin/hazards', icon: <AlertOctagon className="w-6 h-6" /> },
-    { label: 'Review Users', path: '/admin/verifications', icon: <Users className="w-6 h-6" /> },
-    { label: 'Site Media', path: '/admin/site-images', icon: <ImageIcon className="w-6 h-6" /> },
-    { label: 'Map Assets', path: '/admin/map-assets', icon: <MapPin className="w-6 h-6" /> },
-    { label: 'Hotlines', path: '/admin/hotlines', icon: <PhoneCall className="w-6 h-6" /> },
-    { label: 'Reports & Export', path: '/reports', icon: <LineChart className="w-6 h-6" /> },
-    { label: 'Create Incident', path: '/incidents/create', icon: <Flame className="w-6 h-6" /> },
-    { label: 'Incident Map', path: '/incidents/map', icon: <MapIcon className="w-6 h-6" /> },
+    { label: 'Manage Alerts',       path: '/admin/alerts',       icon: <BellRing className="w-6 h-6" />,     adminOnly: true },
+    { label: 'Manage Education',     path: '/admin/education',    icon: <BookOpen className="w-6 h-6" />,     adminOnly: true },
+    { label: 'Manage Services',      path: '/admin/services',     icon: <ShieldCheck className="w-6 h-6" />,  adminOnly: true },
+    { label: 'Incident & Risk Map',  path: '/admin/incident-map', icon: <Map className="w-6 h-6" />,          adminOnly: false },
+    { label: 'Map Assets',           path: '/admin/map-assets',   icon: <MapPin className="w-6 h-6" />,       adminOnly: false },
+    { label: 'Manage Hotlines',      path: '/admin/hotlines',     icon: <PhoneCall className="w-6 h-6" />,    adminOnly: true },
+    { label: 'Manage Users',         path: '/admin/users',        icon: <Users className="w-6 h-6" />,        adminOnly: true },
+    { label: 'Site Media',           path: '/admin/site-images',  icon: <ImageIcon className="w-6 h-6" />,    adminOnly: true },
+    { label: 'AI Detection',         path: '/admin/ai-detection', icon: <Eye className="w-6 h-6" />,          adminOnly: false },
+    { label: 'Reports & Export',     path: '/reports',            icon: <LineChart className="w-6 h-6" />,    adminOnly: false },
   ];
+
+  const visibleLinks = userRole === 'admin'
+    ? adminLinks
+    : adminLinks.filter((l) => !l.adminOnly);
 
   const severityColors: Record<string, string> = {
     'Minor (<₱10k)': 'bg-green-100 text-green-700 border-green-200',
@@ -117,12 +143,45 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <Shield className="w-8 h-8 text-orange-600" /> BFP Admin Dashboard
-      </h2>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <Shield className="w-8 h-8 text-orange-600" /> BFP Admin Dashboard
+        </h2>
+        {/* Role badge */}
+        <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
+          userRole === 'admin'
+            ? 'bg-red-100 text-red-700'
+            : 'bg-blue-100 text-blue-700'
+        }`}>
+          {userRole === 'admin' ? '🔴 Super Admin' : '🔵 BFP Staff'}
+        </span>
+      </div>
+
+      {/* Period Toggle */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+        <span className="text-sm font-medium text-gray-500">Statistics Period:</span>
+        <div className="inline-flex rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+          {(['weekly', 'monthly', 'annually'] as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-5 py-2 text-sm font-semibold capitalize transition-all duration-200 ${
+                period === p
+                  ? 'bg-orange-500 text-white shadow-inner'
+                  : 'bg-white text-gray-600 hover:bg-orange-50 hover:text-orange-600'
+              }`}
+            >
+              {p === 'weekly' ? 'Weekly' : p === 'monthly' ? 'Monthly' : 'Annually'}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-gray-400 italic">
+          {statsLoading ? 'Updating...' : `Showing data for: ${PERIOD_LABELS[period]}`}
+        </span>
+      </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8 transition-opacity duration-300 ${statsLoading ? 'opacity-50' : 'opacity-100'}`}>
         {cards.map((card) => (
           <div key={card.label} className={`${card.color} text-white rounded-xl p-5 shadow-lg`}>
             <div className="mb-2 opacity-90">{card.icon}</div>
@@ -162,9 +221,16 @@ export default function AdminDashboard() {
       )}
 
       {/* Quick Actions */}
-      <h3 className="text-lg font-semibold text-gray-700 mb-3">Quick Actions</h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-lg font-semibold text-gray-700">Quick Actions</h3>
+      </div>
+
+      <Link to="/incidents/create" className="flex items-center justify-center gap-2 bg-red-600 text-white rounded-xl px-5 py-4 shadow-md hover:bg-red-700 transition w-full mb-4 text-lg font-bold tracking-wide">
+        <Flame className="w-6 h-6" /> Create Incident Report
+      </Link>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        {adminLinks.map((link) => (
+        {visibleLinks.map((link) => (
           <Link key={link.path} to={link.path}
             className="flex items-center gap-3 bg-white border rounded-xl px-5 py-4 shadow-sm hover:shadow-md hover:border-orange-300 transition group">
             <span className="text-gray-400 group-hover:text-orange-500 transition-colors">{link.icon}</span>
@@ -203,9 +269,9 @@ export default function AdminDashboard() {
             <Target className="w-5 h-5 text-gray-400" /> Operational Readiness Insights
           </h3>
           {summary && (() => {
-            const peakTime = Object.entries(summary.timeOfDayCounts).sort(([,a],[,b]) => b - a)[0];
-            const topBarangay = Object.entries(summary.barangayCounts).sort(([,a],[,b]) => b - a)[0];
-            const topCause = Object.entries(summary.causeCounts).sort(([,a],[,b]) => b - a)[0];
+            const peakTime = Object.entries(summary.timeOfDayCounts).sort(([, a], [, b]) => b - a)[0];
+            const topBarangay = Object.entries(summary.barangayCounts).sort(([, a], [, b]) => b - a)[0];
+            const topCause = Object.entries(summary.causeCounts).sort(([, a], [, b]) => b - a)[0];
             const totalIncidents = summary.totalIncidents || 1;
             return (
               <div className="space-y-4">

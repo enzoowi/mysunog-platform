@@ -1,19 +1,41 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { FireIncident } from './fire-incident.entity';
 import { CreateIncidentDto } from './dto/create-incident.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class IncidentsService {
   constructor(
     @InjectRepository(FireIncident)
     private incidentsRepository: Repository<FireIncident>,
+    private readonly notificationsService: NotificationsService,
+    private readonly usersService: UsersService,
   ) {}
 
   async create(dto: CreateIncidentDto) {
     const incident = this.incidentsRepository.create(dto);
-    return this.incidentsRepository.save(incident);
+    const savedIncident = await this.incidentsRepository.save(incident);
+
+    // Notify BFP personnel and Admins
+    try {
+      const personnel = await this.usersService.findAdminsAndBfp();
+      for (const p of personnel) {
+        await this.notificationsService.createNotification(
+          p,
+          'New Incident Report',
+          `A new fire incident in ${dto.barangay} was reported.`,
+          'alert',
+          '/reports'
+        );
+      }
+    } catch (error) {
+      console.error('Error sending incident notifications:', error);
+    }
+
+    return savedIncident;
   }
 
   async findAll(barangay?: string) {
@@ -68,8 +90,34 @@ export class IncidentsService {
     return query.getMany();
   }
 
-  async getDashboardSummary() {
-    const incidents = await this.incidentsRepository.find();
+  async getDashboardSummary(period?: string) {
+    let allIncidents = await this.incidentsRepository.find();
+
+    // Filter by period if provided
+    if (period && period !== 'all') {
+      const now = new Date();
+      let cutoff: Date;
+
+      if (period === 'weekly') {
+        cutoff = new Date(now);
+        cutoff.setDate(now.getDate() - 7);
+      } else if (period === 'monthly') {
+        cutoff = new Date(now);
+        cutoff.setDate(now.getDate() - 30);
+      } else if (period === 'annually') {
+        cutoff = new Date(now.getFullYear(), 0, 1); // Jan 1 of current year
+      }
+
+      if (cutoff!) {
+        allIncidents = allIncidents.filter((incident) => {
+          if (!incident.incidentDate) return false;
+          const incidentDate = new Date(incident.incidentDate);
+          return incidentDate >= cutoff;
+        });
+      }
+    }
+
+    const incidents = allIncidents;
 
     const totalIncidents = incidents.length;
 
@@ -235,5 +283,25 @@ export class IncidentsService {
   private timeToMinutes(time: string): number {
     const parts = time.split(':');
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+  }
+
+  async remove(id: number) {
+    return this.incidentsRepository.softDelete(id);
+  }
+
+  async getDeleted() {
+    return this.incidentsRepository.find({
+      withDeleted: true,
+      where: { deletedAt: Not(IsNull()) },
+      order: { deletedAt: 'DESC' },
+    });
+  }
+
+  async restore(id: number) {
+    return this.incidentsRepository.restore(id);
+  }
+
+  async hardDelete(id: number) {
+    return this.incidentsRepository.delete(id);
   }
 }

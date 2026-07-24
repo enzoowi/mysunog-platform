@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Droplet, ShieldPlus, MapPin, Plus, Pencil, Trash2, X, Check, Upload, GripHorizontal } from 'lucide-react';
+import { ArrowLeft, Droplet, ShieldPlus, Plus, Pencil, Trash2, X, Check, Upload, GripHorizontal } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -23,19 +23,13 @@ const stationIcon = new L.Icon({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
 });
-const hotspotIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
-});
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 const DEFAULT_CENTER: [number, number] = [14.0412, 121.1583];
 
-type Tab = 'hydrants' | 'hotspots' | 'stations';
+type Tab = 'hydrants' | 'stations';
 
 type Hydrant = { id: number; name: string; lat: number; lng: number; description?: string; photoUrl?: string; };
-type Hotspot = { id: number; barangay: string; lat: number; lng: number; riskLevel: string; description?: string; photoUrl?: string; };
 type Station = { id: number; name: string; lat: number; lng: number; contact?: string; photoUrl?: string; };
 
 /** Click anywhere on the map to set coordinates */
@@ -77,7 +71,6 @@ function DraggableMarker({
 export default function AdminMapAssets() {
   const [tab, setTab] = useState<Tab>('hydrants');
   const [hydrants, setHydrants] = useState<Hydrant[]>([]);
-  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -91,13 +84,11 @@ export default function AdminMapAssets() {
   async function fetchAll() {
     setLoading(true);
     try {
-      const [h, hs, s] = await Promise.all([
+      const [h, s] = await Promise.all([
         api.get('/map/hydrants'),
-        api.get('/map/hotspots'),
         api.get('/map/stations'),
       ]);
       setHydrants(h.data);
-      setHotspots(hs.data);
       setStations(s.data);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
@@ -164,21 +155,35 @@ export default function AdminMapAssets() {
   function startEdit(item: any) {
     setEditingId(item.id);
     const d: Record<string, string> = {};
-    Object.entries(item).forEach(([k, v]) => { if (v !== null && v !== undefined) d[k] = String(v); });
+    const editableFields = ['name', 'riskLevel', 'contact', 'description', 'lat', 'lng'];
+    Object.entries(item).forEach(([k, v]) => { 
+      if (editableFields.includes(k) && v !== null && v !== undefined) d[k] = String(v); 
+    });
     setFormData(d);
     setPhotoPreview(item.photoUrl ? `${BACKEND_URL}${item.photoUrl}` : null);
   }
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'hydrants', label: 'Fire Hydrants', icon: <Droplet className="w-4 h-4" /> },
-    { key: 'hotspots', label: 'Hotspots', icon: <MapPin className="w-4 h-4" /> },
     { key: 'stations', label: 'BFP Stations', icon: <ShieldPlus className="w-4 h-4" /> },
   ];
 
-  const currentItems = tab === 'hydrants' ? hydrants : tab === 'hotspots' ? hotspots : stations;
+  const currentItems = tab === 'hydrants' ? hydrants : stations;
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <style>{`
+        .leaflet-container {
+          cursor: crosshair !important;
+        }
+        .leaflet-interactive {
+          cursor: pointer !important;
+        }
+        .leaflet-dragging .leaflet-container,
+        .leaflet-dragging .leaflet-interactive {
+          cursor: grabbing !important;
+        }
+      `}</style>
       <Link to="/admin/dashboard" className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 mb-4">
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
@@ -211,7 +216,7 @@ export default function AdminMapAssets() {
             <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <MapClickHandler onPlace={handleMapPlace} />
 
-            {tab === 'hydrants' && hydrants.map(h => (
+            {tab === 'hydrants' && hydrants.filter(h => h.id !== editingId).map(h => (
               <DraggableMarker key={h.id} position={[Number(h.lat), Number(h.lng)]} icon={hydrantIcon}
                 onDragEnd={(lat, lng) => handleDragEnd('hydrants', h.id, lat, lng)}>
                 <Popup>
@@ -222,18 +227,7 @@ export default function AdminMapAssets() {
               </DraggableMarker>
             ))}
 
-            {tab === 'hotspots' && hotspots.map(hs => (
-              <DraggableMarker key={hs.id} position={[Number(hs.lat), Number(hs.lng)]} icon={hotspotIcon}
-                onDragEnd={(lat, lng) => handleDragEnd('hotspots', hs.id, lat, lng)}>
-                <Popup>
-                  {hs.photoUrl && <img src={`${BACKEND_URL}${hs.photoUrl}`} alt="" className="w-full h-28 object-cover rounded mb-2" />}
-                  <strong>{hs.barangay}</strong> — <span className="capitalize">{hs.riskLevel} Risk</span><br />
-                  <span className="text-xs text-gray-500">{hs.description}</span>
-                </Popup>
-              </DraggableMarker>
-            ))}
-
-            {tab === 'stations' && stations.map(s => (
+            {tab === 'stations' && stations.filter(s => s.id !== editingId).map(s => (
               <DraggableMarker key={s.id} position={[Number(s.lat), Number(s.lng)]} icon={stationIcon}
                 onDragEnd={(lat, lng) => handleDragEnd('stations', s.id, lat, lng)}>
                 <Popup>
@@ -243,6 +237,20 @@ export default function AdminMapAssets() {
                 </Popup>
               </DraggableMarker>
             ))}
+
+            {/* Draft Marker */}
+            {formData.lat && formData.lng && (
+              <DraggableMarker
+                position={[Number(formData.lat), Number(formData.lng)]}
+                icon={tab === 'hydrants' ? hydrantIcon : stationIcon}
+                onDragEnd={(lat, lng) => setFormData(p => ({ ...p, lat: lat.toFixed(7), lng: lng.toFixed(7) }))}
+              >
+                <Popup>
+                  <strong className="text-orange-600">{editingId ? 'Unsaved Location' : 'New Location'}</strong><br />
+                  <span className="text-xs text-gray-500">Drag to adjust or click map.</span>
+                </Popup>
+              </DraggableMarker>
+            )}
           </MapContainer>
         </div>
 
@@ -259,20 +267,6 @@ export default function AdminMapAssets() {
               <input type="text" placeholder="Name" value={formData.name || ''}
                 onChange={e => setFormData(p => ({ ...p, name: e.target.value }))}
                 className="w-full border rounded-lg px-3 py-2 text-sm" required />
-            )}
-            {tab === 'hotspots' && (
-              <>
-                <input type="text" placeholder="Barangay" value={formData.barangay || ''}
-                  onChange={e => setFormData(p => ({ ...p, barangay: e.target.value }))}
-                  className="w-full border rounded-lg px-3 py-2 text-sm" required />
-                <select value={formData.riskLevel || 'moderate'}
-                  onChange={e => setFormData(p => ({ ...p, riskLevel: e.target.value }))}
-                  className="w-full border rounded-lg px-3 py-2 text-sm">
-                  <option value="low">Low Risk</option>
-                  <option value="moderate">Moderate Risk</option>
-                  <option value="high">High Risk</option>
-                </select>
-              </>
             )}
             {tab === 'stations' && (
               <input type="text" placeholder="Contact number (optional)" value={formData.contact || ''}
@@ -334,7 +328,7 @@ export default function AdminMapAssets() {
                     <img src={`${BACKEND_URL}${item.photoUrl}`} alt="" className="w-10 h-10 object-cover rounded-lg border flex-shrink-0" />
                   )}
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{item.name || item.barangay}</p>
+                    <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
                     <p className="text-xs text-gray-400">{Number(item.lat).toFixed(5)}, {Number(item.lng).toFixed(5)}</p>
                   </div>
                 </div>

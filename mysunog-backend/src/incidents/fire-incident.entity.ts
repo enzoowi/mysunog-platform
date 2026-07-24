@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
 } from 'typeorm';
 
 @Entity()
@@ -41,7 +42,19 @@ export class FireIncident {
   propertyType?: string;
 
   @Column({ nullable: true })
+  landmark?: string;
+
+  @Column({ nullable: true })
   remarks?: string;
+
+  @Column({ nullable: true })
+  reporterName?: string;
+
+  @Column({ nullable: true })
+  reporterContact?: string;
+
+  @Column({ nullable: true })
+  fireInvestigator?: string;
 
   // Response performance fields
   @Column({ nullable: true })
@@ -62,4 +75,7 @@ export class FireIncident {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }

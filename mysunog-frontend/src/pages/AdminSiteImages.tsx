@@ -7,7 +7,6 @@ const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.ho
 
 const SLOTS = [
   { key: 'home_hero', label: 'Home Hero Banner', description: 'Main background image on the home page hero section' },
-  { key: 'education_banner', label: 'Education Hub Banner', description: 'Banner image shown at the top of the Education Hub' },
 ];
 
 type SiteImage = { id: number; key: string; label?: string; imageUrl?: string; updatedAt: string };

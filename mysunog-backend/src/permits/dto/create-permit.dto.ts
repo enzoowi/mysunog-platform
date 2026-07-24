@@ -1,4 +1,10 @@
-import { IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import {
+  IsString,
+  MinLength,
+  IsOptional,
+  IsEnum,
+  IsNotEmpty,
+} from 'class-validator';
 import { PermitType } from '../permit.entity';
 
 export class CreatePermitDto {
@@ -7,14 +13,30 @@ export class CreatePermitDto {
   businessName: string;
 
   @IsString()
-  @MinLength(5)
-  businessAddress: string;
+  @IsNotEmpty()
+  houseNumber: string;
 
   @IsString()
-  @MinLength(3)
-  purpose: string;
+  @IsNotEmpty()
+  streetName: string;
+
+  @IsString()
+  @IsOptional()
+  subdivision: string;
+
+  @IsString()
+  @IsNotEmpty()
+  barangay: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 
   @IsOptional()
   @IsEnum(PermitType)
   permitType?: PermitType;
+
+  @IsOptional()
+  @IsString()
+  bploSlipUrl?: string;
 }

@@ -71,6 +71,7 @@ export class MapAssetsController {
   ) {
     if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
     const data: any = { ...body };
+    delete data.id;
     if (body.lat !== undefined) data.lat = Number(body.lat);
     if (body.lng !== undefined) data.lng = Number(body.lng);
     return this.mapAssetsService.updateHydrant(Number(id), data);
@@ -80,55 +81,6 @@ export class MapAssetsController {
   @Delete('hydrants/:id')
   removeHydrant(@Param('id') id: string) {
     return this.mapAssetsService.removeHydrant(Number(id));
-  }
-
-  // ==================== HOTSPOTS ====================
-  @Get('hotspots')
-  getHotspots() {
-    return this.mapAssetsService.findAllHotspots();
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('hotspots')
-  @UseInterceptors(
-    FileInterceptor('photo', {
-      storage: photoStorage,
-      fileFilter: imageFileFilter,
-    }),
-  )
-  createHotspot(@Body() body: any, @UploadedFile() file?: Express.Multer.File) {
-    if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
-    return this.mapAssetsService.createHotspot({
-      ...body,
-      lat: Number(body.lat),
-      lng: Number(body.lng),
-    });
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('hotspots/:id')
-  @UseInterceptors(
-    FileInterceptor('photo', {
-      storage: photoStorage,
-      fileFilter: imageFileFilter,
-    }),
-  )
-  updateHotspot(
-    @Param('id') id: string,
-    @Body() body: any,
-    @UploadedFile() file?: Express.Multer.File,
-  ) {
-    if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
-    const data: any = { ...body };
-    if (body.lat !== undefined) data.lat = Number(body.lat);
-    if (body.lng !== undefined) data.lng = Number(body.lng);
-    return this.mapAssetsService.updateHotspot(Number(id), data);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Delete('hotspots/:id')
-  removeHotspot(@Param('id') id: string) {
-    return this.mapAssetsService.removeHotspot(Number(id));
   }
 
   // ==================== BFP STATIONS ====================
@@ -169,6 +121,7 @@ export class MapAssetsController {
   ) {
     if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
     const data: any = { ...body };
+    delete data.id;
     if (body.lat !== undefined) data.lat = Number(body.lat);
     if (body.lng !== undefined) data.lng = Number(body.lng);
     return this.mapAssetsService.updateStation(Number(id), data);

@@ -3,11 +3,11 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 export enum UserRole {
-  CITIZEN = 'citizen',
-  VOLUNTEER = 'volunteer',
+  BFP_STAFF = 'bfp_staff',
   ADMIN = 'admin',
 }
 
@@ -25,12 +25,18 @@ export class User {
   @Column({
     type: 'enum',
     enum: UserRole,
-    default: UserRole.CITIZEN,
+    default: UserRole.BFP_STAFF,
   })
   role: UserRole;
 
   @Column({ nullable: true })
-  fullName?: string;
+  firstName?: string;
+
+  @Column({ nullable: true })
+  middleName?: string;
+
+  @Column({ nullable: true })
+  lastName?: string;
 
   @Column({ nullable: true })
   phone?: string;
@@ -38,17 +44,29 @@ export class User {
   @Column({ nullable: true })
   barangay?: string;
 
-  @Column({ default: false })
-  isVolunteer: boolean;
-
-  /** Whether the admin has verified this citizen's residency */
-  @Column({ default: false })
+  /** Whether the account is verified/active (used for BFP accounts) */
+  @Column({ default: true })
   isVerified: boolean;
 
-  /** Path to the uploaded government ID for residency verification */
-  @Column({ nullable: true })
-  residencyProofUrl?: string;
+  /** Whether this user has submitted a forgot-password request */
+  @Column({ default: false })
+  passwordResetRequested: boolean;
+
+  /** Timestamp when the password reset was requested */
+  @Column({ nullable: true, type: 'timestamp' })
+  passwordResetRequestedAt?: Date;
+
+  /** Whether this account is active. Admins can deactivate/reactivate. */
+  @Column({ default: true })
+  isActive: boolean;
+
+  /** Timestamp when the account was deactivated */
+  @Column({ nullable: true, type: 'timestamp' })
+  deactivatedAt?: Date;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

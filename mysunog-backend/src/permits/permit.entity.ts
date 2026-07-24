@@ -13,6 +13,7 @@ export enum PermitStatus {
   UNDER_REVIEW = 'under_review',
   REVISION_REQUIRED = 'revision_required',
   APPROVED = 'approved',
+  ISSUED = 'issued',
   RELEASED = 'released',
   REJECTED = 'rejected',
 }
@@ -30,11 +31,20 @@ export class PermitRequest {
   @Column()
   businessName: string;
 
-  @Column()
-  businessAddress: string;
+  @Column({ default: '' })
+  houseNumber: string;
 
-  @Column()
-  purpose: string;
+  @Column({ default: '' })
+  streetName: string;
+
+  @Column({ default: '' })
+  subdivision: string;
+
+  @Column({ default: '' })
+  barangay: string;
+
+  @Column({ nullable: true })
+  description?: string;
 
   @Column({
     type: 'enum',
@@ -55,6 +65,15 @@ export class PermitRequest {
 
   @Column({ type: 'date', nullable: true })
   expirationDate?: string;
+
+  @Column({ nullable: true })
+  bploSlipUrl?: string;
+
+  @Column({ nullable: true })
+  inspectionDate?: Date;
+
+  @Column({ nullable: true })
+  certificateUrl?: string;
 
   @ManyToOne(() => User, { eager: true })
   createdBy: User;

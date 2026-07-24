@@ -8,7 +8,7 @@ const BARANGAYS = [
 ];
 
 export default function VolunteerRegister() {
-  const [form, setForm] = useState({ fullName: '', phone: '', barangay: '' });
+  const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', barangay: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -18,7 +18,7 @@ export default function VolunteerRegister() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.fullName || !form.phone || !form.barangay) {
+    if (!form.firstName || !form.lastName || !form.phone || !form.barangay) {
       alert('Please fill in all fields.');
       return;
     }
@@ -51,11 +51,19 @@ export default function VolunteerRegister() {
       <p className="text-gray-600 mb-6">Join the Barangay Fire Watch Program and help protect your community.</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-          <input type="text" name="fullName" value={form.fullName} onChange={handleChange}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500"
-            placeholder="Juan Dela Cruz" />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+            <input type="text" name="firstName" value={form.firstName} onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500"
+              placeholder="Juan" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+            <input type="text" name="lastName" value={form.lastName} onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-500"
+              placeholder="Dela Cruz" />
+          </div>
         </div>
 
         <div>

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, UserCheck, Eye, X, CheckCircle } from 'lucide-react';
+import { ArrowLeft, UserCheck, Eye, X, CheckCircle, ChevronDown } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
 type PendingUser = {
   id: number;
   email: string;
+  firstName?: string;
+  lastName?: string;
   residencyProofUrl?: string;
   createdAt: string;
   role: string;
@@ -18,12 +20,18 @@ export default function AdminVerifications() {
   const [loading, setLoading] = useState(true);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [approving, setApproving] = useState<number | null>(null);
+  // Track selected role per user (defaults to 'citizen')
+  const [selectedRoles, setSelectedRoles] = useState<Record<number, string>>({});
 
   async function fetchPending() {
     try {
       setLoading(true);
       const res = await api.get('/users/pending');
       setUsers(res.data);
+      // Initialize each user's role selection to 'citizen'
+      const defaultRoles: Record<number, string> = {};
+      res.data.forEach((u: PendingUser) => { defaultRoles[u.id] = 'citizen'; });
+      setSelectedRoles(defaultRoles);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   }
@@ -33,6 +41,11 @@ export default function AdminVerifications() {
   async function handleApprove(id: number) {
     setApproving(id);
     try {
+      // If the selected role differs from citizen, update role first
+      const chosenRole = selectedRoles[id] || 'citizen';
+      if (chosenRole !== 'citizen') {
+        await api.patch(`/users/${id}/role`, { role: chosenRole });
+      }
       await api.patch(`/users/${id}/verify`);
       await fetchPending();
     } catch (err) { console.error(err); alert('Failed to approve user.'); }
@@ -95,7 +108,10 @@ export default function AdminVerifications() {
 
               {/* Info */}
               <div className="min-w-0">
-                <p className="font-semibold text-gray-800 truncate">{u.email}</p>
+                <p className="font-semibold text-gray-800 truncate">
+                  {u.firstName || u.lastName ? `${u.firstName || ''} ${u.lastName || ''}`.trim() : u.email}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">{u.email}</p>
                 <p className="text-xs text-gray-500 mt-1">Role: {u.role}</p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   Registered: {new Date(u.createdAt).toLocaleString()}
@@ -103,13 +119,29 @@ export default function AdminVerifications() {
               </div>
             </div>
 
-            {/* Approve button */}
-            <button
-              onClick={() => handleApprove(u.id)}
-              disabled={approving === u.id}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-50 self-center">
-              {approving === u.id ? 'Approving...' : <><CheckCircle className="w-4 h-4" /> Approve Account</>}
-            </button>
+            {/* Approve section with role selector */}
+            <div className="flex flex-col gap-2 self-center">
+              {/* Role selector */}
+              <div className="flex items-center gap-2">
+                <ChevronDown className="w-4 h-4 text-gray-400 pointer-events-none absolute ml-2" />
+                <select
+                  value={selectedRoles[u.id] || 'citizen'}
+                  onChange={(e) => setSelectedRoles((prev) => ({ ...prev, [u.id]: e.target.value }))}
+                  disabled={approving === u.id}
+                  className="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 bg-white focus:ring-2 focus:ring-orange-300 focus:outline-none disabled:opacity-50 cursor-pointer"
+                >
+                  <option value="citizen">Citizen</option>
+                  <option value="bfp_staff">BFP Staff</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <button
+                onClick={() => handleApprove(u.id)}
+                disabled={approving === u.id}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition disabled:opacity-50">
+                {approving === u.id ? 'Approving...' : <><CheckCircle className="w-4 h-4" /> Approve</>}
+              </button>
+            </div>
           </div>
         ))}
       </div>

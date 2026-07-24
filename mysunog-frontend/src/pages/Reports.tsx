@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Clock, MapPin, AlertCircle, TrendingDown, X, Download } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, AlertCircle, TrendingDown, X, Download, Trash2, RotateCcw, Trash } from 'lucide-react';
 import { api } from '../services/api';
 
 const BARANGAYS = [
@@ -16,6 +16,7 @@ export default function Reports() {
   const [incidents, setIncidents] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIncident, setSelectedIncident] = useState<any | null>(null);
+  const [showDeleted, setShowDeleted] = useState(false);
 
   function buildQuery() {
     const params = new URLSearchParams();
@@ -29,8 +30,13 @@ export default function Reports() {
     async function fetchIncidents() {
       setLoading(true);
       try {
-        const res = await api.get(`/incidents/search?${buildQuery()}`);
-        setIncidents(res.data);
+        if (showDeleted) {
+          const res = await api.get('/incidents/deleted');
+          setIncidents(res.data);
+        } else {
+          const res = await api.get(`/incidents/search?${buildQuery()}`);
+          setIncidents(res.data);
+        }
       } catch (e) {
         console.error('Failed to fetch incidents', e);
       } finally {
@@ -39,7 +45,57 @@ export default function Reports() {
     }
     fetchIncidents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [barangay, startDate, endDate]);
+  }, [barangay, startDate, endDate, showDeleted]);
+
+  async function handleDelete(id: number) {
+    if (!window.confirm('Are you sure you want to move this incident record to the archive? This action will move it to Archived Records and will affect analytics.')) return;
+    
+    setLoading(true);
+    try {
+      await api.delete(`/incidents/${id}`);
+      setSelectedIncident(null);
+      // refetch incidents
+      const res = await api.get(`/incidents/search?${buildQuery()}`);
+      setIncidents(res.data);
+    } catch (e) {
+      console.error('Failed to delete incident', e);
+      alert('Failed to delete incident');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleRestore(id: number) {
+    if (!window.confirm('Are you sure you want to restore this record?')) return;
+    setLoading(true);
+    try {
+      await api.post(`/incidents/${id}/restore`);
+      setSelectedIncident(null);
+      const res = await api.get('/incidents/deleted');
+      setIncidents(res.data);
+    } catch (e) {
+      console.error('Failed to restore incident', e);
+      alert('Failed to restore incident');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handlePermanentDelete(id: number) {
+    if (!window.confirm('Are you sure you want to permanently delete this record? This action CANNOT be undone.')) return;
+    setLoading(true);
+    try {
+      await api.delete(`/incidents/${id}/permanent`);
+      setSelectedIncident(null);
+      const res = await api.get('/incidents/deleted');
+      setIncidents(res.data);
+    } catch (e) {
+      console.error('Failed to permanently delete incident', e);
+      alert('Failed to permanently delete incident');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function downloadPdf() {
     window.open(`http://localhost:3000/reports/incidents/pdf?${buildQuery()}`, '_blank');
@@ -54,10 +110,21 @@ export default function Reports() {
       <Link to="/admin/dashboard" className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 mb-4">
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Reports & Export</h2>
-      <p className="text-gray-600 mb-6">Generate and download fire incident reports for administrative use.</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">📊 Reports & Export</h2>
+          <p className="text-gray-600">Generate and download fire incident reports for administrative use.</p>
+        </div>
+        <button 
+          onClick={() => setShowDeleted(!showDeleted)}
+          className={`px-4 py-2 rounded-lg font-medium text-sm transition ${showDeleted ? 'bg-gray-800 text-white hover:bg-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+        >
+          {showDeleted ? 'View Active Records' : 'View Archive'}
+        </button>
+      </div>
 
       {/* Filters & Export */}
+      {!showDeleted && (
       <div className="bg-white border text-sm rounded-xl p-6 mb-6 shadow-sm">
         <h3 className="font-semibold text-lg mb-4 text-gray-800 border-b pb-2">Report Filters & Export</h3>
         
@@ -94,11 +161,12 @@ export default function Reports() {
           </button>
         </div>
       </div>
+      )}
 
       {/* Incident Data Table */}
       <div className="bg-white border rounded-xl shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-            <h3 className="font-semibold text-gray-800">Incident Records</h3>
+            <h3 className="font-semibold text-gray-800">{showDeleted ? 'Archived Records' : 'Incident Records'}</h3>
             <span className="text-xs font-medium text-gray-500 bg-white border px-3 py-1 rounded-full">{incidents.length} Result{incidents.length !== 1 && 's'}</span>
         </div>
         
@@ -180,12 +248,28 @@ export default function Reports() {
                   <p className="font-medium text-gray-800">{selectedIncident.barangay}</p>
                 </div>
                 <div>
+                  <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Reporter Name</p>
+                  <p className="font-medium text-gray-800">{selectedIncident.reporterName || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Reporter Contact</p>
+                  <p className="font-medium text-gray-800">{selectedIncident.reporterContact || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Fire Investigator</p>
+                  <p className="font-medium text-gray-800">{selectedIncident.fireInvestigator || 'N/A'}</p>
+                </div>
+                <div>
                   <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Cause of Fire</p>
                   <p className="font-medium text-gray-800">{selectedIncident.cause || 'Unknown'}</p>
                 </div>
                 <div>
                   <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Property Type</p>
                   <p className="font-medium text-gray-800">{selectedIncident.propertyType || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Nearest Landmark</p>
+                  <p className="font-medium text-gray-800">{selectedIncident.landmark || 'N/A'}</p>
                 </div>
                 
                 <div className="col-span-2 border-t pt-4 mt-2"></div>
@@ -199,7 +283,29 @@ export default function Reports() {
                    <p className="font-medium text-gray-800">{selectedIncident.casualties || 0} Casualties, {selectedIncident.injuries || 0} Injuries</p>
                 </div>
 
-                <div className="col-span-2">
+                <div className="col-span-2 border-t pt-4 mt-2">
+                  <p className="font-semibold text-gray-800 mb-3">Response Performance</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Alarm Time</p>
+                      <p className="font-medium text-gray-800">{selectedIncident.alarmTime || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Response Time</p>
+                      <p className="font-medium text-gray-800">{selectedIncident.responseTime || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Control Time</p>
+                      <p className="font-medium text-gray-800">{selectedIncident.controlTime || '-'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Fire Out Time</p>
+                      <p className="font-medium text-gray-800">{selectedIncident.fireOutTime || '-'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col-span-2 border-t pt-4 mt-2">
                   <p className="text-gray-500 text-xs font-semibold uppercase mb-1">Location Coordinates</p>
                   <p className="font-medium text-gray-800">{selectedIncident.latitude}, {selectedIncident.longitude}</p>
                 </div>
@@ -214,13 +320,39 @@ export default function Reports() {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t bg-gray-50 flex justify-end">
-              <button 
-                onClick={() => window.open(`http://localhost:3000/reports/incidents/${selectedIncident.id}/pdf`, '_blank')}
-                className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow-sm flex items-center gap-2"
-              >
-                <Download className="w-4 h-4" /> Download Incident PDF
-              </button>
+            <div className="px-6 py-4 border-t bg-gray-50 flex justify-between items-center">
+              {showDeleted ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleRestore(selectedIncident.id)}
+                    className="text-green-600 hover:bg-green-50 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Restore
+                  </button>
+                  <button
+                    onClick={() => handlePermanentDelete(selectedIncident.id)}
+                    className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                  >
+                    <Trash className="w-4 h-4" /> Delete Permanently
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => handleDelete(selectedIncident.id)}
+                  className="text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" /> Move to Archive
+                </button>
+              )}
+              
+              {!showDeleted && (
+                <button 
+                  onClick={() => window.open(`http://localhost:3000/reports/incidents/${selectedIncident.id}/pdf`, '_blank')}
+                  className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow-sm flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" /> Download Incident PDF
+                </button>
+              )}
             </div>
             
           </div>

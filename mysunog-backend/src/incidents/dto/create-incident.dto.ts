@@ -20,9 +20,9 @@ export class CreateIncidentDto {
   @IsNotEmpty()
   barangay: string;
 
-  @IsOptional()
   @IsString()
-  cause?: string;
+  @IsNotEmpty()
+  cause: string;
 
   @Type(() => Number)
   @IsNumber()
@@ -56,7 +56,23 @@ export class CreateIncidentDto {
 
   @IsOptional()
   @IsString()
+  landmark?: string;
+
+  @IsOptional()
+  @IsString()
   remarks?: string;
+
+  @IsOptional()
+  @IsString()
+  reporterName?: string;
+
+  @IsOptional()
+  @IsString()
+  reporterContact?: string;
+
+  @IsOptional()
+  @IsString()
+  fireInvestigator?: string;
 
   @IsOptional()
   @IsString()
