@@ -357,8 +357,49 @@ FORMAT:
         steps,
       };
     } catch (error) {
-      console.error('OpenRouteService error:', error?.response?.data || error.message);
-      return { error: 'Failed to calculate emergency route. The routing service may be temporarily unavailable.' };
+      console.warn('OpenRouteService failed, falling back to OSRM:', error?.response?.data || error.message);
+      
+      try {
+        // Fallback to OSRM Public API
+        const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${stationLng},${stationLat};${incidentLng},${incidentLat}?geometries=geojson&overview=full&steps=true`;
+        const osrmResponse = await axios.get(osrmUrl, { timeout: 10000 });
+        
+        const route = osrmResponse.data?.routes?.[0];
+        if (!route) {
+          return { error: 'No route found between the station and incident location.' };
+        }
+
+        const steps: { instruction: string; distance: number; duration: number }[] = [];
+        const legs = route.legs || [];
+        for (const leg of legs) {
+          for (const step of leg.steps || []) {
+            let instruction = '';
+            if (step.maneuver) {
+              const type = step.maneuver.type || '';
+              const modifier = step.maneuver.modifier || '';
+              instruction = `${type.charAt(0).toUpperCase() + type.slice(1)} ${modifier}`.trim();
+              if (step.name) instruction += ` onto ${step.name}`;
+            }
+            steps.push({
+              instruction: instruction || 'Continue along route',
+              distance: Math.round(step.distance || 0),
+              duration: Math.round(step.duration || 0),
+            });
+          }
+        }
+
+        return {
+          origin: { lat: stationLat, lng: stationLng, label: 'BFP Malvar Fire Station' },
+          destination: { lat: incidentLat, lng: incidentLng, label: 'Incident Location' },
+          geometry: route.geometry,
+          distance: Math.round(route.distance || 0),
+          duration: Math.round(route.duration || 0),
+          steps,
+        };
+      } catch (osrmError) {
+        console.error('OSRM fallback error:', osrmError.message);
+        return { error: 'Failed to calculate emergency route. The routing services are temporarily unavailable.' };
+      }
     }
   }
 }
