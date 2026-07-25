@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Delete,
   Body,
   Param,
@@ -18,7 +19,7 @@ import { DetectionService } from './detection.service';
 import { DetectionGateway } from './detection.gateway';
 import { AnalyzeFrameDto } from './dto/analyze-frame.dto';
 import { CreateCameraDto } from './dto/create-camera.dto';
-
+import { UpdateCameraDto } from './dto/update-camera.dto';
 @Controller('detection')
 export class DetectionController {
   constructor(
@@ -154,6 +155,12 @@ export class DetectionController {
   @UseGuards(AuthGuard('jwt'))
   async createCamera(@Body() dto: CreateCameraDto) {
     return this.detectionService.createCamera(dto);
+  }
+
+  @Patch('cameras/:id')
+  @UseGuards(AuthGuard('jwt'))
+  async updateCamera(@Param('id') id: string, @Body() dto: UpdateCameraDto) {
+    return this.detectionService.updateCamera(+id, dto);
   }
 
   /**

@@ -9,6 +9,7 @@ import {
 import { Camera } from './camera.entity';
 import { CreateDetectionEventDto } from './dto/create-detection-event.dto';
 import { CreateCameraDto } from './dto/create-camera.dto';
+import { UpdateCameraDto } from './dto/update-camera.dto';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -353,6 +354,29 @@ export class DetectionService implements OnModuleInit {
       );
     }
     return saved;
+  }
+
+  async updateCamera(id: number, dto: UpdateCameraDto): Promise<Camera> {
+    const camera = await this.cameraRepository.findOne({ where: { id } });
+    if (!camera) throw new Error('Camera not found');
+    
+    await this.disconnectExternalCamera(id.toString());
+    
+    Object.assign(camera, dto);
+    const updated = await this.cameraRepository.save(camera);
+    
+    if (updated.isActive && updated.streamUrl) {
+      await this.connectExternalCamera(
+        updated.id.toString(),
+        updated.streamUrl,
+        updated.name,
+        updated.location,
+        updated.latitude,
+        updated.longitude,
+      );
+    }
+    
+    return updated;
   }
 
   async findAllCameras() {
