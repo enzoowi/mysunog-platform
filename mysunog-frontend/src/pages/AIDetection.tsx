@@ -187,16 +187,17 @@ export default function AIDetection() {
         name: editingCamera.name,
         location: editingCamera.location,
         streamUrl: editingCamera.streamUrl,
-        latitude: editingCamera.latitude,
-        longitude: editingCamera.longitude,
+        latitude: editingCamera.latitude !== null ? Number(editingCamera.latitude) : null,
+        longitude: editingCamera.longitude !== null ? Number(editingCamera.longitude) : null,
       });
       setEditingCamera(null);
       await fetchCameras();
       if (expandedCamera && expandedCamera.id === editingCamera.id) {
         setExpandedCamera({ ...expandedCamera, ...editingCamera });
       }
-    } catch (err) {
-      alert('Failed to update camera');
+    } catch (err: any) {
+      console.error('Update Camera Error:', err.response?.data || err);
+      alert(`Failed to update camera: ${err.response?.data?.message || err.message}`);
     } finally {
       setIsUpdating(false);
     }
