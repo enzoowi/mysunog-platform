@@ -15,6 +15,8 @@ import {
 import { UsersService } from '../users/users.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { DetectionGateway } from '../detection/detection.gateway';
+import { EmailAlertsService } from '../email-alerts/email-alerts.service';
+import { DetectionEvent, DetectionType, SeverityLevel } from '../detection/detection-event.entity';
 
 /**
  * AiIncidentsService — Business logic for the AI incident lifecycle.
@@ -47,6 +49,7 @@ export class AiIncidentsService {
     private readonly usersService: UsersService,
     private readonly notificationsService: NotificationsService,
     private readonly gateway: DetectionGateway,
+    private readonly emailAlertsService: EmailAlertsService,
   ) {}
 
   // ── WEBHOOK: Create or update incident ──────────────────────────────────
@@ -123,6 +126,43 @@ export class AiIncidentsService {
       this.gateway.broadcastNotification({ title, message, link });
     } catch (err) {
       this.logger.error(`Failed to send notifications: ${err.message}`, err.stack);
+    }
+
+    if (dto.max_confidence >= 0.70) {
+      try {
+        const mockEvent = new DetectionEvent();
+        mockEvent.detectionType = (dto.detection_type === 'SMOKE' ? DetectionType.SMOKE : DetectionType.FIRE);
+        mockEvent.confidence = dto.max_confidence;
+        mockEvent.severity = incident.priority.toLowerCase() as SeverityLevel;
+        mockEvent.createdAt = incident.createdAt;
+        mockEvent.cameraSource = incident.cameraId;
+
+        let aiAdviceText = '';
+        try {
+          const aiAdviceResult = await this.notificationsService.getAiAdviceFromAlert({
+            title: 'Detection Alert',
+            message: '',
+            detectionType: mockEvent.detectionType,
+            confidence: mockEvent.confidence,
+            severity: mockEvent.severity,
+            cameraSource: dto.camera_name || dto.camera_id,
+            latitude: dto.latitude,
+            longitude: dto.longitude,
+          });
+          aiAdviceText = aiAdviceResult.advice;
+        } catch (e) {
+          this.logger.warn(`Could not generate AI advice for email: ${e.message}`);
+        }
+        
+        this.emailAlertsService.sendDetectionAlert(
+          mockEvent,
+          dto.camera_name || dto.camera_id,
+          dto.camera_location || 'Unknown',
+          aiAdviceText
+        ).catch(err => this.logger.error(`Email Error: ${err.message}`));
+      } catch (err) {
+        this.logger.error(`Failed to process email alerts: ${err.message}`, err.stack);
+      }
     }
 
     return { incident, isNew: true };
