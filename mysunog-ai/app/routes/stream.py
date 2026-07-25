@@ -385,6 +385,8 @@ def _broadcast_fire_alert(
     detection_type: str,
     confidence: float,
     severity: str = "high",
+    latitude: Optional[float] = None,
+    longitude: Optional[float] = None,
 ):
     """
     Immediately POST a lightweight alert to NestJS so it can broadcast a
@@ -410,6 +412,8 @@ def _broadcast_fire_alert(
         "detectionType": detection_type,
         "confidence": confidence,
         "severity": severity,
+        "latitude": latitude,
+        "longitude": longitude,
     }
 
     try:
@@ -461,6 +465,8 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
                 detection_type=det_type,
                 confidence=max_conf,
                 severity="critical" if max_conf > 0.8 else "high",
+                latitude=camera.latitude,
+                longitude=camera.longitude,
             )
 
             snapshot = temporal_tracker.update(
