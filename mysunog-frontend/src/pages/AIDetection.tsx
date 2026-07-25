@@ -7,9 +7,22 @@ import {
   Wind, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 
+const createPin = (color: string) => `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12c0 7.872 11.233 23.36 11.602 23.86a.5.5 0 0 0 .796 0C12.767 35.36 24 19.872 24 12c0-6.627-5.373-12-12-12zm0 17.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" fill="${color}" stroke="white" stroke-width="1.5"/></svg>`;
+const cameraIcon = new L.DivIcon({
+    html: createPin('#a855f7'),
+    className: '',
+    iconSize: [24, 36],
+    iconAnchor: [12, 36],
+    popupAnchor: [0, -36],
+});
 
-const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || `http://${window.location.hostname}:8000`;
+function MapClickHandler({ onPlace }: { onPlace: (lat: number, lng: number) => void }) {
+  useMapEvents({ click(e) { onPlace(e.latlng.lat, e.latlng.lng); } });
+  return null;
+}const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || `http://${window.location.hostname}:8000`;
 
 type DetectionStats = {
   totalDetections: number;
@@ -50,12 +63,22 @@ export default function AIDetection() {
   // Expanded Camera Modal
   const [expandedCamera, setExpandedCamera] = useState<Camera | null>(null);
 
-  const [newCamera, setNewCamera] = useState({
+  const [newCamera, setNewCamera] = useState<{
+    name: string;
+    location: string;
+    streamUrl: string;
+    type: string;
+    isActive: boolean;
+    latitude: number | null;
+    longitude: number | null;
+  }>({
     name: '',
     location: '',
     streamUrl: '',
     type: 'rtsp',
     isActive: true,
+    latitude: null,
+    longitude: null,
   });
 
   // Email Alerts Modal
@@ -142,7 +165,7 @@ export default function AIDetection() {
     try {
       await api.post('/detection/cameras', newCamera);
       setShowAddModal(false);
-      setNewCamera({ name: '', location: '', streamUrl: '', type: 'rtsp', isActive: true });
+      setNewCamera({ name: '', location: '', streamUrl: '', type: 'rtsp', isActive: true, latitude: null, longitude: null });
       await fetchCameras();
     } catch (err) {
       alert('Failed to add camera');
@@ -384,13 +407,22 @@ export default function AIDetection() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Location</label>
-                <input 
-                  type="text" 
-                  value={newCamera.location} onChange={e => setNewCamera({...newCamera, location: e.target.value})}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
-                  placeholder="e.g. Main Building Ground Floor"
-                />
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Location (Pin on Map)</label>
+                <p className="text-xs text-gray-500 mb-2">Click on the map to set the exact location for the camera in Malvar, Batangas.</p>
+                <div className="h-[250px] w-full rounded-lg overflow-hidden border border-gray-300 relative z-0">
+                  <MapContainer center={[14.0412, 121.1583]} zoom={14} className="h-full w-full">
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                    <MapClickHandler onPlace={(lat, lng) => setNewCamera({ ...newCamera, latitude: lat, longitude: lng })} />
+                    {newCamera.latitude && newCamera.longitude && (
+                      <Marker position={[newCamera.latitude, newCamera.longitude]} icon={cameraIcon} />
+                    )}
+                  </MapContainer>
+                </div>
+                {newCamera.latitude ? (
+                  <p className="text-xs text-green-600 mt-1 font-medium">Location pinned successfully!</p>
+                ) : (
+                  <p className="text-xs text-orange-500 mt-1">Please pin a location on the map.</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Stream URL (RTSP / HTTP)</label>

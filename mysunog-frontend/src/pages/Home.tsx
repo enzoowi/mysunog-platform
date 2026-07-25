@@ -345,7 +345,7 @@ export default function Home() {
               <div className="max-w-7xl mx-auto px-4 md:px-8">
                   <div className="text-center mb-10">
                       <h2 className="text-3xl font-bold text-gray-800 mb-3">Barangay Fire Risk Map</h2>
-                      <p className="text-gray-500 max-w-2xl mx-auto">View AI-predicted fire risk levels for each barangay in Malvar, along with BFP stations, fire hydrants, and risk hotspots. Click any zone to see its risk score and contributing factors.</p>
+                      <p className="text-gray-500 max-w-2xl mx-auto">View AI-predicted fire risk levels for each barangay in Malvar, along with the BFP station, fire hydrants, and risk hotspots. Click any zone to see its risk score and contributing factors.</p>
                   </div>
                   <PublicCommunityMap />
               </div>

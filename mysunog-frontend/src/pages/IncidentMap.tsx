@@ -14,16 +14,22 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const hydrantIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+const createPin = (color: string) => `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12c0 7.872 11.233 23.36 11.602 23.86a.5.5 0 0 0 .796 0C12.767 35.36 24 19.872 24 12c0-6.627-5.373-12-12-12zm0 17.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" fill="${color}" stroke="white" stroke-width="1.5"/></svg>`;
+
+const hydrantIcon = new L.DivIcon({
+    html: createPin('#3b82f6'),
+    className: '',
+    iconSize: [24, 36],
+    iconAnchor: [12, 36],
+    popupAnchor: [0, -36],
 });
 
-const stationIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+const stationIcon = new L.DivIcon({
+    html: createPin('#16a34a'),
+    className: '',
+    iconSize: [24, 36],
+    iconAnchor: [12, 36],
+    popupAnchor: [0, -36],
 });
 
 type Incident = {
@@ -112,7 +118,7 @@ export default function IncidentMap() {
                 <MapIcon className="w-8 h-8 text-blue-700" />
                 <h2 className="text-2xl font-bold text-gray-800">Interactive Community Map</h2>
             </div>
-            <p className="text-gray-600 mb-4">Visualize {isAdmin ? 'fire incidents, ' : ''}hydrants, and BFP stations in Malvar.</p>
+            <p className="text-gray-600 mb-4">Visualize {isAdmin ? 'fire incidents, ' : ''}hydrants, and BFP station in Malvar.</p>
 
             <div className="flex flex-wrap gap-4 mb-4 items-center">
                 <div>
@@ -135,7 +141,7 @@ export default function IncidentMap() {
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={showStations} onChange={(e) => setShowStations(e.target.checked)} />
-                    🟢 BFP Stations
+                    🟢 BFP Station
                 </label>
             </div>
 
@@ -183,7 +189,7 @@ export default function IncidentMap() {
                         </Marker>
                     ))}
 
-                    {/* BFP stations */}
+                    {/* BFP station */}
                     {showStations && stations.map((s) => (
                         <Marker key={`stn-${s.id}`} position={[Number(s.lat), Number(s.lng)]} icon={stationIcon}>
                             <Popup>

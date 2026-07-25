@@ -13,15 +13,22 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const hydrantIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+const createPin = (color: string) => `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12c0 7.872 11.233 23.36 11.602 23.86a.5.5 0 0 0 .796 0C12.767 35.36 24 19.872 24 12c0-6.627-5.373-12-12-12zm0 17.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" fill="${color}" stroke="white" stroke-width="1.5"/></svg>`;
+
+const hydrantIcon = new L.DivIcon({
+    html: createPin('#3b82f6'),
+    className: '',
+    iconSize: [24, 36],
+    iconAnchor: [12, 36],
+    popupAnchor: [0, -36],
 });
-const stationIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
+
+const stationIcon = new L.DivIcon({
+    html: createPin('#16a34a'),
+    className: '',
+    iconSize: [24, 36],
+    iconAnchor: [12, 36],
+    popupAnchor: [0, -36],
 });
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
@@ -165,7 +172,7 @@ export default function AdminMapAssets() {
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: 'hydrants', label: 'Fire Hydrants', icon: <Droplet className="w-4 h-4" /> },
-    { key: 'stations', label: 'BFP Stations', icon: <ShieldPlus className="w-4 h-4" /> },
+    { key: 'stations', label: 'BFP Station', icon: <ShieldPlus className="w-4 h-4" /> },
   ];
 
   const currentItems = tab === 'hydrants' ? hydrants : stations;
@@ -189,7 +196,7 @@ export default function AdminMapAssets() {
       </Link>
       <h2 className="text-2xl font-bold text-gray-800 mb-1">Manage Interactive Map Assets</h2>
       <p className="text-sm text-gray-500 mb-6">
-        Add, edit, delete, and reposition fire hydrants, risk hotspots, and BFP stations.{' '}
+        Add, edit, delete, and reposition fire hydrants, risk hotspots, and the BFP station.{' '}
         <span className="text-orange-600 font-medium">Drag markers on the map to update their position.</span>
       </p>
 

@@ -5,6 +5,7 @@ import { IncidentsService } from './incidents/incidents.service';
 import { EducationService } from './education/education.service';
 import { UserRole } from './users/user.entity';
 import { EducationCategory } from './education/education.entity';
+import { HotlinesService } from './hotlines/hotlines.service';
 import * as bcrypt from 'bcrypt';
 
 async function bootstrap() {
@@ -13,6 +14,7 @@ async function bootstrap() {
   const usersService = app.get(UsersService);
   const incidentsService = app.get(IncidentsService);
   const educationService = app.get(EducationService);
+  const hotlinesService = app.get(HotlinesService);
 
   // ─── 1. Seed BFP Admin User ───────────────────────────────────────────
   console.log('Seeding BFP Admin User...');
@@ -404,6 +406,27 @@ async function bootstrap() {
     await educationService.create(article);
   }
   console.log('Seeded 5 fire safety education articles.');
+
+  // ─── 5. Seed Emergency Hotlines Data ───────────────────────────────────────
+  console.log('Seeding Emergency Hotlines Data...');
+
+  const mockHotlines = [
+    { name: 'Malvar Fire Station', phone: '043-123-4567', category: 'bfp' },
+    { name: 'BFP Malvar Mobile', phone: '0917-111-2222', category: 'bfp' },
+    { name: 'Malvar MDRRMO Office', phone: '043-987-6543', category: 'mdrrmo' },
+    { name: 'MDRRMO Rescue Team', phone: '0918-333-4444', category: 'mdrrmo' },
+    { name: 'Barangay Poblacion Desk', phone: '043-777-8888', category: 'barangay' },
+    { name: 'Barangay San Pioquinto Desk', phone: '043-777-9999', category: 'barangay' },
+    { name: 'Malvar Community Hospital', phone: '043-444-5555', category: 'hospital' },
+    { name: 'Malvar Police Station', phone: '043-555-6666', category: 'police' },
+    { name: 'PNP Malvar Mobile', phone: '0919-555-6666', category: 'police' },
+    { name: 'MERALCO Malvar (Power Outage)', phone: '16211', category: 'general' },
+  ];
+
+  for (const hotline of mockHotlines) {
+    await hotlinesService.create(hotline);
+  }
+  console.log('Seeded 10 emergency hotlines.');
 
   await app.close();
 }

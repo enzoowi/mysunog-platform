@@ -74,8 +74,7 @@ class CameraSource:
         Open a VideoCapture with RTSP-friendly settings.
         Tries FFMPEG backend first (best RTSP support), then default.
         """
-        str_url = str(url)
-        is_rtsp = str_url.lower().startswith("rtsp://")
+        is_rtsp = str(url).lower().startswith("rtsp://")
 
         if is_rtsp:
             # Force TCP transport and set timeouts for RTSP streams
@@ -84,8 +83,8 @@ class CameraSource:
             )
 
         # --- Attempt 1: FFMPEG backend (best for RTSP) ---
-        print(f"[STREAM]   Trying FFMPEG backend for: {str_url}")
-        cap = cv2.VideoCapture(str_url, cv2.CAP_FFMPEG)
+        print(f"[STREAM]   Trying FFMPEG backend for: {url}")
+        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
         if cap.isOpened():
             # Verify we can actually grab a frame
             ret, _ = cap.read()
@@ -97,8 +96,8 @@ class CameraSource:
                 cap.release()
 
         # --- Attempt 2: Default backend ---
-        print(f"[STREAM]   Trying default backend for: {str_url}")
-        cap = cv2.VideoCapture(str_url)
+        print(f"[STREAM]   Trying default backend for: {url}")
+        cap = cv2.VideoCapture(url)
         if cap.isOpened():
             ret, _ = cap.read()
             if ret:
@@ -113,8 +112,8 @@ class CameraSource:
             os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = (
                 "rtsp_transport;udp|stimeout;5000000"
             )
-            print(f"[STREAM]   Trying FFMPEG+UDP for: {str_url}")
-            cap = cv2.VideoCapture(str_url, cv2.CAP_FFMPEG)
+            print(f"[STREAM]   Trying FFMPEG+UDP for: {url}")
+            cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
             if cap.isOpened():
                 ret, _ = cap.read()
                 if ret:
