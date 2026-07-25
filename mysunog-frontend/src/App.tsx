@@ -431,10 +431,9 @@ export default function App() {
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '600px',
-              maxHeight: '85vh', overflow: 'hidden',
+              background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '700px',
+              maxHeight: '90vh', display: 'flex', flexDirection: 'column',
               boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-              display: 'flex', flexDirection: 'column',
             }}
           >
             {/* Header */}
@@ -496,13 +495,11 @@ export default function App() {
                         .replace(/\n\n/g, '<br/>').replace(/\n/g, '<br/>')
                     }}
                   />
-                  {/* Emergency Route Map */}
-                  {aiAdviceContext?.latitude && aiAdviceContext?.longitude && (
-                    <EmergencyRouteMap
-                      incidentLat={aiAdviceContext.latitude}
-                      incidentLng={aiAdviceContext.longitude}
-                    />
-                  )}
+                  {/* Emergency Route Map — always shown; uses camera GPS or defaults to Malvar centre */}
+                  <EmergencyRouteMap
+                    incidentLat={Number(aiAdviceContext?.latitude) || 14.043095}
+                    incidentLng={Number(aiAdviceContext?.longitude) || 121.156819}
+                  />
                 </div>
               )}
             </div>

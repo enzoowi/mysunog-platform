@@ -432,9 +432,8 @@ export default function Notifications() {
                             background: '#fff',
                             borderRadius: '16px',
                             width: '100%',
-                            maxWidth: '600px',
-                            maxHeight: '85vh',
-                            overflow: 'hidden',
+                            maxWidth: '700px',
+                            maxHeight: '90vh',
                             boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
                             display: 'flex',
                             flexDirection: 'column',
@@ -531,13 +530,11 @@ export default function Notifications() {
                                         }}
                                         dangerouslySetInnerHTML={{ __html: renderMarkdown(adviceContent) }}
                                     />
-                                    {/* Emergency Route Map */}
-                                    {adviceCoords && (
-                                        <EmergencyRouteMap
-                                            incidentLat={adviceCoords.lat}
-                                            incidentLng={adviceCoords.lng}
-                                        />
-                                    )}
+                                    {/* Emergency Route Map — always shown; uses camera GPS or defaults to Malvar centre */}
+                                    <EmergencyRouteMap
+                                        incidentLat={adviceCoords ? adviceCoords.lat : 14.043095}
+                                        incidentLng={adviceCoords ? adviceCoords.lng : 121.156819}
+                                    />
                                 </div>
                             )}
                         </div>
