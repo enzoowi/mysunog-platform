@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Notification, NotificationType } from './notification.entity';
 import { User } from '../users/user.entity';
+import { Camera } from '../detection/camera.entity';
 import axios from 'axios';
 
 @Injectable()
@@ -10,6 +11,8 @@ export class NotificationsService {
   constructor(
     @InjectRepository(Notification)
     private notificationsRepository: Repository<Notification>,
+    @InjectRepository(Camera)
+    private cameraRepository: Repository<Camera>,
   ) {}
 
   async createNotification(
@@ -156,7 +159,21 @@ FORMAT:
       );
 
       const advice = response.data?.choices?.[0]?.message?.content || 'Unable to generate advice at this time.';
-      return { advice };
+
+      // Try to extract the camera name from the notification message and look up its GPS coordinates
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      const cameraMatch = notification.message.match(/\(([^)]+)\)/);
+      if (cameraMatch) {
+        const cameraName = cameraMatch[1];
+        const camera = await this.cameraRepository.findOne({ where: { name: cameraName } });
+        if (camera?.latitude && camera?.longitude) {
+          latitude = Number(camera.latitude);
+          longitude = Number(camera.longitude);
+        }
+      }
+
+      return { advice, latitude, longitude };
     } catch (error) {
       console.error('GROQ AI advice error:', error?.response?.data || error.message);
       return { advice: 'AI advice service is temporarily unavailable. Please try again in a moment.' };
@@ -274,6 +291,74 @@ FORMAT:
     } catch (error) {
       console.error('GROQ AI advice error:', error?.response?.data || error.message);
       return { advice: 'AI advice service is temporarily unavailable. Please try again in a moment.' };
+    }
+  }
+
+  /**
+   * Emergency Route Optimization — calls OpenRouteService to get the fastest
+   * driving route from the BFP Malvar Fire Station to the incident location.
+   */
+  async getEmergencyRoute(incidentLat: number, incidentLng: number) {
+    const apiKey = process.env.ORS_API_KEY;
+    if (!apiKey) {
+      return { error: 'Route service not configured. Missing ORS_API_KEY.' };
+    }
+
+    // BFP Malvar Fire Station coordinates (fallback from env)
+    const stationLat = parseFloat(process.env.BFP_STATION_LAT || '14.043095');
+    const stationLng = parseFloat(process.env.BFP_STATION_LNG || '121.156819');
+
+    try {
+      const response = await axios.post(
+        'https://api.openrouteservice.org/v2/directions/driving-car/geojson',
+        {
+          coordinates: [
+            [stationLng, stationLat],   // Origin: BFP Station (lon, lat)
+            [incidentLng, incidentLat], // Destination: Incident (lon, lat)
+          ],
+          instructions: true,
+          language: 'en',
+        },
+        {
+          headers: {
+            Authorization: apiKey,
+            'Content-Type': 'application/json',
+          },
+          timeout: 10000,
+        },
+      );
+
+      const feature = response.data?.features?.[0];
+      if (!feature) {
+        return { error: 'No route found between the station and incident location.' };
+      }
+
+      const props = feature.properties?.summary || {};
+      const segments = feature.properties?.segments || [];
+
+      // Extract turn-by-turn steps
+      const steps: { instruction: string; distance: number; duration: number }[] = [];
+      for (const segment of segments) {
+        for (const step of segment.steps || []) {
+          steps.push({
+            instruction: step.instruction || '',
+            distance: Math.round(step.distance || 0),
+            duration: Math.round(step.duration || 0),
+          });
+        }
+      }
+
+      return {
+        origin: { lat: stationLat, lng: stationLng, label: 'BFP Malvar Fire Station' },
+        destination: { lat: incidentLat, lng: incidentLng, label: 'Incident Location' },
+        geometry: feature.geometry, // GeoJSON LineString
+        distance: Math.round(props.distance || 0), // meters
+        duration: Math.round(props.duration || 0), // seconds
+        steps,
+      };
+    } catch (error) {
+      console.error('OpenRouteService error:', error?.response?.data || error.message);
+      return { error: 'Failed to calculate emergency route. The routing service may be temporarily unavailable.' };
     }
   }
 }

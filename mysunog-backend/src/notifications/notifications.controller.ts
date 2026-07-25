@@ -55,4 +55,12 @@ export class NotificationsController {
   }) {
     return this.notificationsService.getAiAdviceFromAlert(body);
   }
+
+  @Post('emergency-route')
+  getEmergencyRoute(@Body() body: {
+    incidentLat: number;
+    incidentLng: number;
+  }) {
+    return this.notificationsService.getEmergencyRoute(body.incidentLat, body.incidentLng);
+  }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import EmergencyRouteMap from '../components/EmergencyRouteMap';
 
 type NotificationItem = {
     id: number;
@@ -69,6 +70,7 @@ export default function Notifications() {
     const [adviceLoading, setAdviceLoading] = useState(false);
     const [adviceContent, setAdviceContent] = useState('');
     const [adviceNotification, setAdviceNotification] = useState<NotificationItem | null>(null);
+    const [adviceCoords, setAdviceCoords] = useState<{ lat: number; lng: number } | null>(null);
 
     async function fetchNotifications() {
         try {
@@ -129,11 +131,15 @@ export default function Notifications() {
         e.stopPropagation();
         setAdviceNotification(notification);
         setAdviceContent('');
+        setAdviceCoords(null);
         setAdviceModalOpen(true);
         setAdviceLoading(true);
         try {
             const res = await api.get(`/notifications/${notification.id}/ai-advice`);
             setAdviceContent(res.data.advice);
+            if (res.data.latitude && res.data.longitude) {
+                setAdviceCoords({ lat: res.data.latitude, lng: res.data.longitude });
+            }
         } catch (error) {
             console.error(error);
             setAdviceContent('Failed to load AI advice. Please try again.');
@@ -525,6 +531,13 @@ export default function Notifications() {
                                         }}
                                         dangerouslySetInnerHTML={{ __html: renderMarkdown(adviceContent) }}
                                     />
+                                    {/* Emergency Route Map */}
+                                    {adviceCoords && (
+                                        <EmergencyRouteMap
+                                            incidentLat={adviceCoords.lat}
+                                            incidentLng={adviceCoords.lng}
+                                        />
+                                    )}
                                 </div>
                             )}
                         </div>

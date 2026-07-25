@@ -3,6 +3,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { api } from './services/api';
 import { Flame, Bell, LogOut, User, X, AlertTriangle, ChevronDown } from 'lucide-react';
+import EmergencyRouteMap from './components/EmergencyRouteMap';
 
 import Home from './pages/Home';
 import ChatbotWidget from './components/ChatbotWidget';
@@ -54,7 +55,7 @@ export default function App() {
   const [aiAdviceModal, setAiAdviceModal] = useState(false);
   const [aiAdviceLoading, setAiAdviceLoading] = useState(false);
   const [aiAdviceContent, setAiAdviceContent] = useState('');
-  const [aiAdviceContext, setAiAdviceContext] = useState<{ title: string; message: string } | null>(null);
+  const [aiAdviceContext, setAiAdviceContext] = useState<{ title: string; message: string; latitude?: number; longitude?: number } | null>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Ref that mirrors userRole state so the socket closure always reads the latest value
@@ -370,7 +371,7 @@ export default function App() {
                     longitude: fireAlertToast.longitude,
                     rawDetections: fireAlertToast.rawDetections,
                   };
-                  setAiAdviceContext({ title: ctx.title, message: ctx.message });
+                  setAiAdviceContext({ title: ctx.title, message: ctx.message, latitude: ctx.latitude, longitude: ctx.longitude });
                   setAiAdviceContent('');
                   setAiAdviceModal(true);
                   setAiAdviceLoading(true);
@@ -495,6 +496,13 @@ export default function App() {
                         .replace(/\n\n/g, '<br/>').replace(/\n/g, '<br/>')
                     }}
                   />
+                  {/* Emergency Route Map */}
+                  {aiAdviceContext?.latitude && aiAdviceContext?.longitude && (
+                    <EmergencyRouteMap
+                      incidentLat={aiAdviceContext.latitude}
+                      incidentLng={aiAdviceContext.longitude}
+                    />
+                  )}
                 </div>
               )}
             </div>
