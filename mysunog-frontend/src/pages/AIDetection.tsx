@@ -3,8 +3,7 @@ import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
 import {
-  ArrowLeft, Activity, Flame, AlertTriangle, Zap,
-  Wind, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail
+  ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -24,15 +23,6 @@ function MapClickHandler({ onPlace }: { onPlace: (lat: number, lng: number) => v
   return null;
 }const AI_SERVICE_URL = import.meta.env.VITE_AI_SERVICE_URL || `http://${window.location.hostname}:8000`;
 
-type DetectionStats = {
-  totalDetections: number;
-  fireCount: number;
-  smokeCount: number;
-  severityCounts: { low: number; medium: number; high: number; critical: number };
-  recentDetections: number;
-  avgConfidence: number;
-};
-
 type Camera = {
   id: number;
   name: string;
@@ -48,7 +38,6 @@ export default function AIDetection() {
   const navigate = useNavigate();
   const { isAdmin } = useAuth();
   const [authorized, setAuthorized] = useState(false);
-  const [stats, setStats] = useState<DetectionStats | null>(null);
   const [aiHealth, setAiHealth] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -95,7 +84,6 @@ export default function AIDetection() {
 
   useEffect(() => {
     if (latestAlert) {
-      fetchStats();
       const timer = setTimeout(() => {
         clearLatestAlert();
       }, 8000);
@@ -117,7 +105,7 @@ export default function AIDetection() {
 
   useEffect(() => {
     if (!authorized) return;
-    Promise.all([fetchStats(), fetchHealth(), fetchCameras()])
+    Promise.all([fetchHealth(), fetchCameras()])
       .finally(() => setLoading(false));
 
     // Poll stream statuses
@@ -127,12 +115,6 @@ export default function AIDetection() {
     };
   }, [authorized]);
 
-  async function fetchStats() {
-    try {
-      const res = await api.get('/detection/stats');
-      setStats(res.data);
-    } catch { /* ignore */ }
-  }
 
   async function fetchHealth() {
     try {
