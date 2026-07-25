@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
 import {
   ArrowLeft, Activity, Flame, AlertTriangle, Zap,
-  Wind, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail, Edit2
+  Wind, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -81,8 +81,6 @@ export default function AIDetection() {
     longitude: null,
   });
 
-  const [editingCamera, setEditingCamera] = useState<Camera | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
 
   // Email Alerts Modal
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -177,31 +175,6 @@ export default function AIDetection() {
     }
   }
 
-  async function handleUpdateCamera(e: React.FormEvent) {
-    e.preventDefault();
-    if (!editingCamera || !editingCamera.name || !editingCamera.streamUrl) return;
-    
-    setIsUpdating(true);
-    try {
-      await api.patch(`/detection/cameras/${editingCamera.id}`, {
-        name: editingCamera.name,
-        location: editingCamera.location,
-        streamUrl: editingCamera.streamUrl,
-        latitude: editingCamera.latitude !== null ? Number(editingCamera.latitude) : null,
-        longitude: editingCamera.longitude !== null ? Number(editingCamera.longitude) : null,
-      });
-      setEditingCamera(null);
-      await fetchCameras();
-      if (expandedCamera && expandedCamera.id === editingCamera.id) {
-        setExpandedCamera({ ...expandedCamera, ...editingCamera });
-      }
-    } catch (err: any) {
-      console.error('Update Camera Error:', err.response?.data || err);
-      alert(`Failed to update camera: ${err.response?.data?.message || err.message}`);
-    } finally {
-      setIsUpdating(false);
-    }
-  }
 
   async function handleDeleteCamera(id: number) {
     if (!window.confirm('Are you sure you want to delete this camera? It will stop AI detection for it.')) return;
@@ -393,22 +366,13 @@ export default function AIDetection() {
                 <div className="p-4 flex flex-col flex-1" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-between items-start mb-1">
                     <h4 className="font-bold text-gray-800 text-sm cursor-pointer" onClick={() => setExpandedCamera(cam)}>{cam.name}</h4>
-                    <div className="flex items-center gap-1">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setEditingCamera(cam); }}
-                        className="text-gray-400 hover:text-blue-500 transition p-1"
-                        title="Edit Camera"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteCamera(cam.id); }}
-                        className="text-gray-400 hover:text-red-500 transition p-1"
-                        title="Delete Camera"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDeleteCamera(cam.id); }}
+                      className="text-gray-400 hover:text-red-500 transition p-1"
+                      title="Delete Camera"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                   <p className="text-xs text-gray-500 mb-3">{cam.location || (cam.latitude ? `Pinned at ${Number(cam.latitude).toFixed(4)}, ${Number(cam.longitude).toFixed(4)}` : 'No location set')}</p>
                   
@@ -497,75 +461,6 @@ export default function AIDetection() {
         </div>
       )}
 
-      {/* Edit Camera Modal */}
-      {editingCamera && (
-        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-              <h3 className="font-bold text-lg text-gray-800">Edit External Camera</h3>
-              <button onClick={() => setEditingCamera(null)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleUpdateCamera} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Camera Name</label>
-                <input 
-                  type="text" required
-                  value={editingCamera.name} onChange={e => setEditingCamera({...editingCamera, name: e.target.value})}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. Lobby Entrance"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Location Name (Optional)</label>
-                <input 
-                  type="text" 
-                  value={editingCamera.location || ''} onChange={e => setEditingCamera({...editingCamera, location: e.target.value})}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. Main Building Ground Floor"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Location (Pin on Map)</label>
-                <p className="text-xs text-gray-500 mb-2">Click on the map to set the exact location for the camera in Malvar, Batangas.</p>
-                <div className="h-[250px] w-full rounded-lg overflow-hidden border border-gray-300 relative z-0">
-                  <MapContainer center={editingCamera.latitude ? [editingCamera.latitude, editingCamera.longitude] : [14.0412, 121.1583]} zoom={14} className="h-full w-full">
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
-                    <MapClickHandler onPlace={(lat, lng) => setEditingCamera({ ...editingCamera, latitude: lat, longitude: lng })} />
-                    {editingCamera.latitude && editingCamera.longitude && (
-                      <Marker position={[editingCamera.latitude, editingCamera.longitude]} icon={cameraIcon} />
-                    )}
-                  </MapContainer>
-                </div>
-                {editingCamera.latitude ? (
-                  <p className="text-xs text-green-600 mt-1 font-medium">Location pinned successfully!</p>
-                ) : (
-                  <p className="text-xs text-orange-500 mt-1">Please pin a location on the map.</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">Stream URL (RTSP / HTTP)</label>
-                <input 
-                  type="text" required
-                  value={editingCamera.streamUrl} onChange={e => setEditingCamera({...editingCamera, streamUrl: e.target.value})}
-                  className="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-blue-500"
-                  placeholder="rtsp://admin:pass@192.168.1.100:554/stream"
-                />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setEditingCamera(null)} className="flex-1 px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg">
-                  Cancel
-                </button>
-                <button type="submit" disabled={isUpdating} className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex justify-center items-center gap-2 disabled:opacity-70">
-                  {isUpdating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Edit2 className="w-4 h-4" />}
-                  {isUpdating ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Expanded Camera Modal */}
       {expandedCamera && (
@@ -584,13 +479,6 @@ export default function AIDetection() {
                       Offline
                     </span>
                   )}
-                  <button 
-                    onClick={() => setEditingCamera(expandedCamera)}
-                    className="ml-2 bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition"
-                    title="Edit Camera"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
                 </h3>
                 <p className="text-gray-400 text-sm mt-1">{expandedCamera.location || (expandedCamera.latitude ? `Pinned at ${Number(expandedCamera.latitude).toFixed(4)}, ${Number(expandedCamera.longitude).toFixed(4)}` : 'No location set')}</p>
               </div>
