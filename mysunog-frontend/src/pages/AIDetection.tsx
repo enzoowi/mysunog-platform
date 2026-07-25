@@ -261,31 +261,6 @@ export default function AIDetection() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-red-500 text-white rounded-xl p-4 shadow-lg">
-          <Flame className="w-6 h-6 mb-1 opacity-90" />
-          <p className="text-2xl font-bold">{stats?.fireCount || 0}</p>
-          <p className="text-xs opacity-90">Total Fire Incidents</p>
-        </div>
-        <div className="bg-slate-500 text-white rounded-xl p-4 shadow-lg">
-          <Wind className="w-6 h-6 mb-1 opacity-90" />
-          <p className="text-2xl font-bold">{stats?.smokeCount || 0}</p>
-          <p className="text-xs opacity-90">Total Smoke Incidents</p>
-        </div>
-        <div className="bg-orange-500 text-white rounded-xl p-4 shadow-lg">
-          <Activity className="w-6 h-6 mb-1 opacity-90" />
-          <p className="text-2xl font-bold">{stats?.totalDetections || 0}</p>
-          <p className="text-xs opacity-90">Total Events</p>
-        </div>
-        <div className="bg-amber-600 text-white rounded-xl p-4 shadow-lg">
-          <AlertTriangle className="w-6 h-6 mb-1 opacity-90" />
-          <p className="text-2xl font-bold">
-            {(stats?.severityCounts?.high || 0) + (stats?.severityCounts?.critical || 0)}
-          </p>
-          <p className="text-xs opacity-90">High/Critical Events</p>
-        </div>
-      </div>
 
       <div className="flex justify-between items-center mb-4 mt-8">
         <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
