@@ -35,7 +35,7 @@ export default function EmergencyRouteMap({ incidentLat, incidentLng }: { incide
   const [route, setRoute] = useState<RouteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showSteps, setShowSteps] = useState(false);
+  const [showSteps, setShowSteps] = useState(true);
 
   useEffect(() => {
     let cancelled = false;

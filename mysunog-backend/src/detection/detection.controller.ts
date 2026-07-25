@@ -211,6 +211,8 @@ export class DetectionController {
       detectionType: string;
       confidence: number;
       severity?: string;
+      latitude?: number;
+      longitude?: number;
     },
     @Query('api_key') apiKeyQuery?: string,
   ) {
@@ -229,8 +231,8 @@ export class DetectionController {
       confidence: body.confidence || 0,
       severity: body.severity || 'high',
       cameraSource: body.cameraName || body.cameraId || 'External Camera',
-      latitude: null,
-      longitude: null,
+      latitude: body.latitude || null,
+      longitude: body.longitude || null,
       createdAt: new Date().toISOString(),
     });
 
