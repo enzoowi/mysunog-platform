@@ -50,7 +50,7 @@ function DraggableMarker({
   position, icon, children, onDragEnd,
 }: {
   position: [number, number];
-  icon: L.Icon;
+  icon: L.Icon | L.DivIcon;
   children: React.ReactNode;
   onDragEnd: (lat: number, lng: number) => void;
 }) {
