@@ -653,8 +653,8 @@ export default function App() {
         </Routes>
       </main>
 
-      {/* Floating Chatbot Widget — shown for public (unauthenticated) users only */}
-      {userRole === null && <ChatbotWidget />}
+      {/* Floating Chatbot Widget */}
+      {(userRole === null || userRole === 'admin' || userRole === 'bfp_staff') && <ChatbotWidget />}
     </div>
   );
 }
