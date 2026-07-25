@@ -27,6 +27,9 @@ export class DetectionService implements OnModuleInit {
   /** Shared API key for authenticating with the AI service */
   private readonly serviceApiKey: string;
 
+  /** Throttle emails per camera to avoid spamming on every broadcast-alert frame */
+  private lastEmailSentAt: Map<string, number> = new Map();
+
   constructor(
     @InjectRepository(DetectionEvent)
     private detectionEventRepository: Repository<DetectionEvent>,
@@ -504,6 +507,59 @@ export class DetectionService implements OnModuleInit {
       return {};
     }
   }
+
+  /**
+   * Called by the real-time broadcast-alert endpoint.
+   * Sends an email but throttles it to once every 2 minutes per camera.
+   */
+  async triggerBroadcastEmail(body: any): Promise<void> {
+    if (body.confidence < 0.70) return;
+
+    const cameraId = body.cameraId || 'unknown';
+    const now = Date.now();
+    const lastSent = this.lastEmailSentAt.get(cameraId) || 0;
+
+    // Cooldown: 2 minutes
+    if (now - lastSent < 2 * 60 * 1000) {
+      return;
+    }
+    this.lastEmailSentAt.set(cameraId, now);
+
+    this.logger.log(`[Broadcast Email] Triggering email for camera ${cameraId} (Confidence: ${body.confidence})`);
+
+    const mockEvent = new DetectionEvent();
+    mockEvent.detectionType = body.detectionType === 'smoke' ? DetectionType.SMOKE : DetectionType.FIRE;
+    mockEvent.confidence = body.confidence;
+    mockEvent.severity = body.severity || 'high';
+    mockEvent.createdAt = new Date();
+    mockEvent.cameraSource = body.cameraName || body.cameraId || 'External Camera';
+
+    let aiAdviceText = '';
+    try {
+      const aiAdviceResult = await this.notificationsService.getAiAdviceFromAlert({
+        title: 'Detection Alert',
+        message: '',
+        detectionType: mockEvent.detectionType,
+        confidence: mockEvent.confidence,
+        severity: mockEvent.severity,
+        cameraSource: mockEvent.cameraSource,
+        latitude: body.latitude,
+        longitude: body.longitude,
+      });
+      aiAdviceText = aiAdviceResult.advice;
+    } catch (e) {
+      this.logger.warn(`Could not generate AI advice for broadcast email: ${e.message}`);
+    }
+
+    this.emailAlertsService.sendDetectionAlert(
+      mockEvent,
+      mockEvent.cameraSource,
+      'Live Camera Stream',
+      aiAdviceText
+    ).catch(err => this.logger.error(`Broadcast Email Error: ${err.message}`));
+  }
+
+  // ─── ANALYZE FRAME (Base64) ────────────────────────────────────────────────
 
   // ─── PRIVATE HELPERS ──────────────────────────────────────────
 

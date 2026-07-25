@@ -72,11 +72,10 @@ export default function Chatbot() {
             <div className="flex-1 p-3 overflow-y-auto bg-gray-50" style={{ maxHeight: 'calc(100vh - 200px)' }}>
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex mb-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${
-                            msg.sender === 'user'
+                        <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${msg.sender === 'user'
                                 ? 'bg-orange-600 text-white rounded-br-md'
                                 : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md'
-                        }`}>
+                            }`}>
                             {msg.text}
                         </div>
                     </div>
@@ -94,13 +93,13 @@ export default function Chatbot() {
             <div className="p-3 border-t bg-white">
                 {/* Quick prompts */}
                 <div className="flex flex-wrap gap-1.5 mb-3">
-                {QUICK_PROMPTS.map((prompt) => (
-                    <button key={prompt.label} onClick={() => sendMessage(prompt.message)} disabled={loading}
-                        className="flex items-center px-2 py-1 bg-white border border-gray-200 rounded-full text-[10px] text-gray-600 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition disabled:opacity-50">
-                        {prompt.icon} {prompt.label}
-                    </button>
-                ))}
-            </div>
+                    {QUICK_PROMPTS.map((prompt) => (
+                        <button key={prompt.label} onClick={() => sendMessage(prompt.message)} disabled={loading}
+                            className="flex items-center px-2 py-1 bg-white border border-gray-200 rounded-full text-[10px] text-gray-600 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition disabled:opacity-50">
+                            {prompt.icon} {prompt.label}
+                        </button>
+                    ))}
+                </div>
 
                 {/* Input */}
                 <div className="flex gap-2">

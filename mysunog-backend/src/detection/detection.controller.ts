@@ -236,6 +236,11 @@ export class DetectionController {
       createdAt: new Date().toISOString(),
     });
 
+    // Fire-and-forget throttled email alert (no await to avoid blocking)
+    this.detectionService.triggerBroadcastEmail(body).catch(err => {
+      console.error(`Error triggering broadcast email: ${err.message}`);
+    });
+
     return { success: true };
   }
 }
