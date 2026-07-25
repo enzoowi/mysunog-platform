@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { api } from '../services/api';
-import { Send, Bot, FileText, ClipboardList, Calendar, Flame, Droplets, ShieldQuestion } from 'lucide-react';
+import { Send, Bot, FileText, ClipboardList, Calendar, Flame, Droplets, ShieldQuestion, Clock } from 'lucide-react';
 
 type Message = {
     sender: 'user' | 'bot';
@@ -14,6 +14,7 @@ const QUICK_PROMPTS = [
     { label: 'FSIC Info', message: 'What is an FSIC and how do I get one?', icon: <ShieldQuestion className="w-3 h-3 mr-1" /> },
     { label: 'Fire tips', message: 'What are some fire prevention tips for homes?', icon: <Flame className="w-3 h-3 mr-1" /> },
     { label: 'LPG safety', message: 'How do I handle LPG safely at home?', icon: <Droplets className="w-3 h-3 mr-1" /> },
+    { label: 'Business Hours', message: 'What are the business hours of the BFP Malvar station?', icon: <Clock className="w-3 h-3 mr-1" /> },
 ];
 
 export default function Chatbot() {
