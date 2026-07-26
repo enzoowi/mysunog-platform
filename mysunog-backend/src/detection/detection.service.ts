@@ -115,7 +115,7 @@ export class DetectionService implements OnModuleInit {
         });
 
         this.logger.log(`Detection received. Confidence: ${event.confidence}, Type: ${event.detectionType}`);
-        
+
         if (Number(event.confidence) >= 0.70) {
           this.logger.log(`Confidence ${event.confidence} is >= 0.70. Triggering email and in-app alerts...`);
           let cameraName = cameraId || 'webcam';
@@ -328,7 +328,7 @@ export class DetectionService implements OnModuleInit {
     const avgConfidence =
       totalDetections > 0
         ? events.reduce((sum, e) => sum + Number(e.confidence), 0) /
-          totalDetections
+        totalDetections
         : 0;
 
     return {
@@ -362,12 +362,12 @@ export class DetectionService implements OnModuleInit {
   async updateCamera(id: number, dto: UpdateCameraDto): Promise<Camera> {
     const camera = await this.cameraRepository.findOne({ where: { id } });
     if (!camera) throw new Error('Camera not found');
-    
+
     await this.disconnectExternalCamera(id.toString());
-    
+
     Object.assign(camera, dto);
     const updated = await this.cameraRepository.save(camera);
-    
+
     if (updated.isActive && updated.streamUrl) {
       await this.connectExternalCamera(
         updated.id.toString(),
@@ -378,7 +378,7 @@ export class DetectionService implements OnModuleInit {
         updated.longitude,
       );
     }
-    
+
     return updated;
   }
 

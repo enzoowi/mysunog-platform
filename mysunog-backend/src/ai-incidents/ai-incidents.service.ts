@@ -137,28 +137,10 @@ export class AiIncidentsService {
         mockEvent.createdAt = incident.createdAt;
         mockEvent.cameraSource = incident.cameraId;
 
-        let aiAdviceText = '';
-        try {
-          const aiAdviceResult = await this.notificationsService.getAiAdviceFromAlert({
-            title: 'Detection Alert',
-            message: '',
-            detectionType: mockEvent.detectionType,
-            confidence: mockEvent.confidence,
-            severity: mockEvent.severity,
-            cameraSource: dto.camera_name || dto.camera_id,
-            latitude: dto.latitude,
-            longitude: dto.longitude,
-          });
-          aiAdviceText = aiAdviceResult.advice;
-        } catch (e) {
-          this.logger.warn(`Could not generate AI advice for email: ${e.message}`);
-        }
-        
         this.emailAlertsService.sendDetectionAlert(
           mockEvent,
           dto.camera_name || dto.camera_id,
-          dto.camera_location || 'Unknown',
-          aiAdviceText
+          dto.camera_location || 'Unknown'
         ).catch(err => this.logger.error(`Email Error: ${err.message}`));
       } catch (err) {
         this.logger.error(`Failed to process email alerts: ${err.message}`, err.stack);
