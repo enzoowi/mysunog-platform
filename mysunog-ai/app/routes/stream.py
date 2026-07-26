@@ -477,7 +477,7 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
                     camera_id=camera.camera_id,
                     camera_name=camera.camera_name,
                     detection_type=det_type,
-                    confidence=max_conf,
+                    confidence=float(max_conf),
                     severity="critical" if max_conf > 0.8 else "high",
                     latitude=camera.latitude,
                     longitude=camera.longitude,
