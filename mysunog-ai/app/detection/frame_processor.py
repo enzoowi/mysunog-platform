@@ -61,11 +61,15 @@ def analyze_single_frame(
 
     # Apply false positive validation if validator is provided
     if validator and result.detected:
-        is_confirmed = validator.update(source_id, True)
+        # Extract bounding box tuples for spatial IoU tracking
+        current_boxes = [
+            (d.x1, d.y1, d.x2, d.y2) for d in result.detections
+        ]
+        is_confirmed = validator.update(source_id, True, boxes=current_boxes)
         if not is_confirmed:
             return result
     elif validator:
-        validator.update(source_id, False)
+        validator.update(source_id, False, boxes=[])
 
     return result
 

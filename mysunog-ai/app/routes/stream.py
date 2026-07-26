@@ -210,7 +210,15 @@ class CameraSource:
                 time.sleep(2)
                 continue
 
-            ret, frame = self.cap.read()
+            try:
+                ret, frame = self.cap.read()
+            except cv2.error as e:
+                print(f"[STREAM] [{self.camera_id}] OpenCV error reading frame: {e}")
+                ret, frame = False, None
+            except Exception as e:
+                print(f"[STREAM] [{self.camera_id}] Unexpected error reading frame: {e}")
+                ret, frame = False, None
+
             if not ret or frame is None or frame.size == 0:
                 consecutive_failures += 1
                 if consecutive_failures >= max_failures:
@@ -448,7 +456,11 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
     result = detector.detect(frame, frame_number=camera.frame_count)
 
     if result.detected and result.detections:
-        confirmed = camera.validator.update(camera.camera_id, True)
+        # Extract bounding box tuples for spatial IoU tracking
+        current_boxes = [
+            (d.x1, d.y1, d.x2, d.y2) for d in result.detections
+        ]
+        confirmed = camera.validator.update(camera.camera_id, True, boxes=current_boxes)
         with camera.detection_lock:
             camera.last_detections = result.detections
 
@@ -516,7 +528,7 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
                 if should_create:
                     temporal_tracker.mark_reported(camera.camera_id, "__pending__")
     else:
-        camera.validator.update(camera.camera_id, False)
+        camera.validator.update(camera.camera_id, False, boxes=[])
         temporal_tracker.clear(camera.camera_id, timeout_seconds=15)
         with camera.detection_lock:
             camera.last_detections = []
