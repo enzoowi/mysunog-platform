@@ -39,7 +39,7 @@ export class EmailAlertsService implements OnModuleInit {
     await this.emailRecipientRepository.delete(id);
   }
 
-  async sendDetectionAlert(event: DetectionEvent, cameraName: string, location: string, aiAdvice?: string): Promise<void> {
+  async sendDetectionAlert(event: DetectionEvent, cameraName: string, location: string): Promise<void> {
     const recipients = await this.emailRecipientRepository.find({ where: { isActive: true } });
     if (recipients.length === 0) {
       this.logger.log('No active email recipients to notify.');
@@ -68,13 +68,14 @@ export class EmailAlertsService implements OnModuleInit {
         <li><strong>📅 Date:</strong> ${dateStr}</li>
         <li><strong>⏰ Time:</strong> ${timeStr}</li>
       </ul>
-      ${aiAdvice ? `
-      <h3>🤖 AI Tactical Advice:</h3>
-      <div style="background: #f9fafb; border-left: 4px solid #f97316; padding: 12px; font-size: 14px; color: #374151;">
-        ${aiAdvice.replace(/\n/g, '<br/>')}
+      
+      <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-top: 20px; font-size: 14px; color: #7f1d1d;">
+        <h3 style="margin-top: 0; color: #991b1b;">⚠️ Immediate Action Required</h3>
+        <p style="margin-bottom: 0;">
+          Please open the <strong>MySunog dashboard</strong> and navigate to the <strong>AI Detection</strong> page to verify this alert. 
+          <strong>Do not dispatch resources until visual confirmation is made.</strong>
+        </p>
       </div>
-      ` : ''}
-      <p>⚠️ <strong>Please check the dashboard immediately.</strong></p>
     `;
 
     this.logger.log(`Preparing to send email alert to ${recipients.length} recipients...`);

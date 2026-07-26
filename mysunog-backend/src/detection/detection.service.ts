@@ -534,28 +534,10 @@ export class DetectionService implements OnModuleInit {
     mockEvent.createdAt = new Date();
     mockEvent.cameraSource = body.cameraName || body.cameraId || 'External Camera';
 
-    let aiAdviceText = '';
-    try {
-      const aiAdviceResult = await this.notificationsService.getAiAdviceFromAlert({
-        title: 'Detection Alert',
-        message: '',
-        detectionType: mockEvent.detectionType,
-        confidence: mockEvent.confidence,
-        severity: mockEvent.severity,
-        cameraSource: mockEvent.cameraSource,
-        latitude: body.latitude,
-        longitude: body.longitude,
-      });
-      aiAdviceText = aiAdviceResult.advice;
-    } catch (e) {
-      this.logger.warn(`Could not generate AI advice for broadcast email: ${e.message}`);
-    }
-
     this.emailAlertsService.sendDetectionAlert(
       mockEvent,
       mockEvent.cameraSource,
-      'Live Camera Stream',
-      aiAdviceText
+      'Live Camera Stream'
     ).catch(err => this.logger.error(`Broadcast Email Error: ${err.message}`));
   }
 

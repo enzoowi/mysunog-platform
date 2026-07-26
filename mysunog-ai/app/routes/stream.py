@@ -244,9 +244,9 @@ class CameraSource:
             if self.last_frame is None:
                 return None
             if time.time() - self.last_frame_time > 5:
-                # Instead of None, return the last frame to keep the stream alive
-                return self.last_frame.copy()
-            return self.last_frame.copy()
+                # Keep the stream alive even if no recent frames
+                return self.last_frame
+            return self.last_frame
 
     @property
     def has_recent_frames(self) -> bool:
@@ -554,8 +554,19 @@ def _mjpeg_generator(camera: CameraSource, run_detection: bool, frame_interval: 
     Detection is handled by the background thread; this generator only
     reads `camera.last_detections` to draw overlays on the video feed.
     """
+    last_processed_frame_count = -1
+
     while camera.is_active:
+        start_time = time.time()
+        
+        # Only process if the camera has captured a new frame
+        if camera.frame_count == last_processed_frame_count:
+            time.sleep(0.01) # Yield to prevent high CPU usage
+            continue
+            
+        last_processed_frame_count = camera.frame_count
         frame = camera.get_frame()
+        
         if frame is None:
             time.sleep(0.05)
             continue
@@ -586,7 +597,12 @@ def _mjpeg_generator(camera: CameraSource, run_detection: bool, frame_interval: 
             + frame_bytes
             + b"\r\n"
         )
-        time.sleep(frame_interval)
+        
+        # Dynamically calculate remaining sleep time to maintain target FPS
+        elapsed = time.time() - start_time
+        remaining = frame_interval - elapsed
+        if remaining > 0:
+            time.sleep(remaining)
 
 
 # ─── Request/Response Models ──────────────────────────────────────
