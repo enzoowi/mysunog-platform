@@ -73,8 +73,8 @@ export default function Chatbot() {
                 {messages.map((msg, index) => (
                     <div key={index} className={`flex mb-3 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${msg.sender === 'user'
-                                ? 'bg-orange-600 text-white rounded-br-md'
-                                : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md'
+                            ? 'bg-orange-600 text-white rounded-br-md'
+                            : 'bg-white border border-gray-200 text-gray-800 rounded-bl-md'
                             }`}>
                             {msg.text}
                         </div>
