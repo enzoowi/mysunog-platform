@@ -7,6 +7,7 @@ import {
   Min,
   Max,
   IsDateString,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { AiDetectionType, FireGrowthStatus, IncidentPriority } from '../enums';
@@ -109,10 +110,12 @@ export class CreateAiIncidentDto {
   max_confidence: number;
 
   // ── Temporal ──────────────────────────────────────────────────────────
+  @ValidateNested()
   @Type(() => TemporalDataDto)
   temporal: TemporalDataDto;
 
   // ── Severity ──────────────────────────────────────────────────────────
+  @ValidateNested()
   @Type(() => SeverityReportDto)
   severity: SeverityReportDto;
 

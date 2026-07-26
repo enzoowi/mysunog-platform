@@ -127,24 +127,7 @@ export class DetectionService implements OnModuleInit {
               location = cam.location;
             }
           }
-          let aiAdviceText = '';
-          try {
-            const aiAdviceResult = await this.notificationsService.getAiAdviceFromAlert({
-              title: 'Detection Alert',
-              message: '',
-              detectionType: event.detectionType,
-              confidence: event.confidence,
-              severity: event.severity,
-              cameraSource: cameraName,
-              latitude: event.latitude,
-              longitude: event.longitude,
-              rawDetections: event.rawDetections,
-            });
-            aiAdviceText = aiAdviceResult.advice;
-          } catch (e) {
-            this.logger.warn(`Could not generate AI advice for email: ${e.message}`);
-          }
-          this.emailAlertsService.sendDetectionAlert(event, cameraName, location, aiAdviceText).catch(err => this.logger.error(`Email Error: ${err.message}`));
+          this.emailAlertsService.sendDetectionAlert(event, cameraName, location).catch(err => this.logger.error(`Email Error: ${err.message}`));
 
           // Notify Admins and BFP Personnel
           try {
@@ -239,24 +222,7 @@ export class DetectionService implements OnModuleInit {
           this.logger.log(`Video detection received. Confidence: ${event.confidence}`);
           if (Number(event.confidence) >= 0.70) {
             this.logger.log(`Video detection confidence ${event.confidence} is >= 0.70. Triggering email and in-app alerts...`);
-            let aiAdviceText = '';
-            try {
-              const aiAdviceResult = await this.notificationsService.getAiAdviceFromAlert({
-                title: 'Detection Alert',
-                message: '',
-                detectionType: event.detectionType,
-                confidence: event.confidence,
-                severity: event.severity,
-                cameraSource: 'Uploaded Video',
-                latitude: event.latitude,
-                longitude: event.longitude,
-                rawDetections: event.rawDetections,
-              });
-              aiAdviceText = aiAdviceResult.advice;
-            } catch (e) {
-              this.logger.warn(`Could not generate AI advice for video upload email: ${e.message}`);
-            }
-            this.emailAlertsService.sendDetectionAlert(event, 'Uploaded Video', 'Unknown', aiAdviceText).catch(err => this.logger.error(`Email Error: ${err.message}`));
+            this.emailAlertsService.sendDetectionAlert(event, 'Uploaded Video', 'Unknown').catch(err => this.logger.error(`Email Error: ${err.message}`));
 
             // Notify Admins and BFP Personnel
             try {
