@@ -471,15 +471,17 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
             # ── Immediate real-time alert (sync, no async issues) ──
             det_type = "fire" if fire_area > 0 else "smoke"
             max_conf = max((d.confidence for d in result.detections), default=0)
-            _broadcast_fire_alert(
-                camera_id=camera.camera_id,
-                camera_name=camera.camera_name,
-                detection_type=det_type,
-                confidence=max_conf,
-                severity="critical" if max_conf > 0.8 else "high",
-                latitude=camera.latitude,
-                longitude=camera.longitude,
-            )
+            
+            if max_conf >= 0.70:
+                _broadcast_fire_alert(
+                    camera_id=camera.camera_id,
+                    camera_name=camera.camera_name,
+                    detection_type=det_type,
+                    confidence=max_conf,
+                    severity="critical" if max_conf > 0.8 else "high",
+                    latitude=camera.latitude,
+                    longitude=camera.longitude,
+                )
 
             snapshot = temporal_tracker.update(
                 camera_id=camera.camera_id,
@@ -495,8 +497,18 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
                 camera_count=1,
             )
 
-            should_create = not snapshot.incident_reported and snapshot.consecutive_count >= camera.MIN_INCIDENT_CONSECUTIVE
-            should_update = snapshot.incident_reported and snapshot.reported_incident_id is not None and snapshot.reported_incident_id != "__pending__"
+            should_create = (
+                not snapshot.incident_reported 
+                and snapshot.consecutive_count >= camera.MIN_INCIDENT_CONSECUTIVE
+                and max_conf >= 0.70
+            )
+            should_update = (
+                snapshot.incident_reported 
+                and snapshot.reported_incident_id is not None 
+                and snapshot.reported_incident_id != "__pending__"
+                # Only update if there's a significant change to avoid spam
+                # but allow updates even if confidence drops (to show fire dying down)
+            )
 
             if should_create or should_update:
                 existing_id = snapshot.reported_incident_id if should_update else None
