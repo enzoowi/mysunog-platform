@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, type ReactNode } from 'react';
+import { useEffect, useState, useMemo, useRef, type ReactNode } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -48,7 +48,12 @@ L.Icon.Default.mergeOptions({
 
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
   const map = useMap();
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     map.flyTo(center, zoom, { duration: 1.5 });
   }, [center, zoom, map]);
   return null;

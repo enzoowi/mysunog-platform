@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup, Marker, useMap, Pane } from 'react-leaflet';
@@ -38,7 +38,12 @@ const stationIcon = new L.DivIcon({
 
 function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
     const map = useMap();
+    const isFirstRender = useRef(true);
     useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
         map.flyTo(center, zoom, { duration: 1.5 });
     }, [center, zoom, map]);
     return null;
