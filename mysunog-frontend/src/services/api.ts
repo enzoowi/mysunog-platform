@@ -15,3 +15,7 @@ api.interceptors.request.use((config) => {
 
     return config;
 });
+
+// Eagerly wake up the backend (useful for Vercel/serverless cold starts)
+// This fires immediately when the JS bundle loads, before the user can even type their credentials.
+api.get('/health').catch(() => { /* silently ignore if it fails or backend is already awake */ });
