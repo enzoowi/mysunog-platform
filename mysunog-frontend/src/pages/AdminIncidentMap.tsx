@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, CircleMarker, Popup, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Marker, useMap, Pane } from 'react-leaflet';
 import L from 'leaflet';
 import { ArrowLeft, Map as MapIcon, Filter, Calendar, Flame, Droplet, ShieldPlus, AlertTriangle, RefreshCw } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
@@ -36,7 +36,13 @@ const stationIcon = new L.DivIcon({
     popupAnchor: [0, -36],
 });
 
-
+function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
+    const map = useMap();
+    useEffect(() => {
+        map.flyTo(center, zoom, { duration: 1.5 });
+    }, [center, zoom, map]);
+    return null;
+}
 
 type Incident = {
     id: number;
@@ -310,13 +316,16 @@ export default function AdminIncidentMap() {
 
             {/* Map + Risk Detail Panel */}
             <div className="flex gap-5">
-              <div className={`${selectedRiskZone ? 'w-2/3' : 'w-full'} transition-all duration-300`}>
-                {loading ? (
-                    <div className="flex items-center justify-center h-96 bg-white border rounded-xl">
-                        <p className="text-gray-500">Loading map data...</p>
-                    </div>
-                ) : (
-                    <div className="border rounded-xl overflow-hidden shadow-sm">
+              <div className={`${selectedRiskZone ? 'w-2/3' : 'w-full'} transition-all duration-300 relative`}>
+                    <div className="border rounded-xl overflow-hidden shadow-sm relative">
+                        {loading && (
+                            <div className="absolute inset-0 z-[1000] bg-white/50 flex items-center justify-center">
+                                <div className="bg-white px-4 py-2 rounded-full shadow-md text-sm font-medium text-gray-600 flex items-center gap-2">
+                                    <RefreshCw className="w-4 h-4 animate-spin text-orange-500" />
+                                    Updating Map...
+                                </div>
+                            </div>
+                        )}
                         <MapContainer
                             center={defaultCenter}
                             zoom={13}
@@ -324,6 +333,10 @@ export default function AdminIncidentMap() {
                             minZoom={12}
                             style={{ height: '550px', width: '100%' }}
                         >
+                            <MapUpdater 
+                                center={selectedBarangay !== 'All' && filteredRiskZones.length > 0 ? filteredRiskZones[0].center : defaultCenter} 
+                                zoom={selectedBarangay !== 'All' ? 15 : 13} 
+                            />
                             <TileLayer
                                 attribution='&copy; OpenStreetMap contributors'
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -337,35 +350,39 @@ export default function AdminIncidentMap() {
 
 
                             {/* Incident markers */}
-                            {showIncidents && incidents.map((incident) => {
-                                const damage = Number(incident.estimatedDamage || 0);
-                                return (
-                                    <CircleMarker
-                                        key={`inc-${incident.id}`}
-                                        center={[Number(incident.latitude), Number(incident.longitude)]}
-                                        radius={7}
-                                        pathOptions={{ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.8, weight: 2 }}
-                                    >
-                                        <Popup>
-                                            <div style={{ minWidth: '220px' }}>
-                                                {incident.photoUrl && <img src={`${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${incident.photoUrl}`)} />}
-                                                <div className="flex items-center gap-2 mb-2 border-b pb-2">
-                                                    <Flame className="w-4 h-4 text-red-500" />
-                                                    <strong className="text-sm">Incident #{incident.id}</strong>
-                                                </div>
-                                                <p className="text-xs mb-1"><strong>Barangay:</strong> {incident.barangay}</p>
-                                                <p className="text-xs mb-1"><strong>Date:</strong> {incident.incidentDate}</p>
-                                                <p className="text-xs mb-1"><strong>Time:</strong> {incident.incidentTime}</p>
-                                                <p className="text-xs mb-1"><strong>Cause:</strong> {incident.cause || 'N/A'}</p>
-                                                <p className="text-xs mb-1"><strong>Property:</strong> {incident.propertyType || 'N/A'}</p>
-                                                <p className="text-xs mb-1"><strong>Damage:</strong> ₱{damage.toLocaleString()}</p>
-                                                <p className="text-xs mb-1"><strong>Casualties:</strong> {incident.casualties || 0} | <strong>Injuries:</strong> {incident.injuries || 0}</p>
-                                                {incident.landmark && <p className="text-xs"><strong>Landmark:</strong> {incident.landmark}</p>}
-                                            </div>
-                                        </Popup>
-                                    </CircleMarker>
-                                );
-                            })}
+                            {showIncidents && (
+                                <Pane name="incidentsPane" style={{ zIndex: 500 }}>
+                                    {incidents.map((incident) => {
+                                        const damage = Number(incident.estimatedDamage || 0);
+                                        return (
+                                            <CircleMarker
+                                                key={`inc-${incident.id}`}
+                                                center={[Number(incident.latitude), Number(incident.longitude)]}
+                                                radius={7}
+                                                pathOptions={{ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.8, weight: 2 }}
+                                            >
+                                                <Popup>
+                                                    <div style={{ minWidth: '220px' }}>
+                                                        {incident.photoUrl && <img src={`${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${incident.photoUrl}`)} />}
+                                                        <div className="flex items-center gap-2 mb-2 border-b pb-2">
+                                                            <Flame className="w-4 h-4 text-red-500" />
+                                                            <strong className="text-sm">Incident #{incident.id}</strong>
+                                                        </div>
+                                                        <p className="text-xs mb-1"><strong>Barangay:</strong> {incident.barangay}</p>
+                                                        <p className="text-xs mb-1"><strong>Date:</strong> {incident.incidentDate}</p>
+                                                        <p className="text-xs mb-1"><strong>Time:</strong> {incident.incidentTime}</p>
+                                                        <p className="text-xs mb-1"><strong>Cause:</strong> {incident.cause || 'N/A'}</p>
+                                                        <p className="text-xs mb-1"><strong>Property:</strong> {incident.propertyType || 'N/A'}</p>
+                                                        <p className="text-xs mb-1"><strong>Damage:</strong> ₱{damage.toLocaleString()}</p>
+                                                        <p className="text-xs mb-1"><strong>Casualties:</strong> {incident.casualties || 0} | <strong>Injuries:</strong> {incident.injuries || 0}</p>
+                                                        {incident.landmark && <p className="text-xs"><strong>Landmark:</strong> {incident.landmark}</p>}
+                                                    </div>
+                                                </Popup>
+                                            </CircleMarker>
+                                        );
+                                    })}
+                                </Pane>
+                            )}
 
                             {/* Fire hydrants */}
                             {showHydrants && filteredHydrants.map((h) => (
@@ -396,7 +413,6 @@ export default function AdminIncidentMap() {
                             ))}
                         </MapContainer>
                     </div>
-                )}
               </div>
 
               {/* Risk Detail Panel */}

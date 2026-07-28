@@ -6,6 +6,8 @@ import {
   TileLayer,
   CircleMarker,
   Popup,
+  useMap,
+  Pane,
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -43,6 +45,14 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
+
+function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.flyTo(center, zoom, { duration: 1.5 });
+  }, [center, zoom, map]);
+  return null;
+}
 
 type WeatherData = {
   temperature_c: number;
@@ -516,6 +526,10 @@ export default function FireRiskMap() {
               minZoom={11}
               style={{ height: '560px', width: '100%' }}
             >
+              <MapUpdater 
+                center={selectedZone ? selectedZone.center : defaultCenter} 
+                zoom={selectedZone ? 15 : 13} 
+              />
               <TileLayer
                 attribution="&copy; OpenStreetMap contributors"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -531,53 +545,52 @@ export default function FireRiskMap() {
               )}
 
               {/* Fire Incident Markers */}
-              {showIncidents &&
-                incidents.map((inc) => (
-                  <CircleMarker
-                    key={`inc-${inc.id}`}
-                    center={[
-                      Number(inc.latitude),
-                      Number(inc.longitude),
-                    ]}
-                    radius={6}
-                    pathOptions={{
-                      color: '#dc2626',
-                      fillColor: '#ef4444',
-                      fillOpacity: 0.85,
-                      weight: 2,
-                    }}
-                  >
-                    <Popup>
-                      <div style={{ minWidth: '180px' }}>
-                        <div className="flex items-center gap-2 mb-2 border-b pb-2">
-                          <Flame className="w-4 h-4 text-red-500" />
-                          <strong className="text-sm">
-                            Incident #{inc.id}
-                          </strong>
+              {showIncidents && (
+                <Pane name="incidentsPane" style={{ zIndex: 500 }}>
+                  {incidents
+                    .filter((inc) => !selectedZone || inc.barangay === selectedZone.name)
+                    .map((inc) => (
+                    <CircleMarker
+                      key={`inc-${inc.id}`}
+                      center={[
+                        Number(inc.latitude),
+                        Number(inc.longitude),
+                      ]}
+                      radius={7}
+                      pathOptions={{
+                        color: '#dc2626',
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.8,
+                        weight: 2,
+                      }}
+                    >
+                      <Popup>
+                        <div style={{ minWidth: '200px' }}>
+                          <div className="flex items-center gap-2 mb-2 border-b pb-2">
+                            <Flame className="w-4 h-4 text-red-500" />
+                            <strong className="text-sm">
+                              Incident #{inc.id}
+                            </strong>
+                          </div>
+                          <p className="text-xs mb-1">
+                            <strong>Barangay:</strong> {inc.barangay}
+                          </p>
+                          <p className="text-xs mb-1">
+                            <strong>Date:</strong> {inc.incidentDate}
+                          </p>
+                          <p className="text-xs mb-1">
+                            <strong>Cause:</strong> {inc.cause || 'N/A'}
+                          </p>
+                          <p className="text-xs mb-1">
+                            <strong>Damage:</strong> ₱
+                            {Number(inc.estimatedDamage || 0).toLocaleString()}
+                          </p>
                         </div>
-                        <p className="text-xs mb-1">
-                          <strong>Barangay:</strong> {inc.barangay}
-                        </p>
-                        <p className="text-xs mb-1">
-                          <strong>Date:</strong> {inc.incidentDate}
-                        </p>
-                        <p className="text-xs mb-1">
-                          <strong>Time:</strong> {inc.incidentTime}
-                        </p>
-                        <p className="text-xs mb-1">
-                          <strong>Cause:</strong>{' '}
-                          {inc.cause || 'N/A'}
-                        </p>
-                        <p className="text-xs mb-1">
-                          <strong>Damage:</strong> ₱
-                          {Number(
-                            inc.estimatedDamage || 0,
-                          ).toLocaleString()}
-                        </p>
-                      </div>
-                    </Popup>
-                  </CircleMarker>
-                ))}
+                      </Popup>
+                    </CircleMarker>
+                  ))}
+                </Pane>
+              )}
             </MapContainer>
           </div>
         </div>
