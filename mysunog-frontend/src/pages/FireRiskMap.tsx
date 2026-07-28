@@ -46,16 +46,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
-  const map = useMap();
-  const isFirstRender = useRef(true);
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    map.flyTo(center, zoom, { duration: 1.5 });
-  }, [center, zoom, map]);
+function MapUpdater() {
   return null;
 }
 
@@ -524,17 +515,9 @@ export default function FireRiskMap() {
             <MapContainer
               center={defaultCenter}
               zoom={13}
-              maxBounds={[
-                [13.95, 121.05],
-                [14.10, 121.25],
-              ]}
               minZoom={11}
               style={{ height: '560px', width: '100%' }}
             >
-              <MapUpdater 
-                center={selectedZone ? selectedZone.center : defaultCenter} 
-                zoom={selectedZone ? 15 : 13} 
-              />
               <TileLayer
                 attribution="&copy; OpenStreetMap contributors"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -569,8 +552,8 @@ export default function FireRiskMap() {
                         weight: 2,
                       }}
                     >
-                      <Popup>
-                        <div style={{ minWidth: '200px' }}>
+                      <Popup pane="popupPane">
+                        <div style={{ minWidth: '200px', maxHeight: '250px', overflowY: 'auto' }}>
                           <div className="flex items-center gap-2 mb-2 border-b pb-2">
                             <Flame className="w-4 h-4 text-red-500" />
                             <strong className="text-sm">

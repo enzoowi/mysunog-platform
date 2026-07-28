@@ -36,16 +36,7 @@ const stationIcon = new L.DivIcon({
     popupAnchor: [0, -36],
 });
 
-function MapUpdater({ center, zoom }: { center: [number, number]; zoom: number }) {
-    const map = useMap();
-    const isFirstRender = useRef(true);
-    useEffect(() => {
-        if (isFirstRender.current) {
-            isFirstRender.current = false;
-            return;
-        }
-        map.flyTo(center, zoom, { duration: 1.5 });
-    }, [center, zoom, map]);
+function MapUpdater() {
     return null;
 }
 
@@ -334,14 +325,9 @@ export default function AdminIncidentMap() {
                         <MapContainer
                             center={defaultCenter}
                             zoom={13}
-                            maxBounds={[[13.98, 121.08], [14.10, 121.25]]}
                             minZoom={12}
                             style={{ height: '550px', width: '100%' }}
                         >
-                            <MapUpdater 
-                                center={selectedBarangay !== 'All' && filteredRiskZones.length > 0 ? filteredRiskZones[0].center : defaultCenter} 
-                                zoom={selectedBarangay !== 'All' ? 15 : 13} 
-                            />
                             <TileLayer
                                 attribution='&copy; OpenStreetMap contributors'
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -366,8 +352,8 @@ export default function AdminIncidentMap() {
                                                 radius={7}
                                                 pathOptions={{ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.8, weight: 2 }}
                                             >
-                                                <Popup>
-                                                    <div style={{ minWidth: '220px' }}>
+                                                <Popup pane="popupPane">
+                                                    <div style={{ minWidth: '220px', maxHeight: '250px', overflowY: 'auto' }}>
                                                         {incident.photoUrl && <img src={incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`)} />}
                                                         <div className="flex items-center gap-2 mb-2 border-b pb-2">
                                                             <Flame className="w-4 h-4 text-red-500" />
