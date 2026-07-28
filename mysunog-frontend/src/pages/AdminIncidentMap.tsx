@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, CircleMarker, Popup, Marker, useMap, Pane } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Marker, Pane } from 'react-leaflet';
 import L from 'leaflet';
 import { ArrowLeft, Map as MapIcon, Filter, Calendar, Flame, Droplet, ShieldPlus, AlertTriangle, RefreshCw } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
@@ -36,9 +36,6 @@ const stationIcon = new L.DivIcon({
     popupAnchor: [0, -36],
 });
 
-function MapUpdater() {
-    return null;
-}
 
 type Incident = {
     id: number;

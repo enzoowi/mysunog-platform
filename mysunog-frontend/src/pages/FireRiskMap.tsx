@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, type ReactNode } from 'react';
+import { useEffect, useState, useMemo, type ReactNode } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -6,7 +6,6 @@ import {
   TileLayer,
   CircleMarker,
   Popup,
-  useMap,
   Pane,
 } from 'react-leaflet';
 import L from 'leaflet';
@@ -46,9 +45,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-function MapUpdater() {
-  return null;
-}
 
 type WeatherData = {
   temperature_c: number;
