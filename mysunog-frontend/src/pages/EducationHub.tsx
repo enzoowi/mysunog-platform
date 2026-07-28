@@ -36,6 +36,7 @@ export default function EducationHub() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     async function fetchBanner() {
@@ -60,10 +61,37 @@ export default function EducationHub() {
 
   useEffect(() => {
     setCurrentIndex(0);
+    setProgress(0);
   }, [selectedCategory, contents.length]);
 
-  const handlePrev = () => setCurrentIndex((prev) => Math.max(0, prev - 1));
-  const handleNext = () => setCurrentIndex((prev) => Math.min(contents.length - 1, prev + 1));
+  // Reset progress when index changes manually or automatically
+  useEffect(() => {
+    setProgress(0);
+  }, [currentIndex]);
+
+  // Auto-advance timer (15 seconds)
+  useEffect(() => {
+    if (contents.length <= 1) return;
+
+    const intervalTime = 150; // ms
+    const totalTime = 15000; // 15s
+    const step = (intervalTime / totalTime) * 100;
+
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev + step >= 100) {
+          setCurrentIndex((curr) => (curr + 1) % contents.length);
+          return 0;
+        }
+        return prev + step;
+      });
+    }, intervalTime);
+
+    return () => clearInterval(timer);
+  }, [contents.length, currentIndex]);
+
+  const handlePrev = () => setCurrentIndex((prev) => (prev === 0 ? contents.length - 1 : prev - 1));
+  const handleNext = () => setCurrentIndex((prev) => (prev + 1) % contents.length);
 
   return (
     <div className="w-full">
@@ -119,13 +147,21 @@ export default function EducationHub() {
         )}
 
         {!loading && contents.length > 0 && (
-          <div className="relative w-full h-[600px] flex items-center justify-center overflow-hidden py-4">
+          <>
+            {contents.length > 1 && (
+              <div className="w-full max-w-sm md:max-w-md mx-auto mb-2 h-1 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-orange-400 to-red-500 transition-all duration-150 ease-linear"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            )}
+            <div className="relative w-full h-[600px] flex items-center justify-center overflow-hidden py-4">
             
             {/* Left Navigation Arrow */}
             <button 
               onClick={handlePrev}
-              disabled={currentIndex === 0}
-              className={`absolute left-0 md:left-4 z-30 p-3 rounded-full bg-white/90 backdrop-blur shadow-lg border border-gray-100 transition-all ${currentIndex === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-gray-50 hover:scale-105'}`}
+              className="absolute left-0 md:left-4 z-30 p-3 rounded-full bg-white/90 backdrop-blur shadow-lg border border-gray-100 transition-all opacity-100 hover:bg-gray-50 hover:scale-105"
             >
               <ChevronLeft className="w-6 h-6 text-gray-700" />
             </button>
@@ -223,13 +259,13 @@ export default function EducationHub() {
             {/* Right Navigation Arrow */}
             <button 
               onClick={handleNext}
-              disabled={currentIndex === contents.length - 1}
-              className={`absolute right-0 md:right-4 z-30 p-3 rounded-full bg-white/90 backdrop-blur shadow-lg border border-gray-100 transition-all ${currentIndex === contents.length - 1 ? 'opacity-0 pointer-events-none' : 'opacity-100 hover:bg-gray-50 hover:scale-105'}`}
+              className="absolute right-0 md:right-4 z-30 p-3 rounded-full bg-white/90 backdrop-blur shadow-lg border border-gray-100 transition-all opacity-100 hover:bg-gray-50 hover:scale-105"
             >
               <ChevronRight className="w-6 h-6 text-gray-700" />
             </button>
             
           </div>
+          </>
         )}
       </div>
       
