@@ -16,7 +16,7 @@ export default function Home() {
       try {
         const res = await api.get('/site-images');
         const hero = res.data.find((img: any) => img.key === 'home_hero');
-        if (hero?.imageUrl) setHeroImage(`${BACKEND_URL}${hero.imageUrl}`);
+        if (hero?.imageUrl) setHeroImage(hero.imageUrl?.startsWith('http') ? hero.imageUrl : `${BACKEND_URL}${hero.imageUrl}`);
       } catch {
         console.error('Failed to load hero banner');
       }

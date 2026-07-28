@@ -13,18 +13,20 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { DetectionService } from './detection.service';
 import { DetectionGateway } from './detection.gateway';
 import { AnalyzeFrameDto } from './dto/analyze-frame.dto';
 import { CreateCameraDto } from './dto/create-camera.dto';
 import { UpdateCameraDto } from './dto/update-camera.dto';
+import { UploadService } from '../upload/upload.service';
 @Controller('detection')
 export class DetectionController {
   constructor(
     private readonly detectionService: DetectionService,
     private readonly detectionGateway: DetectionGateway,
+    private readonly uploadService: UploadService,
   ) {}
 
   /**
@@ -58,14 +60,7 @@ export class DetectionController {
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/videos',
-        filename: (_req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `video-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       limits: { fileSize: 200 * 1024 * 1024 }, // 200 MB max
       fileFilter: (_req, file, cb) => {
         const allowed = /\.(mp4|avi|mov|webm|mkv)$/i;
@@ -78,7 +73,10 @@ export class DetectionController {
     }),
   )
   async uploadVideo(@UploadedFile() file: Express.Multer.File) {
-    const result = await this.detectionService.analyzeVideo(file.path);
+    const videoUrl = await this.uploadService.uploadFile(file, 'videos');
+    // We now send the Cloudinary URL to analyzeVideo instead of local file.path
+    // Note: The Python backend will need to download or stream this URL.
+    const result = await this.detectionService.analyzeVideo(videoUrl);
 
     // Broadcast each detection via WebSocket
     if (result.success && result.events && result.events.length > 0) {

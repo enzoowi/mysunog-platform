@@ -18,6 +18,7 @@ import { DetectionModule } from './detection/detection.module';
 import { RiskMapModule } from './risk-map/risk-map.module';
 import { AiIncidentsModule } from './ai-incidents/ai-incidents.module';
 import { EmailAlertsModule } from './email-alerts/email-alerts.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { EmailAlertsModule } from './email-alerts/email-alerts.module';
     RiskMapModule,
     AiIncidentsModule,
     EmailAlertsModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

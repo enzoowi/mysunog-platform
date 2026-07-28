@@ -167,7 +167,7 @@ export default function AdminMapAssets() {
       if (editableFields.includes(k) && v !== null && v !== undefined) d[k] = String(v); 
     });
     setFormData(d);
-    setPhotoPreview(item.photoUrl ? `${BACKEND_URL}${item.photoUrl}` : null);
+    setPhotoPreview(item.photoUrl ? item.photoUrl?.startsWith('http') ? item.photoUrl : `${BACKEND_URL}${item.photoUrl}` : null);
   }
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
@@ -227,7 +227,7 @@ export default function AdminMapAssets() {
               <DraggableMarker key={h.id} position={[Number(h.lat), Number(h.lng)]} icon={hydrantIcon}
                 onDragEnd={(lat, lng) => handleDragEnd('hydrants', h.id, lat, lng)}>
                 <Popup>
-                  {h.photoUrl && <img src={`${BACKEND_URL}${h.photoUrl}`} alt="" className="w-full h-28 object-cover rounded mb-2" />}
+                  {h.photoUrl && <img src={h.photoUrl?.startsWith('http') ? h.photoUrl : `${BACKEND_URL}${h.photoUrl}`} alt="" className="w-full h-28 object-cover rounded mb-2" />}
                   <strong>{h.name}</strong><br />
                   <span className="text-xs text-gray-500">{h.description}</span>
                 </Popup>
@@ -238,7 +238,7 @@ export default function AdminMapAssets() {
               <DraggableMarker key={s.id} position={[Number(s.lat), Number(s.lng)]} icon={stationIcon}
                 onDragEnd={(lat, lng) => handleDragEnd('stations', s.id, lat, lng)}>
                 <Popup>
-                  {s.photoUrl && <img src={`${BACKEND_URL}${s.photoUrl}`} alt="" className="w-full h-28 object-cover rounded mb-2" />}
+                  {s.photoUrl && <img src={s.photoUrl?.startsWith('http') ? s.photoUrl : `${BACKEND_URL}${s.photoUrl}`} alt="" className="w-full h-28 object-cover rounded mb-2" />}
                   <strong>{s.name}</strong><br />
                   <span className="text-xs text-gray-500">{s.contact}</span>
                 </Popup>
@@ -332,7 +332,7 @@ export default function AdminMapAssets() {
               <div key={item.id} className="flex items-center justify-between bg-white border rounded-xl px-4 py-3 shadow-sm gap-2">
                 <div className="flex items-center gap-3 min-w-0">
                   {item.photoUrl && (
-                    <img src={`${BACKEND_URL}${item.photoUrl}`} alt="" className="w-10 h-10 object-cover rounded-lg border flex-shrink-0" />
+                    <img src={item.photoUrl?.startsWith('http') ? item.photoUrl : `${BACKEND_URL}${item.photoUrl}`} alt="" className="w-10 h-10 object-cover rounded-lg border flex-shrink-0" />
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>

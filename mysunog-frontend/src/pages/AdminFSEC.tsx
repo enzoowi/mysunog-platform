@@ -121,7 +121,7 @@ export default function AdminFSEC() {
                                 </td>
                                 <td className="px-4 py-3">
                                     {i.bploSlipUrl ? (
-                                        <a href={`${BACKEND_URL}${i.bploSlipUrl}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
+                                        <a href={i.bploSlipUrl?.startsWith('http') ? i.bploSlipUrl : `${BACKEND_URL}${i.bploSlipUrl}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-blue-600 hover:underline">
                                             <Eye className="w-4 h-4" /> View
                                         </a>
                                     ) : <span className="text-gray-400">N/A</span>}
@@ -143,7 +143,7 @@ export default function AdminFSEC() {
                                             </button>
                                         )}
                                         {i.status === 'issued' && i.certificateUrl && (
-                                            <a href={`${BACKEND_URL}${i.certificateUrl}`} target="_blank" rel="noreferrer" className="p-1.5 bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100" title="Download Certificate">
+                                            <a href={i.certificateUrl?.startsWith('http') ? i.certificateUrl : `${BACKEND_URL}${i.certificateUrl}`} target="_blank" rel="noreferrer" className="p-1.5 bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100" title="Download Certificate">
                                                 <Eye className="w-4 h-4" />
                                             </a>
                                         )}

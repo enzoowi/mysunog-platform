@@ -10,13 +10,17 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { SiteImagesService } from './site-images.service';
+import { UploadService } from '../upload/upload.service';
 
 @Controller('site-images')
 export class SiteImagesController {
-  constructor(private siteImagesService: SiteImagesService) {}
+  constructor(
+    private siteImagesService: SiteImagesService,
+    private uploadService: UploadService,
+  ) {}
 
   @Get()
   findAll() {
@@ -27,14 +31,7 @@ export class SiteImagesController {
   @Post(':key')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/site-images',
-        filename: (_req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `site-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (_req, file, cb) => {
         if (file.mimetype.startsWith('image/')) cb(null, true);
         else cb(new Error('Only image files are allowed'), false);
@@ -46,7 +43,7 @@ export class SiteImagesController {
     @UploadedFile() file: Express.Multer.File,
     @Body('label') label?: string,
   ) {
-    const imageUrl = `/uploads/site-images/${file.filename}`;
+    const imageUrl = await this.uploadService.uploadFile(file, 'site-images');
     return this.siteImagesService.upsert(key, imageUrl, label);
   }
 }

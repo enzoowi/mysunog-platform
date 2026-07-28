@@ -87,11 +87,11 @@ export default function AdminVerifications() {
               <div className="flex-shrink-0">
                 {u.residencyProofUrl ? (
                   <button
-                    onClick={() => setLightboxUrl(`${BACKEND_URL}${u.residencyProofUrl}`)}
+                    onClick={() => setLightboxUrl(u.residencyProofUrl?.startsWith('http') ? u.residencyProofUrl : `${BACKEND_URL}${u.residencyProofUrl}`)}
                     className="relative group block rounded-lg overflow-hidden border w-20 h-20"
                     title="View ID">
                     <img
-                      src={`${BACKEND_URL}${u.residencyProofUrl}`}
+                      src={u.residencyProofUrl?.startsWith('http') ? u.residencyProofUrl : `${BACKEND_URL}${u.residencyProofUrl}`}
                       alt="Government ID"
                       className="w-full h-full object-cover group-hover:opacity-80 transition"
                     />

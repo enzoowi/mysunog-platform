@@ -15,16 +15,11 @@ import { PermitsService } from './permits.service';
 import { CreatePermitDto } from './dto/create-permit.dto';
 import { UpdatePermitStatusDto } from './dto/update-status.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
+import { UploadService } from '../upload/upload.service';
 
-const photoStorage = diskStorage({
-  destination: './uploads/bplo-slips',
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `fsic-${uniqueSuffix}${extname(file.originalname)}`);
-  },
-});
+const photoStorage = memoryStorage();
 
 const imageFileFilter = (_req: any, file: Express.Multer.File, cb: any) => {
   if (file.mimetype.startsWith('image/')) cb(null, true);
@@ -34,7 +29,10 @@ const imageFileFilter = (_req: any, file: Express.Multer.File, cb: any) => {
 @UseGuards(AuthGuard('jwt'))
 @Controller('permits')
 export class PermitsController {
-  constructor(private permitsService: PermitsService) {}
+  constructor(
+    private permitsService: PermitsService,
+    private uploadService: UploadService,
+  ) {}
 
   // Citizen: create request
   @Post()
@@ -44,13 +42,13 @@ export class PermitsController {
       fileFilter: imageFileFilter,
     }),
   )
-  create(
+  async create(
     @Body() dto: CreatePermitDto,
     @Req() req: any,
     @UploadedFile() file?: Express.Multer.File,
   ) {
     if (file) {
-      dto.bploSlipUrl = `/uploads/bplo-slips/${file.filename}`;
+      dto.bploSlipUrl = await this.uploadService.uploadFile(file, 'bplo-slips');
     }
     return this.permitsService.create(dto, { id: req.user.userId } as any);
   }

@@ -12,17 +12,12 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { MapAssetsService } from './map-assets.service';
+import { UploadService } from '../upload/upload.service';
 
-const photoStorage = diskStorage({
-  destination: './uploads/map-assets',
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `map-${uniqueSuffix}${extname(file.originalname)}`);
-  },
-});
+const photoStorage = memoryStorage();
 
 const imageFileFilter = (_req: any, file: Express.Multer.File, cb: any) => {
   if (file.mimetype.startsWith('image/')) cb(null, true);
@@ -31,7 +26,10 @@ const imageFileFilter = (_req: any, file: Express.Multer.File, cb: any) => {
 
 @Controller('map')
 export class MapAssetsController {
-  constructor(private mapAssetsService: MapAssetsService) {}
+  constructor(
+    private mapAssetsService: MapAssetsService,
+    private uploadService: UploadService,
+  ) {}
 
   // ==================== HYDRANTS ====================
   @Get('hydrants')
@@ -47,8 +45,8 @@ export class MapAssetsController {
       fileFilter: imageFileFilter,
     }),
   )
-  createHydrant(@Body() body: any, @UploadedFile() file?: Express.Multer.File) {
-    if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
+  async createHydrant(@Body() body: any, @UploadedFile() file?: Express.Multer.File) {
+    if (file) body.photoUrl = await this.uploadService.uploadFile(file, 'map-assets');
     return this.mapAssetsService.createHydrant({
       ...body,
       lat: Number(body.lat),
@@ -64,12 +62,12 @@ export class MapAssetsController {
       fileFilter: imageFileFilter,
     }),
   )
-  updateHydrant(
+  async updateHydrant(
     @Param('id') id: string,
     @Body() body: any,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
+    if (file) body.photoUrl = await this.uploadService.uploadFile(file, 'map-assets');
     const data: any = { ...body };
     delete data.id;
     if (body.lat !== undefined) data.lat = Number(body.lat);
@@ -97,8 +95,8 @@ export class MapAssetsController {
       fileFilter: imageFileFilter,
     }),
   )
-  createStation(@Body() body: any, @UploadedFile() file?: Express.Multer.File) {
-    if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
+  async createStation(@Body() body: any, @UploadedFile() file?: Express.Multer.File) {
+    if (file) body.photoUrl = await this.uploadService.uploadFile(file, 'map-assets');
     return this.mapAssetsService.createStation({
       ...body,
       lat: Number(body.lat),
@@ -114,12 +112,12 @@ export class MapAssetsController {
       fileFilter: imageFileFilter,
     }),
   )
-  updateStation(
+  async updateStation(
     @Param('id') id: string,
     @Body() body: any,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    if (file) body.photoUrl = `/uploads/map-assets/${file.filename}`;
+    if (file) body.photoUrl = await this.uploadService.uploadFile(file, 'map-assets');
     const data: any = { ...body };
     delete data.id;
     if (body.lat !== undefined) data.lat = Number(body.lat);

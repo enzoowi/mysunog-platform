@@ -164,10 +164,10 @@ export default function PublicCommunityMap() {
               <Popup>
                 {h.photoUrl && (
                   <img
-                    src={`${BACKEND_URL}${h.photoUrl}`}
+                    src={h.photoUrl?.startsWith('http') ? h.photoUrl : `${BACKEND_URL}${h.photoUrl}`}
                     alt=""
                     className="w-full h-28 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition"
-                    onClick={() => setFullImageUrl(`${BACKEND_URL}${h.photoUrl!}`)}
+                    onClick={() => setFullImageUrl(h.photoUrl!?.startsWith('http') ? h.photoUrl! : `${BACKEND_URL}${h.photoUrl!}`)}
                   />
                 )}
                 <div className="flex items-center gap-1.5 mb-1">
@@ -185,10 +185,10 @@ export default function PublicCommunityMap() {
               <Popup>
                 {s.photoUrl && (
                   <img
-                    src={`${BACKEND_URL}${s.photoUrl}`}
+                    src={s.photoUrl?.startsWith('http') ? s.photoUrl : `${BACKEND_URL}${s.photoUrl}`}
                     alt=""
                     className="w-full h-28 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition"
-                    onClick={() => setFullImageUrl(`${BACKEND_URL}${s.photoUrl!}`)}
+                    onClick={() => setFullImageUrl(s.photoUrl!?.startsWith('http') ? s.photoUrl! : `${BACKEND_URL}${s.photoUrl!}`)}
                   />
                 )}
                 <div className="flex items-center gap-1.5 mb-1">

@@ -13,14 +13,18 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { EducationService } from './education.service';
 import { CreateEducationDto } from './dto/create-education.dto';
+import { UploadService } from '../upload/upload.service';
 
 @Controller('education')
 export class EducationController {
-  constructor(private educationService: EducationService) {}
+  constructor(
+    private educationService: EducationService,
+    private uploadService: UploadService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateEducationDto) {
@@ -52,25 +56,18 @@ export class EducationController {
   @Post(':id/image')
   @UseInterceptors(
     FileInterceptor('image', {
-      storage: diskStorage({
-        destination: './uploads/education',
-        filename: (_req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `edu-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       fileFilter: (_req, file, cb) => {
         if (file.mimetype.startsWith('image/')) cb(null, true);
         else cb(new Error('Only image files are allowed'), false);
       },
     }),
   )
-  uploadImage(
+  async uploadImage(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const imageUrl = `/uploads/education/${file.filename}`;
+    const imageUrl = await this.uploadService.uploadFile(file, 'education');
     return this.educationService.update(Number(id), { imageUrl });
   }
 }

@@ -41,10 +41,10 @@ export default function MyPermits() {
                                     <p className="text-sm text-gray-600"><strong>Remarks:</strong> {permit.adminRemarks || 'None'}</p>
                                     <div className="mt-3 flex flex-wrap gap-3">
                                         {permit.bploSlipUrl && (
-                                            <a href={`${BACKEND_URL}${permit.bploSlipUrl}`} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline inline-block">View BPLO Slip</a>
+                                            <a href={permit.bploSlipUrl?.startsWith('http') ? permit.bploSlipUrl : `${BACKEND_URL}${permit.bploSlipUrl}`} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline inline-block">View BPLO Slip</a>
                                         )}
                                         {permit.status === 'issued' && permit.certificateUrl && (
-                                            <a href={`${BACKEND_URL}${permit.certificateUrl}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-600 hover:underline inline-block flex items-center gap-1">
+                                            <a href={permit.certificateUrl?.startsWith('http') ? permit.certificateUrl : `${BACKEND_URL}${permit.certificateUrl}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-600 hover:underline inline-block flex items-center gap-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                 Download Certificate
                                             </a>
@@ -75,10 +75,10 @@ export default function MyPermits() {
                                     <p className="text-sm text-gray-600"><strong>Remarks:</strong> {insp.adminNotes || 'None'}</p>
                                     <div className="mt-3 flex flex-wrap gap-3">
                                         {insp.bploSlipUrl && (
-                                            <a href={`${BACKEND_URL}${insp.bploSlipUrl}`} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline inline-block">View BPLO Slip</a>
+                                            <a href={insp.bploSlipUrl?.startsWith('http') ? insp.bploSlipUrl : `${BACKEND_URL}${insp.bploSlipUrl}`} target="_blank" rel="noreferrer" className="text-sm text-blue-600 hover:underline inline-block">View BPLO Slip</a>
                                         )}
                                         {insp.status === 'issued' && insp.certificateUrl && (
-                                            <a href={`${BACKEND_URL}${insp.certificateUrl}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-600 hover:underline inline-block flex items-center gap-1">
+                                            <a href={insp.certificateUrl?.startsWith('http') ? insp.certificateUrl : `${BACKEND_URL}${insp.certificateUrl}`} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-600 hover:underline inline-block flex items-center gap-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                                                 Download Certificate
                                             </a>

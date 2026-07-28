@@ -164,7 +164,7 @@ export default function IncidentMap() {
                             pathOptions={{ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.8 }}>
                             <Popup>
                                 <div style={{ minWidth: '200px' }}>
-                                    {incident.photoUrl && <img src={`${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${incident.photoUrl}`)} />}
+                                    {incident.photoUrl && <img src={incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`)} />}
                                     <p><strong>Barangay:</strong> {incident.barangay}</p>
                                     <p><strong>Date:</strong> {incident.incidentDate}</p>
                                     <p><strong>Time:</strong> {incident.incidentTime}</p>
@@ -179,7 +179,7 @@ export default function IncidentMap() {
                     {showHydrants && hydrants.map((h) => (
                         <Marker key={`hyd-${h.id}`} position={[Number(h.lat), Number(h.lng)]} icon={hydrantIcon}>
                             <Popup>
-                                {h.photoUrl && <img src={`${BACKEND_URL}${h.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${h.photoUrl}`)} />}
+                                {h.photoUrl && <img src={h.photoUrl?.startsWith('http') ? h.photoUrl : `${BACKEND_URL}${h.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(h.photoUrl?.startsWith('http') ? h.photoUrl : `${BACKEND_URL}${h.photoUrl}`)} />}
                                 <div className="flex items-center gap-1 mb-1">
                                     <Droplet className="w-4 h-4 text-blue-500" />
                                     <strong>{h.name}</strong>
@@ -193,7 +193,7 @@ export default function IncidentMap() {
                     {showStations && stations.map((s) => (
                         <Marker key={`stn-${s.id}`} position={[Number(s.lat), Number(s.lng)]} icon={stationIcon}>
                             <Popup>
-                                {s.photoUrl && <img src={`${BACKEND_URL}${s.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(`${BACKEND_URL}${s.photoUrl}`)} />}
+                                {s.photoUrl && <img src={s.photoUrl?.startsWith('http') ? s.photoUrl : `${BACKEND_URL}${s.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(s.photoUrl?.startsWith('http') ? s.photoUrl : `${BACKEND_URL}${s.photoUrl}`)} />}
                                 <div className="flex items-center gap-1 mb-1">
                                     <ShieldPlus className="w-4 h-4 text-green-600" />
                                     <strong>{s.name}</strong>

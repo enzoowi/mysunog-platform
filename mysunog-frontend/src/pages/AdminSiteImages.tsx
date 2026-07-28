@@ -88,7 +88,7 @@ export default function AdminSiteImages() {
                 <div className="mt-4">
                   <p className="text-xs text-gray-500 mb-2 font-medium">Current image:</p>
                   <img
-                    src={`${BACKEND_URL}${current.imageUrl}`}
+                    src={current.imageUrl?.startsWith('http') ? current.imageUrl : `${BACKEND_URL}${current.imageUrl}`}
                     alt={slot.label}
                     className="w-full max-h-64 object-cover rounded-lg border"
                   />
