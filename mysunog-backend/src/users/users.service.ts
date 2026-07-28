@@ -143,7 +143,7 @@ export class UsersService {
     return { message: 'If this email is registered, your request has been submitted.' };
   }
 
-  /** Admin resets a user's password to a random temporary one and emails it */
+  /** Admin resets a user's password to a random temporary one and returns it */
   async resetPasswordByAdmin(id: number) {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
@@ -158,12 +158,11 @@ export class UsersService {
     user.passwordResetRequestedAt = undefined;
     await this.usersRepository.save(user);
 
-    this.emailService.sendTempPassword(
-      { email: user.email, firstName: user.firstName, lastName: user.lastName },
-      tempPassword,
-    );
-
-    return { message: `Temporary password sent to ${user.email}` };
+    // Instead of emailing, return the temp password to the admin
+    return { 
+      message: `Password reset successfully for ${user.email}`,
+      tempPassword 
+    };
   }
 
   /** Logged-in user changes their own password */

@@ -83,11 +83,16 @@ export default function AdminManageUsers() {
   }
 
   async function handleResetPassword(user: UserRecord) {
-    if (!window.confirm(`Reset password for ${user.email}? A temporary password will be emailed to them.`)) return;
+    if (!window.confirm(`Reset password for ${user.email}? You will receive a temporary password to share with them.`)) return;
     setResettingId(user.id);
     try {
-      await api.post(`/users/${user.id}/reset-password`);
-      showToast('success', `Temporary password sent to ${user.email}`);
+      const response = await api.post(`/users/${user.id}/reset-password`);
+      const tempPassword = response.data?.tempPassword;
+      if (tempPassword) {
+        window.alert(`Password has been reset for ${user.email}.\n\nTemporary Password: ${tempPassword}\n\nPlease share this password with the user securely.`);
+      } else {
+        showToast('success', `Password reset successfully for ${user.email}`);
+      }
       fetchUsers();
     } catch {
       showToast('error', 'Failed to reset password. Please try again.');

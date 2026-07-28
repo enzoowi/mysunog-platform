@@ -155,7 +155,7 @@ export default function Login() {
                                     <p className="font-semibold text-sm text-gray-800">Forgot your password?</p>
                                 </div>
                                 <p className="text-xs text-gray-600 leading-relaxed">
-                                    Enter the email address linked to your account. An administrator will review your request and send a temporary password to your email.
+                                    Enter the email address linked to your account. An administrator will review your request. Please contact your administrator to receive your temporary password.
                                 </p>
                                 <input
                                     type="email"
@@ -187,7 +187,7 @@ export default function Login() {
                                 <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-3" />
                                 <p className="font-semibold text-gray-800 mb-1">Request Submitted!</p>
                                 <p className="text-xs text-gray-600 leading-relaxed">
-                                    If your email is registered, an administrator will send a temporary password to <strong>{forgotEmail}</strong> shortly.
+                                    If your email is registered, your request has been logged. Please contact your administrator to receive your temporary password.
                                 </p>
                                 <button
                                     onClick={() => { setIsForgotPassword(false); setForgotSubmitted(false); }}

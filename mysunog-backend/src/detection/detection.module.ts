@@ -15,4 +15,4 @@ import { UsersModule } from '../users/users.module';
   providers: [DetectionService, DetectionGateway],
   exports: [DetectionService, DetectionGateway],
 })
-export class DetectionModule {}
+export class DetectionModule { }
