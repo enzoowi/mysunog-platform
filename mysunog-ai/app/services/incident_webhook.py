@@ -23,6 +23,9 @@ import time
 from datetime import datetime, timezone
 from typing import Optional
 import logging
+import cv2
+import base64
+import numpy as np
 
 from app.config import settings
 from app.models.incident_schemas import (
@@ -74,6 +77,7 @@ def _build_payload(
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
     existing_incident_id: Optional[str] = None,
+    frame_base64: Optional[str] = None,
 ) -> IncidentPayload:
     """
     Assemble all data into a single IncidentPayload ready to POST.
@@ -123,6 +127,7 @@ def _build_payload(
         severity=severity,
         priority=priority,
         existing_incident_id=existing_incident_id,
+        frame_base64=frame_base64,
     )
 
 
@@ -137,10 +142,30 @@ async def post_incident_to_backend(
     latitude: Optional[float] = None,
     longitude: Optional[float] = None,
     existing_incident_id: Optional[str] = None,
+    frame: Optional[np.ndarray] = None,
 ) -> IncidentWebhookResponse:
     """
     Asynchronously POST an incident payload to the NestJS backend.
     """
+    """
+    frame_b64 = None
+    if frame is not None:
+        try:
+            # Resize frame to max 640px dimension to save bandwidth
+            h, w = frame.shape[:2]
+            max_dim = 640
+            if max(h, w) > max_dim:
+                scale = max_dim / max(h, w)
+                resized = cv2.resize(frame, (int(w * scale), int(h * scale)))
+            else:
+                resized = frame
+            
+            # Encode to JPEG
+            _, buffer = cv2.imencode('.jpg', resized, [cv2.IMWRITE_JPEG_QUALITY, 70])
+            frame_b64 = base64.b64encode(buffer).decode('utf-8')
+        except Exception as e:
+            logger.error(f"Failed to encode frame to base64: {e}")
+
     payload = _build_payload(
         camera_id=camera_id,
         snapshot=snapshot,
@@ -150,6 +175,7 @@ async def post_incident_to_backend(
         latitude=latitude,
         longitude=longitude,
         existing_incident_id=existing_incident_id,
+        frame_base64=frame_b64,
     )
 
     url     = f"{settings.nestjs_backend_url}{_WEBHOOK_PATH}"

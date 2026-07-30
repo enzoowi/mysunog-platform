@@ -21,6 +21,7 @@ export class NotificationsService {
     message: string,
     type: NotificationType = 'general',
     link: string | null = null,
+    imageUrl: string | null = null,
   ) {
     const notification = this.notificationsRepository.create({
       user,
@@ -29,6 +30,7 @@ export class NotificationsService {
       isRead: false,
       type,
       link,
+      imageUrl,
     });
 
     return this.notificationsRepository.save(notification);
@@ -137,6 +139,25 @@ FORMAT:
 
     const userPrompt = `ALERT: ${notification.title}\nDETAILS: ${notification.message}\nTIME: ${new Date(notification.createdAt).toLocaleString()}\n\nAnalyze this detection alert and give situation-specific tactical advice.`;
 
+    let userMessageContent: any = userPrompt;
+    if (notification.imageUrl) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const imgPath = path.join(__dirname, '..', '..', notification.imageUrl);
+        if (fs.existsSync(imgPath)) {
+          const imgBase64 = fs.readFileSync(imgPath).toString('base64');
+          const mime = imgPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+          userMessageContent = [
+            { type: 'text', text: userPrompt },
+            { type: 'image_url', image_url: { url: `data:${mime};base64,${imgBase64}` } }
+          ];
+        }
+      } catch (e) {
+        console.error('Failed to load image for AI advice', e);
+      }
+    }
+
     try {
       const response = await axios.post(
         'https://api.groq.com/openai/v1/chat/completions',
@@ -144,7 +165,7 @@ FORMAT:
           model,
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
+            { role: 'user', content: userMessageContent },
           ],
           temperature: 0.3,
           max_tokens: 500,
@@ -173,7 +194,7 @@ FORMAT:
         }
       }
 
-      return { advice, latitude, longitude };
+      return { advice, latitude, longitude, imageUrl: notification.imageUrl };
     } catch (error) {
       console.error('GROQ AI advice error:', error?.response?.data || error.message);
       return { advice: 'AI advice service is temporarily unavailable. Please try again in a moment.' };
@@ -265,6 +286,28 @@ FORMAT:
 
     const userPrompt = `${cctvReport}\nALERT TITLE: ${data.title}\nALERT MESSAGE: ${data.message}\n\nAnalyze this CCTV detection and give situation-specific tactical advice.`;
 
+    let userMessageContent: any = userPrompt;
+
+    // Check if we have an image URL. It usually comes from data.imageUrl which we can add to the controller body
+    const imageUrl = (data as any).imageUrl;
+    if (imageUrl) {
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const imgPath = path.join(__dirname, '..', '..', imageUrl);
+        if (fs.existsSync(imgPath)) {
+          const imgBase64 = fs.readFileSync(imgPath).toString('base64');
+          const mime = imgPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+          userMessageContent = [
+            { type: 'text', text: userPrompt },
+            { type: 'image_url', image_url: { url: `data:${mime};base64,${imgBase64}` } }
+          ];
+        }
+      } catch (e) {
+        console.error('Failed to load image for AI advice', e);
+      }
+    }
+
     try {
       const response = await axios.post(
         'https://api.groq.com/openai/v1/chat/completions',
@@ -272,7 +315,7 @@ FORMAT:
           model,
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
+            { role: 'user', content: userMessageContent },
           ],
           temperature: 0.3,
           max_tokens: 500,

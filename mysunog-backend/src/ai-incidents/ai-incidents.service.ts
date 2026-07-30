@@ -5,6 +5,8 @@ import { AiIncident } from './ai-incident.entity';
 import { AiIncidentStatusHistory } from './ai-incident-status-history.entity';
 import { CreateAiIncidentDto } from './dto/create-ai-incident.dto';
 import { UpdateIncidentStatusDto } from './dto/update-incident-status.dto';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   AiIncidentStatus,
   AiDetectionType,
@@ -63,13 +65,18 @@ export class AiIncidentsService {
     dto: CreateAiIncidentDto,
   ): Promise<{ incident: AiIncident; isNew: boolean }> {
 
+    let imageUrl: string | null = null;
+    if (dto.frame_base64) {
+      imageUrl = await this._saveFrameBase64(dto.frame_base64);
+    }
+
     // If the AI is explicitly referencing an existing incident, update it
     if (dto.existing_incident_id && dto.existing_incident_id !== '__pending__') {
       const existing = await this.incidentRepo.findOne({
         where: { id: dto.existing_incident_id },
       });
       if (existing) {
-        const updated = await this._updateIncidentFromPayload(existing, dto);
+        const updated = await this._updateIncidentFromPayload(existing, dto, imageUrl);
         return { incident: updated, isNew: false };
       }
     }
@@ -85,7 +92,7 @@ export class AiIncidentsService {
 
     if (activeIncident) {
       // Update the existing active incident with new AI data
-      const updated = await this._updateIncidentFromPayload(activeIncident, dto);
+      const updated = await this._updateIncidentFromPayload(activeIncident, dto, imageUrl);
       this.logger.log(
         `[UPDATE] incident=${updated.id} camera=${dto.camera_id} ` +
         `severity=${updated.severityScore} priority=${updated.priority}`,
@@ -94,7 +101,7 @@ export class AiIncidentsService {
     }
 
     // No active incident — create a new one
-    const incident = await this._createNewIncident(dto);
+    const incident = await this._createNewIncident(dto, imageUrl);
     this.logger.warn(
       `[NEW INCIDENT] id=${incident.id} camera=${dto.camera_id} ` +
       `priority=${incident.priority} severity=${incident.severityScore}`,
@@ -117,6 +124,7 @@ export class AiIncidentsService {
           message,
           'ai_alert',
           link,
+          imageUrl,
         );
       }
       this.logger.log(`Sent ai_alert notifications to ${targetUsers.length} admin/BFP users.`);
@@ -258,7 +266,27 @@ export class AiIncidentsService {
 
   // ── PRIVATE HELPERS ──────────────────────────────────────────────────────
 
-  private async _createNewIncident(dto: CreateAiIncidentDto): Promise<AiIncident> {
+  private async _saveFrameBase64(base64Str: string): Promise<string | null> {
+    if (!base64Str) return null;
+    try {
+      // Remove data URI prefix if present
+      const base64Data = base64Str.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      const filename = `incident-${Date.now()}.jpg`;
+      const uploadDir = path.join(__dirname, '..', '..', 'uploads', 'detections');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const filepath = path.join(uploadDir, filename);
+      fs.writeFileSync(filepath, buffer);
+      return `/uploads/detections/${filename}`;
+    } catch (e) {
+      this.logger.error(`Failed to save frame image: ${e.message}`);
+      return null;
+    }
+  }
+
+  private async _createNewIncident(dto: CreateAiIncidentDto, imageUrl: string | null = null): Promise<AiIncident> {
     const incident = this.incidentRepo.create({
       cameraId:            dto.camera_id,
       cameraName:          dto.camera_name,
@@ -282,6 +310,7 @@ export class AiIncidentsService {
 
       priority: this._mapPriority(dto.priority),
       status:   AiIncidentStatus.UNVERIFIED,
+      imageUrl,
     });
 
     const saved = await this.incidentRepo.save(incident);
@@ -302,6 +331,7 @@ export class AiIncidentsService {
   private async _updateIncidentFromPayload(
     incident: AiIncident,
     dto: CreateAiIncidentDto,
+    imageUrl: string | null = null,
   ): Promise<AiIncident> {
     // Update temporal data
     incident.lastDetectionTime    = new Date(dto.temporal.last_detection_time);
@@ -315,6 +345,10 @@ export class AiIncidentsService {
     incident.severityScore   = dto.severity.score;
     incident.severityLevel   = this._mapPriority(dto.severity.level);
     incident.severityReasons = dto.severity.reasons;
+
+    if (imageUrl) {
+      incident.imageUrl = imageUrl;
+    }
 
     // Escalate priority (never lower it automatically — only BFP can de-escalate)
     const newPriority = this._mapPriority(dto.priority);

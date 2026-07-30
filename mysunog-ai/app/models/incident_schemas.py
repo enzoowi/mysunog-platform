@@ -119,6 +119,12 @@ class IncidentPayload(BaseModel):
                     "than a new one. NestJS should update the existing record."
     )
 
+    # ── Captured Frame ────────────────────────────────────────────────────
+    frame_base64: Optional[str] = Field(
+        default=None,
+        description="Base64 encoded JPEG image of the incident."
+    )
+
     # ── Metadata ──────────────────────────────────────────────────────────
     payload_version: str = "2.0"
     generated_at: str = Field(

@@ -63,6 +63,10 @@ export class AiIncident {
   @Column({ nullable: true })
   cameraLocation: string;
 
+  /** URL of the captured frame */
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column('decimal', { precision: 10, scale: 7, nullable: true })
   latitude: number;
 

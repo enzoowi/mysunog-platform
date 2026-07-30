@@ -164,6 +164,7 @@ async def detect_frame(
                     latitude=request.latitude,
                     longitude=request.longitude,
                     existing_incident_id=existing_id,
+                    frame=frame,
                 )
             )
             # Optimistically mark as reported (actual ID set after webhook reply)

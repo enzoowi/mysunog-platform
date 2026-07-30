@@ -521,6 +521,7 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
                 _longitude = camera.longitude
                 _snapshot = snapshot
                 _sev = sev
+                _frame = frame.copy() if frame is not None else None
 
                 async def send_and_update():
                     resp = await post_incident_to_backend(
@@ -532,6 +533,7 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
                         latitude=_latitude,
                         longitude=_longitude,
                         existing_incident_id=existing_id,
+                        frame=_frame,
                     )
                     if resp.success and resp.incident_id:
                         temporal_tracker.mark_reported(_camera_id, resp.incident_id)

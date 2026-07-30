@@ -127,4 +127,9 @@ export class CreateAiIncidentDto {
   @IsOptional()
   @IsString()
   existing_incident_id?: string;
+
+  // ── Frame Image ───────────────────────────────────────────────────────
+  @IsOptional()
+  @IsString()
+  frame_base64?: string;
 }

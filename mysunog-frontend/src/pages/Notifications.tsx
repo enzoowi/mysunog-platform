@@ -71,6 +71,7 @@ export default function Notifications() {
     const [adviceContent, setAdviceContent] = useState('');
     const [adviceNotification, setAdviceNotification] = useState<NotificationItem | null>(null);
     const [adviceCoords, setAdviceCoords] = useState<{ lat: number; lng: number } | null>(null);
+    const [adviceImageUrl, setAdviceImageUrl] = useState<string | null>(null);
 
     async function fetchNotifications() {
         try {
@@ -132,6 +133,7 @@ export default function Notifications() {
         setAdviceNotification(notification);
         setAdviceContent('');
         setAdviceCoords(null);
+        setAdviceImageUrl(null);
         setAdviceModalOpen(true);
         setAdviceLoading(true);
         try {
@@ -139,6 +141,9 @@ export default function Notifications() {
             setAdviceContent(res.data.advice);
             if (res.data.latitude && res.data.longitude) {
                 setAdviceCoords({ lat: res.data.latitude, lng: res.data.longitude });
+            }
+            if (res.data.imageUrl) {
+                setAdviceImageUrl(res.data.imageUrl);
             }
         } catch (error) {
             console.error(error);
@@ -518,6 +523,20 @@ export default function Notifications() {
                                             <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#7f1d1d', lineHeight: 1.6 }}>
                                                 {adviceNotification.message}
                                             </p>
+                                        </div>
+                                    )}
+
+                                    {/* Captured frame if available */}
+                                    {adviceImageUrl && (
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <p style={{ margin: '0 0 8px', fontSize: '12px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                                Captured Frame
+                                            </p>
+                                            <img 
+                                                src={`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}${adviceImageUrl}`} 
+                                                alt="AI Detected Incident" 
+                                                style={{ width: '100%', borderRadius: '8px', border: '1px solid #e5e7eb' }} 
+                                            />
                                         </div>
                                     )}
 

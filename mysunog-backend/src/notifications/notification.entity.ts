@@ -34,6 +34,10 @@ export class Notification {
   @Column({ nullable: true, type: 'text' })
   link: string | null;
 
+  /** URL of the captured frame */
+  @Column({ nullable: true })
+  imageUrl: string | null;
+
   @ManyToOne(() => User, { eager: true, onDelete: 'CASCADE' })
   user: User;
 
