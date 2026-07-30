@@ -213,7 +213,7 @@ FORMAT:
     rawDetections?: any[];
   }) {
     const apiKey = process.env.GROQ_API_KEY;
-    const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+    const model = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator.' };
