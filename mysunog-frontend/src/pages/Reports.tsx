@@ -97,12 +97,52 @@ export default function Reports() {
     }
   }
 
-  function downloadPdf() {
-    window.open(`http://localhost:3000/reports/incidents/pdf?${buildQuery()}`, '_blank');
+  async function downloadPdf() {
+    try {
+      const res = await api.get(`/reports/incidents/pdf?${buildQuery()}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `incident-report-${Date.now()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (e) {
+      console.error('Failed to download PDF', e);
+      alert('Failed to download PDF');
+    }
   }
 
-  function downloadExcel() {
-    window.open(`http://localhost:3000/reports/incidents/excel?${buildQuery()}`, '_blank');
+  async function downloadExcel() {
+    try {
+      const res = await api.get(`/reports/incidents/excel?${buildQuery()}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `incident-report-${Date.now()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (e) {
+      console.error('Failed to download Excel', e);
+      alert('Failed to download Excel');
+    }
+  }
+
+  async function downloadSinglePdf(id: number) {
+    try {
+      const res = await api.get(`/reports/incidents/${id}/pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `incident-${id}-report-${Date.now()}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (e) {
+      console.error('Failed to download PDF', e);
+      alert('Failed to download PDF');
+    }
   }
 
   return (
@@ -347,7 +387,7 @@ export default function Reports() {
               
               {!showDeleted && (
                 <button 
-                  onClick={() => window.open(`http://localhost:3000/reports/incidents/${selectedIncident.id}/pdf`, '_blank')}
+                  onClick={() => downloadSinglePdf(selectedIncident.id)}
                   className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition shadow-sm flex items-center gap-2"
                 >
                   <Download className="w-4 h-4" /> Download Incident PDF
