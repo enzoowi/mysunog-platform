@@ -101,7 +101,7 @@ export class NotificationsService {
     }
 
     const apiKey = process.env.GROQ_API_KEY;
-    const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+    const model = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator.' };
@@ -140,7 +140,7 @@ FORMAT:
     const userPrompt = `ALERT: ${notification.title}\nDETAILS: ${notification.message}\nTIME: ${new Date(notification.createdAt).toLocaleString()}\n\nAnalyze this detection alert and give situation-specific tactical advice.`;
 
     let userMessageContent: any = userPrompt;
-    if (notification.imageUrl) {
+    if (notification.imageUrl && model.toLowerCase().includes('vision')) {
       try {
         const fs = require('fs');
         const path = require('path');
@@ -290,7 +290,7 @@ FORMAT:
 
     // Check if we have an image URL. It usually comes from data.imageUrl which we can add to the controller body
     const imageUrl = (data as any).imageUrl;
-    if (imageUrl) {
+    if (imageUrl && model.toLowerCase().includes('vision')) {
       try {
         const fs = require('fs');
         const path = require('path');
