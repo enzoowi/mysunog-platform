@@ -147,7 +147,6 @@ async def post_incident_to_backend(
     """
     Asynchronously POST an incident payload to the NestJS backend.
     """
-    """
     frame_b64 = None
     if frame is not None:
         try:

@@ -310,7 +310,7 @@ export class AiIncidentsService {
 
       priority: this._mapPriority(dto.priority),
       status:   AiIncidentStatus.UNVERIFIED,
-      imageUrl,
+      imageUrl: imageUrl || undefined,
     });
 
     const saved = await this.incidentRepo.save(incident);
