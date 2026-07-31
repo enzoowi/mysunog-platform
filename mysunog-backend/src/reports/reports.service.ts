@@ -343,11 +343,6 @@ export class ReportsService {
       doc.fontSize(9).font('Helvetica-Bold').text('Prepared by:', left, cy + 5);
       doc.font('Helvetica').text('Fire Investigator', left, cy + 17);
 
-      // Marshal Signature
-      doc.moveTo(mid + 20, cy).lineTo(mid + 200, cy).stroke('#000');
-      doc.fontSize(9).font('Helvetica-Bold').text('Noted by:', mid + 20, cy + 5);
-      doc.font('Helvetica').text('Municipal Fire Marshal', mid + 20, cy + 17);
-
       // Incident Images
       let pageNum = 1;
       this.drawFooter(doc, pageNum);
@@ -366,14 +361,14 @@ export class ReportsService {
       if (imagesArray.length > 0) {
         doc.addPage();
         pageNum++;
-        doc.fontSize(12).font('Helvetica-Bold').text('Incident Images', 40, 40);
+        doc.fontSize(16).font('Helvetica-Bold').text('Incident Images', { align: 'center' });
+        doc.moveDown(1);
         this.drawFooter(doc, pageNum);
 
-        let currentY = 70;
-        let currentX = 40;
-        const imgWidth = 230;
-        const imgHeight = 160;
-        const gap = 20;
+        let currentY = doc.y;
+        const imgWidth = 450;
+        const imgHeight = 300;
+        const gap = 30;
 
         for (let i = 0; i < imagesArray.length; i++) {
           const url = imagesArray[i];
@@ -383,22 +378,17 @@ export class ReportsService {
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
             
-            if (i > 0 && i % 2 === 0) {
-              currentX = 40;
-              currentY += imgHeight + gap;
-            }
-            
             if (currentY + imgHeight > 750) {
               doc.addPage();
               pageNum++;
               this.drawFooter(doc, pageNum);
               currentY = 40;
-              currentX = 40;
             }
 
-            doc.image(buffer, currentX, currentY, { fit: [imgWidth, imgHeight], align: 'center', valign: 'center' });
+            const x = (doc.page.width - imgWidth) / 2;
+            doc.image(buffer, x, currentY, { fit: [imgWidth, imgHeight], align: 'center', valign: 'center' });
             
-            currentX += imgWidth + gap;
+            currentY += imgHeight + gap;
           } catch (e) {
             console.error('Failed to load image for PDF', e);
           }
