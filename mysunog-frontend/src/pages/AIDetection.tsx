@@ -97,7 +97,7 @@ export default function AIDetection() {
     api.get('/auth/me')
       .then((res) => {
         const role = res.data.role;
-        if (role === 'admin' || role === 'bfp_staff') setAuthorized(true);
+        if (role === 'admin' || role === 'bfp_staff' || role === 'fire_investigator') setAuthorized(true);
         else { navigate('/', { replace: true }); }
       })
       .catch(() => navigate('/login', { replace: true }));

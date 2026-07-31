@@ -92,7 +92,7 @@ export default function AdminIncidentMap() {
         const token = localStorage.getItem('token');
         if (!token) { navigate('/', { replace: true }); return; }
         api.get('/auth/me')
-            .then((res) => { if (res.data.role !== 'admin' && res.data.role !== 'bfp_staff') { navigate('/', { replace: true }); } })
+            .then((res) => { if (res.data.role !== 'admin' && res.data.role !== 'bfp_staff' && res.data.role !== 'fire_investigator') { navigate('/', { replace: true }); } })
             .catch(() => navigate('/login', { replace: true }));
     }, [navigate]);
 

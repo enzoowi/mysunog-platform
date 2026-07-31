@@ -63,7 +63,7 @@ export default function AdminDashboard() {
     api.get('/auth/me')
       .then((res) => {
         const role = res.data.role;
-        if (role === 'admin' || role === 'bfp_staff') {
+        if (role === 'admin' || role === 'bfp_staff' || role === 'fire_investigator') {
           setUserRole(role);
           setAuthorized(true);
         } else {

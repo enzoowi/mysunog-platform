@@ -25,8 +25,8 @@ export default function Login() {
             const res = await api.post('/auth/login', { email, password });
             localStorage.setItem('token', res.data.access_token);
             const me = await api.get('/auth/me');
-            if (me.data.role === 'admin' || me.data.role === 'bfp_staff') {
-                navigate('/admin/dashboard');
+            if (me.data.role === 'admin' || me.data.role === 'bfp_staff' || me.data.role === 'fire_investigator') {
+                navigate('/admin/dashboard', { replace: true });
             } else {
                 navigate('/');
             }

@@ -61,7 +61,7 @@ export default function IncidentMap() {
             if (token) {
                 const res = await api.get('/auth/me');
                 // Show incident markers only for BFP personnel (staff and admin)
-                if (res.data.role === 'admin' || res.data.role === 'bfp_staff') {
+                if (res.data.role === 'admin' || res.data.role === 'bfp_staff' || res.data.role === 'fire_investigator') {
                     setIsAdmin(true);
                 }
             }

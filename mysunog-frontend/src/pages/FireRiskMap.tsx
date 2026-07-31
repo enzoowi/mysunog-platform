@@ -152,7 +152,7 @@ export default function FireRiskMap() {
       .get('/auth/me')
       .then((res) => {
         const role = res.data.role;
-        if (role !== 'admin' && role !== 'bfp_staff') navigate('/', { replace: true });
+        if (role !== 'admin' && role !== 'bfp_staff' && role !== 'fire_investigator') navigate('/', { replace: true });
       })
       .catch(() => navigate('/login', { replace: true }));
   }, [navigate]);
