@@ -8,6 +8,7 @@ import {
 
 export enum UserRole {
   BFP_STAFF = 'bfp_staff',
+  FIRE_INVESTIGATOR = 'fire_investigator',
   ADMIN = 'admin',
 }
 

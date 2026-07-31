@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { ArrowLeft, MapPin, X } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
@@ -45,6 +46,17 @@ export default function IncidentCreate() {
     const [showMapModal, setShowMapModal] = useState(false);
     const [images, setImages] = useState<File[]>([]);
     const [isUploading, setIsUploading] = useState(false);
+
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user) {
+            const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            if (fullName) {
+                setForm(prev => ({ ...prev, fireInvestigator: fullName }));
+            }
+        }
+    }, [user]);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { name, value } = e.target;
@@ -131,8 +143,10 @@ export default function IncidentCreate() {
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Fire Investigator</label>
-                        <input type="text" name="fireInvestigator" value={form.fireInvestigator} onChange={handleChange}
-                            className="w-full border rounded-lg px-4 py-2" placeholder="Optional" />
+                    <input type="text" name="fireInvestigator" value={form.fireInvestigator} 
+                        className="w-full border rounded-lg px-4 py-2 bg-gray-100 text-gray-600 cursor-not-allowed" 
+                        readOnly
+                    />
                     </div>
                 </div>
 

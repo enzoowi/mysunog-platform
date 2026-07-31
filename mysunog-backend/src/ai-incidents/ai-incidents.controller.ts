@@ -120,7 +120,7 @@ export class AiIncidentsController {
    * The requesting user's ID and name are extracted from the JWT payload.
    */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.BFP_STAFF)
+  @Roles(UserRole.ADMIN, UserRole.BFP_STAFF, UserRole.FIRE_INVESTIGATOR)
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,
@@ -148,7 +148,7 @@ export class AiIncidentsController {
    * Convenience shortcut — equivalent to PATCH /status with { status: ACKNOWLEDGED }
    */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.BFP_STAFF)
+  @Roles(UserRole.ADMIN, UserRole.BFP_STAFF, UserRole.FIRE_INVESTIGATOR)
   @Patch(':id/acknowledge')
   async acknowledge(@Param('id') id: string, @Req() req: any) {
     return this.updateStatus(

@@ -121,7 +121,6 @@ export default function AdminDashboard() {
     { label: 'Manage Hotlines',      path: '/admin/hotlines',     icon: <PhoneCall className="w-6 h-6" />,    adminOnly: true },
     { label: 'Manage Users',         path: '/admin/users',        icon: <Users className="w-6 h-6" />,        adminOnly: true },
     { label: 'Site Media',           path: '/admin/site-images',  icon: <ImageIcon className="w-6 h-6" />,    adminOnly: true },
-    { label: 'AI Detection',         path: '/admin/ai-detection', icon: <Eye className="w-6 h-6" />,          adminOnly: false },
     { label: 'Reports & Export',     path: '/reports',            icon: <LineChart className="w-6 h-6" />,    adminOnly: false },
   ];
 
@@ -151,9 +150,11 @@ export default function AdminDashboard() {
         <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
           userRole === 'admin'
             ? 'bg-red-100 text-red-700'
+            : userRole === 'fire_investigator'
+            ? 'bg-purple-100 text-purple-700'
             : 'bg-blue-100 text-blue-700'
         }`}>
-          {userRole === 'admin' ? '🔴 Super Admin' : '🔵 BFP Staff'}
+          {userRole === 'admin' ? '🔴 Super Admin' : userRole === 'fire_investigator' ? '🔥 Fire Investigator' : '🔵 BFP Staff'}
         </span>
       </div>
 
@@ -225,9 +226,31 @@ export default function AdminDashboard() {
         <h3 className="text-lg font-semibold text-gray-700">Quick Actions</h3>
       </div>
 
-      <Link to="/incidents/create" className="flex items-center justify-center gap-2 bg-red-600 text-white rounded-xl px-5 py-4 shadow-md hover:bg-red-700 transition w-full mb-4 text-lg font-bold tracking-wide">
-        <Flame className="w-6 h-6" /> Create Incident Report
-      </Link>
+      <div className="mb-6 space-y-4">
+        {/* Massive AI Detection Highlight */}
+        <Link to="/admin/ai-detection" className="flex flex-col sm:flex-row items-center justify-between bg-gradient-to-r from-purple-700 to-indigo-800 text-white rounded-2xl p-6 shadow-xl hover:shadow-2xl hover:scale-[1.01] transition-all w-full relative overflow-hidden group">
+          <div className="absolute -right-10 -top-10 bg-white/10 w-40 h-40 rounded-full blur-2xl group-hover:bg-white/20 transition-all"></div>
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm shadow-inner">
+              <Eye className="w-10 h-10 text-white animate-pulse" />
+            </div>
+            <div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">AI Fire & Smoke Detection</h3>
+              <p className="text-purple-100 font-medium mt-1">Real-time CCTV monitoring and instant automated alerts.</p>
+            </div>
+          </div>
+          <div className="mt-4 sm:mt-0 bg-white text-purple-800 px-6 py-3 rounded-full font-bold shadow-md hover:bg-gray-50 transition relative z-10">
+            Open Control Center &rarr;
+          </div>
+        </Link>
+
+        {/* Create Incident Report (Only for Fire Investigators) */}
+        {userRole === 'fire_investigator' && (
+          <Link to="/incidents/create" className="flex items-center justify-center gap-3 bg-red-600 text-white rounded-xl px-5 py-4 shadow-md hover:bg-red-700 transition w-full text-lg font-bold tracking-wide border border-red-500">
+            <Flame className="w-6 h-6" /> Create Incident Report
+          </Link>
+        )}
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
         {visibleLinks.map((link) => (

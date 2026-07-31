@@ -25,6 +25,7 @@ type UserRecord = {
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   bfp_staff: { label: 'BFP Staff', color: 'bg-orange-100 text-orange-700' },
   admin: { label: 'Admin', color: 'bg-red-100 text-red-700' },
+  fire_investigator: { label: 'Fire Investigator', color: 'bg-purple-100 text-purple-700' },
 };
 
 export default function AdminManageUsers() {
@@ -221,6 +222,7 @@ export default function AdminManageUsers() {
         >
           <option value="all">All Roles</option>
           <option value="bfp_staff">BFP Staff</option>
+          <option value="fire_investigator">Fire Investigator</option>
           <option value="admin">Admin</option>
         </select>
         <select
@@ -267,6 +269,7 @@ export default function AdminManageUsers() {
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Role</label>
                 <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500">
                   <option value="bfp_staff">BFP Staff</option>
+          <option value="fire_investigator">Fire Investigator</option>
                   <option value="admin">Admin</option>
                 </select>
               </div>
@@ -339,6 +342,7 @@ export default function AdminManageUsers() {
                           className={`appearance-none pr-7 pl-2 py-1.5 rounded-lg text-xs font-semibold border-0 outline-none cursor-pointer transition disabled:opacity-50 ${ROLE_LABELS[user.role]?.color || 'bg-gray-100 text-gray-700'}`}
                         >
                           <option value="bfp_staff">BFP Staff</option>
+                          <option value="fire_investigator">Fire Investigator</option>
                           <option value="admin">Admin</option>
                         </select>
                         <ChevronDown className="absolute right-1.5 w-3 h-3 pointer-events-none opacity-60" />

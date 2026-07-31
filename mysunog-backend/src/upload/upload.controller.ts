@@ -18,7 +18,7 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('images')
-  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN)
+  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
   @UseInterceptors(FilesInterceptor('images', 5)) // allow up to 5 images
   async uploadImages(@UploadedFiles() files: Express.Multer.File[]) {
     if (!files || files.length === 0) {

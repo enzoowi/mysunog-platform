@@ -65,7 +65,7 @@ export default function App() {
 
   // Request browser notification permission for admin/bfp_staff
   useEffect(() => {
-    if ((userRole === 'admin' || userRole === 'bfp_staff') && 'Notification' in window && Notification.permission === 'default') {
+    if ((userRole === 'admin' || userRole === 'bfp_staff' || userRole === 'fire_investigator') && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
   }, [userRole]);
@@ -226,7 +226,7 @@ export default function App() {
     });
 
     // Show global fire alert toast for admin and BFP staff
-    if (userRole === 'admin' || userRole === 'bfp_staff') {
+    if (userRole === 'admin' || userRole === 'bfp_staff' || userRole === 'fire_investigator') {
       // Immediate real-time broadcast from AI background detection
       // This fires instantly when fire/smoke is confirmed on a camera,
       // even before the full incident pipeline completes.
@@ -538,7 +538,7 @@ export default function App() {
                 {/* Staff/Admin links */}
                 <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide px-3 py-1 md:hidden mt-4">Account</span>
                 {/* Dashboard — bfp_staff and admin */}
-                {(userRole === 'admin' || userRole === 'bfp_staff') && (
+                {(userRole === 'admin' || userRole === 'bfp_staff' || userRole === 'fire_investigator') && (
                   <Link to="/admin/dashboard" className="px-3 py-2 text-sm text-orange-600 font-bold hover:bg-orange-50 rounded-lg transition" onClick={() => setMenuOpen(false)}>Dashboard</Link>
                 )}
 
@@ -619,24 +619,24 @@ export default function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Shared authenticated routes */}
-          <Route path="/notifications" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><Notifications /></RequireRole>} />
+          <Route path="/notifications" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><Notifications /></RequireRole>} />
 
           {/* Incident routes — bfp_staff and admin only */}
-          <Route path="/incidents/create" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><IncidentCreate /></RequireRole>} />
-          <Route path="/incidents/list" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><IncidentList /></RequireRole>} />
-          <Route path="/incidents/dashboard" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><IncidentDashboard /></RequireRole>} />
+          <Route path="/incidents/create" element={<RequireRole allowedRoles={['fire_investigator']}><IncidentCreate /></RequireRole>} />
+          <Route path="/incidents/list" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><IncidentList /></RequireRole>} />
+          <Route path="/incidents/dashboard" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><IncidentDashboard /></RequireRole>} />
           <Route path="/incidents/map" element={<IncidentMap />} />
 
           {/* BFP Staff + Admin routes */}
-          <Route path="/admin/dashboard" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><AdminDashboard /></RequireRole>} />
-          <Route path="/admin/incident-map" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><AdminIncidentMap /></RequireRole>} />
-          <Route path="/admin/ai-detection" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><AIDetection /></RequireRole>} />
-          <Route path="/admin/detection-map" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><DetectionMap /></RequireRole>} />
-          <Route path="/admin/fire-risk-map" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><FireRiskMap /></RequireRole>} />
-          <Route path="/reports" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><Reports /></RequireRole>} />
+          <Route path="/admin/dashboard" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><AdminDashboard /></RequireRole>} />
+          <Route path="/admin/incident-map" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><AdminIncidentMap /></RequireRole>} />
+          <Route path="/admin/ai-detection" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><AIDetection /></RequireRole>} />
+          <Route path="/admin/detection-map" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><DetectionMap /></RequireRole>} />
+          <Route path="/admin/fire-risk-map" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><FireRiskMap /></RequireRole>} />
+          <Route path="/reports" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><Reports /></RequireRole>} />
           {/* AI Incident routes */}
 
-          <Route path="/admin/ai-incidents/:id" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><AiIncidentDetail /></RequireRole>} />
+          <Route path="/admin/ai-incidents/:id" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><AiIncidentDetail /></RequireRole>} />
 
           {/* Admin-only routes */}
           <Route path="/admin/alerts" element={<RequireRole allowedRoles={['admin']}><AdminAlerts /></RequireRole>} />
@@ -644,17 +644,17 @@ export default function App() {
           <Route path="/admin/site-images" element={<RequireRole allowedRoles={['admin']}><AdminSiteImages /></RequireRole>} />
           <Route path="/admin/hotlines" element={<RequireRole allowedRoles={['admin']}><AdminHotlines /></RequireRole>} />
           <Route path="/admin/services" element={<RequireRole allowedRoles={['admin']}><AdminServices /></RequireRole>} />
-          <Route path="/admin/map-assets" element={<RequireRole allowedRoles={['admin', 'bfp_staff']}><AdminMapAssets /></RequireRole>} />
+          <Route path="/admin/map-assets" element={<RequireRole allowedRoles={['admin', 'bfp_staff', 'fire_investigator']}><AdminMapAssets /></RequireRole>} />
           <Route path="/admin/users" element={<RequireRole allowedRoles={['admin']}><AdminManageUsers /></RequireRole>} />
           <Route path="/admin/deactivated-users" element={<RequireRole allowedRoles={['admin']}><AdminDeactivatedUsers /></RequireRole>} />
 
           {/* All authenticated users */}
-          <Route path="/change-password" element={<RequireRole allowedRoles={['bfp_staff', 'admin']}><ChangePassword /></RequireRole>} />
+          <Route path="/change-password" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><ChangePassword /></RequireRole>} />
         </Routes>
       </main>
 
       {/* Floating Chatbot Widget */}
-      {(userRole === null || userRole === 'admin' || userRole === 'bfp_staff') && <ChatbotWidget />}
+      {(userRole === null || userRole === 'admin' || userRole === 'bfp_staff' || userRole === 'fire_investigator') && <ChatbotWidget />}
     </div>
   );
 }

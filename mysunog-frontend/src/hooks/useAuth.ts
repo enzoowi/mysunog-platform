@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 
-export type UserRole = 'bfp_staff' | 'admin' | null;
+export type UserRole = 'bfp_staff' | 'fire_investigator' | 'admin' | null;
 
 type AuthState = {
   role: UserRole;
+  user: any;
   loading: boolean;
   isAdmin: boolean;
   isStaff: boolean;
-  /** True for both bfp_staff and admin — anyone who is BFP personnel */
+  /** True for both bfp_staff, fire_investigator and admin — anyone who is BFP personnel */
   isBfpPersonnel: boolean;
 };
 
 export function useAuth(): AuthState {
   const [role, setRole] = useState<UserRole>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,17 +26,21 @@ export function useAuth(): AuthState {
     }
     api
       .get('/auth/me')
-      .then((res) => setRole(res.data.role as UserRole))
+      .then((res) => {
+        setRole(res.data.role as UserRole);
+        setUser(res.data);
+      })
       .catch(() => {
         localStorage.removeItem('token');
         setRole(null);
+        setUser(null);
       })
       .finally(() => setLoading(false));
   }, []);
 
   const isAdmin = role === 'admin';
-  const isStaff = role === 'bfp_staff';
+  const isStaff = role === 'bfp_staff' || role === 'fire_investigator';
   const isBfpPersonnel = isAdmin || isStaff;
 
-  return { role, loading, isAdmin, isStaff, isBfpPersonnel };
+  return { role, user, loading, isAdmin, isStaff, isBfpPersonnel };
 }

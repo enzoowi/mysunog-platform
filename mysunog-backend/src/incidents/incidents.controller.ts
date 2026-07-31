@@ -20,7 +20,7 @@ export class IncidentsController {
   constructor(private readonly incidentsService: IncidentsService) {}
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN)
+  @Roles(UserRole.FIRE_INVESTIGATOR)
   @Post()
   create(@Body() dto: CreateIncidentDto) {
     return this.incidentsService.create(dto);
@@ -28,7 +28,7 @@ export class IncidentsController {
 
   // GET /incidents is guarded — incident data is confidential (bfp_staff+ only)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN)
+  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
   @Get()
   findAll(@Query('barangay') barangay?: string) {
     return this.incidentsService.findAll(barangay);
@@ -36,7 +36,7 @@ export class IncidentsController {
 
   // Search is also guarded — used in Reports and FireRiskMap
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN)
+  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
   @Get('search')
   search(
     @Query('barangay') barangay?: string,
@@ -55,14 +55,14 @@ export class IncidentsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN)
+  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
   @Get('dashboard-summary')
   getDashboardSummary(@Query('period') period?: string) {
     return this.incidentsService.getDashboardSummary(period);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN)
+  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
   @Get('response-performance')
   getResponsePerformance() {
     return this.incidentsService.getResponsePerformance();
@@ -90,7 +90,7 @@ export class IncidentsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN)
+  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.incidentsService.remove(+id);
