@@ -2,7 +2,7 @@ import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { api } from './services/api';
-import { Flame, Bell, LogOut, User, X, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Flame, Bell, LogOut, User, X, AlertTriangle, ChevronDown, Clock } from 'lucide-react';
 import EmergencyRouteMap from './components/EmergencyRouteMap';
 
 import Home from './pages/Home';
