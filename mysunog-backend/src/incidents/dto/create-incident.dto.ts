@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsNotEmpty,
   Min,
+  IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -89,4 +90,9 @@ export class CreateIncidentDto {
   @IsOptional()
   @IsString()
   fireOutTime?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
 }

@@ -73,6 +73,10 @@ export class FireIncident {
   @Column({ nullable: true })
   photoUrl?: string;
 
+  /** Optional array of image URLs of the incident */
+  @Column('text', { array: true, nullable: true })
+  images?: string[];
+
   @CreateDateColumn()
   createdAt: Date;
 

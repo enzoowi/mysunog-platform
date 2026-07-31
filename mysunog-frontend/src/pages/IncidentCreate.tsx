@@ -43,6 +43,8 @@ export default function IncidentCreate() {
     const [otherCause, setOtherCause] = useState('');
     const [otherPropertyType, setOtherPropertyType] = useState('');
     const [showMapModal, setShowMapModal] = useState(false);
+    const [images, setImages] = useState<File[]>([]);
+    const [isUploading, setIsUploading] = useState(false);
 
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { name, value } = e.target;
@@ -52,6 +54,18 @@ export default function IncidentCreate() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
+            setIsUploading(true);
+            let uploadedImages: string[] = [];
+            
+            if (images.length > 0) {
+                const formData = new FormData();
+                images.forEach((img) => formData.append('images', img));
+                const uploadRes = await api.post('/upload/images', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                uploadedImages = uploadRes.data;
+            }
+
             const finalCause = form.cause === 'Other' ? otherCause : form.cause;
             const finalPropertyType = form.propertyType === 'Other' ? otherPropertyType : form.propertyType;
             await api.post('/incidents', {
@@ -70,6 +84,7 @@ export default function IncidentCreate() {
                 reporterName: form.reporterName || undefined,
                 reporterContact: form.reporterContact || undefined,
                 fireInvestigator: form.fireInvestigator || undefined,
+                images: uploadedImages.length > 0 ? uploadedImages : undefined,
             });
             alert('Incident saved successfully.');
             setForm({
@@ -81,9 +96,12 @@ export default function IncidentCreate() {
             });
             setOtherCause('');
             setOtherPropertyType('');
+            setImages([]);
         } catch (error) {
             console.error(error);
             alert('Failed to save incident.');
+        } finally {
+            setIsUploading(false);
         }
     }
 
@@ -255,9 +273,33 @@ export default function IncidentCreate() {
                         className="w-full border rounded-lg px-4 py-2" />
                 </div>
 
-                <button type="submit" disabled={!form.latitude || !form.longitude}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Incident Images (Optional, Max 5)</label>
+                    <input 
+                        type="file" 
+                        multiple 
+                        accept="image/*"
+                        onChange={(e) => {
+                            if (e.target.files) {
+                                const selected = Array.from(e.target.files);
+                                if (selected.length > 5) {
+                                    alert('You can only upload a maximum of 5 images.');
+                                    e.target.value = '';
+                                    return;
+                                }
+                                setImages(selected);
+                            }
+                        }}
+                        className="w-full border rounded-lg px-4 py-2 bg-gray-50 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" 
+                    />
+                    {images.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-2">{images.length} file(s) selected.</p>
+                    )}
+                </div>
+
+                <button type="submit" disabled={!form.latitude || !form.longitude || isUploading}
                     className="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                    Save Incident
+                    {isUploading ? 'Uploading and Saving...' : 'Save Incident'}
                 </button>
             </form>
 

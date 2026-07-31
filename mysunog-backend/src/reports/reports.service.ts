@@ -243,7 +243,7 @@ export class ReportsService {
     const incident = await this.incidentsRepo.findOne({ where: { id } });
     if (!incident) throw new Error('Incident not found');
 
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       const doc = new (PDFDocument as any)({ margin: 40, size: 'A4' });
       const chunks: any[] = [];
       doc.on('data', (chunk: any) => chunks.push(chunk));
@@ -348,7 +348,28 @@ export class ReportsService {
       doc.fontSize(9).font('Helvetica-Bold').text('Noted by:', mid + 20, cy + 5);
       doc.font('Helvetica').text('Municipal Fire Marshal', mid + 20, cy + 17);
 
-      this.drawFooter(doc, 1);
+      // Incident Images
+      let pageNum = 1;
+      this.drawFooter(doc, pageNum);
+
+      if (incident.images && incident.images.length > 0) {
+        for (const url of incident.images) {
+          try {
+            const response = await fetch(url);
+            if (!response.ok) continue;
+            const arrayBuffer = await response.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            doc.addPage();
+            pageNum++;
+            doc.fontSize(12).font('Helvetica-Bold').text('Incident Image', 40, 40);
+            doc.image(buffer, 40, 70, { fit: [500, 700], align: 'center', valign: 'center' });
+            this.drawFooter(doc, pageNum);
+          } catch (e) {
+            console.error('Failed to load image for PDF', e);
+          }
+        }
+      }
+
       doc.end();
     });
   }
