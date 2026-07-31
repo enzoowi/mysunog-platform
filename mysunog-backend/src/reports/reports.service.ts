@@ -352,18 +352,53 @@ export class ReportsService {
       let pageNum = 1;
       this.drawFooter(doc, pageNum);
 
-      if (incident.images && incident.images.length > 0) {
-        for (const url of incident.images) {
+      let imagesArray: string[] = [];
+      if (Array.isArray(incident.images)) {
+        imagesArray = incident.images;
+      } else if (typeof incident.images === 'string') {
+        let str = incident.images as string;
+        if (str.startsWith('{') && str.endsWith('}')) {
+          str = str.slice(1, -1);
+        }
+        imagesArray = str.split(',').map(s => s.replace(/^"|"$/g, '').trim()).filter(s => s.length > 0);
+      }
+
+      if (imagesArray.length > 0) {
+        doc.addPage();
+        pageNum++;
+        doc.fontSize(12).font('Helvetica-Bold').text('Incident Images', 40, 40);
+        this.drawFooter(doc, pageNum);
+
+        let currentY = 70;
+        let currentX = 40;
+        const imgWidth = 230;
+        const imgHeight = 160;
+        const gap = 20;
+
+        for (let i = 0; i < imagesArray.length; i++) {
+          const url = imagesArray[i];
           try {
             const response = await fetch(url);
             if (!response.ok) continue;
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
-            doc.addPage();
-            pageNum++;
-            doc.fontSize(12).font('Helvetica-Bold').text('Incident Image', 40, 40);
-            doc.image(buffer, 40, 70, { fit: [500, 700], align: 'center', valign: 'center' });
-            this.drawFooter(doc, pageNum);
+            
+            if (i > 0 && i % 2 === 0) {
+              currentX = 40;
+              currentY += imgHeight + gap;
+            }
+            
+            if (currentY + imgHeight > 750) {
+              doc.addPage();
+              pageNum++;
+              this.drawFooter(doc, pageNum);
+              currentY = 40;
+              currentX = 40;
+            }
+
+            doc.image(buffer, currentX, currentY, { fit: [imgWidth, imgHeight], align: 'center', valign: 'center' });
+            
+            currentX += imgWidth + gap;
           } catch (e) {
             console.error('Failed to load image for PDF', e);
           }

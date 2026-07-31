@@ -356,6 +356,19 @@ export default function Reports() {
                     {selectedIncident.remarks || 'No remarks provided.'}
                   </div>
                 </div>
+
+                {selectedIncident.images && Array.isArray(selectedIncident.images) && selectedIncident.images.length > 0 && (
+                  <div className="col-span-2 border-t pt-4 mt-2">
+                    <p className="font-semibold text-gray-800 mb-3">Incident Images</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedIncident.images.map((imgUrl: string, idx: number) => (
+                        <a key={idx} href={imgUrl} target="_blank" rel="noopener noreferrer" className="block w-full aspect-video rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition">
+                          <img src={imgUrl} alt={`Incident photo ${idx + 1}`} className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
