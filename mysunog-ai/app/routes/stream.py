@@ -550,28 +550,41 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
 
 # ─── MJPEG Generator (rendering only — no detection) ─────────────────
 
-def _mjpeg_generator(camera: CameraSource, run_detection: bool, frame_interval: float) -> Generator[bytes, None, None]:
+def _mjpeg_generator(camera: CameraSource, run_detection: bool, frame_interval: float, quality: int = 60) -> Generator[bytes, None, None]:
     """
     Yield MJPEG frames for browser streaming.
     Detection is handled by the background thread; this generator only
     reads `camera.last_detections` to draw overlays on the video feed.
+
+    Optimised for low-bandwidth tunnels (Cloudflare / ngrok):
+    - Skips encoding when the camera frame hasn't changed
+    - Resizes large frames to max 720p to cut bandwidth
+    - Uses configurable JPEG quality (default 60)
     """
     last_processed_frame_count = -1
+    MAX_WIDTH = 1280
+    encode_params = [cv2.IMWRITE_JPEG_QUALITY, quality]
 
     while camera.is_active:
         start_time = time.time()
-        
+
         # Only process if the camera has captured a new frame
         if camera.frame_count == last_processed_frame_count:
-            time.sleep(0.01) # Yield to prevent high CPU usage
+            time.sleep(0.01)  # Yield to prevent high CPU usage
             continue
-            
+
         last_processed_frame_count = camera.frame_count
         frame = camera.get_frame()
-        
+
         if frame is None:
             time.sleep(0.05)
             continue
+
+        # Resize large frames to cap bandwidth
+        h, w = frame.shape[:2]
+        if w > MAX_WIDTH:
+            scale = MAX_WIDTH / w
+            frame = cv2.resize(frame, (MAX_WIDTH, int(h * scale)), interpolation=cv2.INTER_AREA)
 
         # Read detection results produced by the background detection thread
         if run_detection:
@@ -581,16 +594,17 @@ def _mjpeg_generator(camera: CameraSource, run_detection: bool, frame_interval: 
             if detections:
                 display_frame = _draw_detections_on_frame(frame, detections, camera.frame_count)
             else:
-                display_frame = frame.copy()
+                # Draw status text directly on the frame (no copy needed — frame is already a copy from get_frame)
+                display_frame = frame
                 status_text = f"LIVE | Frame {camera.frame_count}"
                 cv2.putText(display_frame, status_text, (10, 24), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
         else:
-            display_frame = frame.copy()
+            display_frame = frame
 
         if camera.error:
             cv2.putText(display_frame, "RECONNECTING...", (10, 84), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2)
 
-        _, jpeg = cv2.imencode(".jpg", display_frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        _, jpeg = cv2.imencode(".jpg", display_frame, encode_params)
         frame_bytes = jpeg.tobytes()
 
         yield (
@@ -599,7 +613,7 @@ def _mjpeg_generator(camera: CameraSource, run_detection: bool, frame_interval: 
             + frame_bytes
             + b"\r\n"
         )
-        
+
         # Dynamically calculate remaining sleep time to maintain target FPS
         elapsed = time.time() - start_time
         remaining = frame_interval - elapsed
@@ -683,7 +697,8 @@ async def stream_status():
 async def mjpeg_stream(
     camera_id: str = Path(...),
     detect: bool = Query(True, description="Enable fire/smoke detection overlays"),
-    fps: float = Query(10.0, description="Target stream frame rate (max 30)"),
+    fps: float = Query(5.0, description="Target stream frame rate (max 30)"),
+    quality: int = Query(60, description="JPEG quality 1-100 (lower = less bandwidth)"),
 ):
     camera = _manager.get_camera(camera_id)
     if not camera or not camera.is_active:
@@ -693,10 +708,11 @@ async def mjpeg_stream(
         )
 
     fps = min(max(fps, 1.0), 30.0)
+    quality = min(max(quality, 10), 100)
     frame_interval = 1.0 / fps
 
     return StreamingResponse(
-        _mjpeg_generator(camera, run_detection=detect, frame_interval=frame_interval),
+        _mjpeg_generator(camera, run_detection=detect, frame_interval=frame_interval, quality=quality),
         media_type="multipart/x-mixed-replace; boundary=frame",
         headers={
             "Cache-Control": "no-cache, no-store, must-revalidate",

@@ -288,12 +288,18 @@ export default function AIDetection() {
               <div key={cam.id} className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col relative group cursor-pointer" onClick={() => setExpandedCamera(cam)}>
                 {/* Camera Viewer */}
                 <div className="bg-gray-950 aspect-video relative flex items-center justify-center">
-                  {isLive ? (
+                  {isLive && expandedCamera?.id !== cam.id ? (
                     <img 
-                      src={`${AI_SERVICE_URL}/stream/mjpeg/${cam.id}?detect=true&t=${Date.now()}`} 
+                      src={`${AI_SERVICE_URL}/stream/mjpeg/${cam.id}?detect=true&fps=3&quality=50`} 
                       className="w-full h-full object-contain"
                       alt={cam.name}
+                      loading="lazy"
                     />
+                  ) : isLive && expandedCamera?.id === cam.id ? (
+                    <div className="text-center px-4">
+                      <Tv2 className="w-10 h-10 mx-auto text-gray-700 mb-2" />
+                      <p className="text-xs text-gray-400 uppercase tracking-widest">Viewing in fullscreen</p>
+                    </div>
                   ) : (
                     <div className="text-center px-4">
                       <Tv2 className="w-10 h-10 mx-auto text-gray-700 mb-2" />
@@ -450,7 +456,7 @@ export default function AIDetection() {
             <div className="flex-1 bg-gray-950 rounded-2xl overflow-hidden border border-gray-800 shadow-2xl relative flex items-center justify-center">
               {streamStatuses[expandedCamera.id.toString()]?.connected ? (
                 <img 
-                  src={`${AI_SERVICE_URL}/stream/mjpeg/${expandedCamera.id}?detect=true&t=${Date.now()}`} 
+                  src={`${AI_SERVICE_URL}/stream/mjpeg/${expandedCamera.id}?detect=true&fps=5&quality=65`} 
                   className="w-full h-full object-contain"
                   alt={expandedCamera.name}
                 />
