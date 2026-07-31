@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Users, Search, RefreshCw, KeyRound, AlertCircle,
-  CheckCircle, XCircle, User, ChevronDown, UserX, Plus,
+  CheckCircle, XCircle, User, ChevronDown, UserX, Plus, Copy,
 } from 'lucide-react';
 
 type UserRecord = {
@@ -42,6 +42,7 @@ export default function AdminManageUsers() {
   // Create User Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [resetSuccessModal, setResetSuccessModal] = useState<{ email: string; tempPassword: string } | null>(null);
   const [newUser, setNewUser] = useState({
     email: '',
     password: '',
@@ -89,7 +90,7 @@ export default function AdminManageUsers() {
       const response = await api.post(`/users/${user.id}/reset-password`);
       const tempPassword = response.data?.tempPassword;
       if (tempPassword) {
-        window.alert(`Password has been reset for ${user.email}.\n\nTemporary Password: ${tempPassword}\n\nPlease share this password with the user securely.`);
+        setResetSuccessModal({ email: user.email, tempPassword });
       } else {
         showToast('success', `Password reset successfully for ${user.email}`);
       }
@@ -383,6 +384,57 @@ export default function AdminManageUsers() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Success Modal */}
+      {resetSuccessModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b flex justify-between items-center">
+              <h3 className="font-bold text-lg text-gray-800">Password Reset Successful</h3>
+              <button onClick={() => setResetSuccessModal(null)} className="text-gray-400 hover:text-gray-600">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-gray-600">
+                The password for <span className="font-semibold">{resetSuccessModal.email}</span> has been reset.
+              </p>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Temporary Password</label>
+                <div className="flex gap-2">
+                  <input
+                    readOnly
+                    type="text"
+                    value={resetSuccessModal.tempPassword}
+                    className="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50 outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(resetSuccessModal.tempPassword);
+                      showToast('success', 'Copied to clipboard');
+                    }}
+                    className="flex items-center justify-center px-3 border rounded-lg hover:bg-gray-100 transition text-gray-600"
+                    title="Copy to clipboard"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-100">
+                Please share this password with the user securely. This password is required for their next login.
+              </p>
+              <div className="pt-2 flex justify-end">
+                <button
+                  onClick={() => setResetSuccessModal(null)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
