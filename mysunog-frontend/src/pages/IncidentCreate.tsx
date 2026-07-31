@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../services/api';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, MapPin } from 'lucide-react';
+import { ArrowLeft, MapPin, X } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -49,6 +49,10 @@ export default function IncidentCreate() {
     function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
+    }
+
+    function removeImage(index: number) {
+        setImages(prev => prev.filter((_, i) => i !== index));
     }
 
     async function handleSubmit(e: React.FormEvent) {
@@ -281,19 +285,39 @@ export default function IncidentCreate() {
                         accept="image/*"
                         onChange={(e) => {
                             if (e.target.files) {
-                                const selected = Array.from(e.target.files);
-                                if (selected.length > 5) {
-                                    alert('You can only upload a maximum of 5 images.');
-                                    e.target.value = '';
-                                    return;
-                                }
-                                setImages(selected);
+                                const newFiles = Array.from(e.target.files);
+                                setImages(prev => {
+                                    const combined = [...prev, ...newFiles];
+                                    if (combined.length > 5) {
+                                        alert('You can only upload a maximum of 5 images.');
+                                        return combined.slice(0, 5);
+                                    }
+                                    return combined;
+                                });
+                                // Reset input so the same file(s) can be selected again if needed
+                                e.target.value = '';
                             }
                         }}
                         className="w-full border rounded-lg px-4 py-2 bg-gray-50 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" 
                     />
+                    
                     {images.length > 0 && (
-                        <p className="text-xs text-gray-500 mt-2">{images.length} file(s) selected.</p>
+                        <div className="mt-3 space-y-2">
+                            {images.map((file, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-gray-50 border rounded-lg px-3 py-2 text-sm text-gray-700">
+                                    <span className="truncate pr-4">{file.name}</span>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => removeImage(idx)}
+                                        className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1 rounded-md transition"
+                                        title="Remove image"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                            <p className="text-xs text-gray-500 text-right">{images.length}/5 file(s) selected.</p>
+                        </div>
                     )}
                 </div>
 
