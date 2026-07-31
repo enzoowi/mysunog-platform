@@ -51,7 +51,8 @@ export default function IncidentCreate() {
 
     useEffect(() => {
         if (user) {
-            const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            const parts = [user.firstName, user.middleName, user.lastName].filter(Boolean);
+            const fullName = parts.join(' ').trim();
             if (fullName) {
                 setForm(prev => ({ ...prev, fireInvestigator: fullName }));
             }
