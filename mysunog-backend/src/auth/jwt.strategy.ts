@@ -18,6 +18,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) return null;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = user;
-    return rest;
+    return { ...rest, userId: user.id };
   }
 }
