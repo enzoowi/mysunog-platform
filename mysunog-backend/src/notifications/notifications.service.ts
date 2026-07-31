@@ -88,7 +88,12 @@ export class NotificationsService {
   }
 
   async clearAll(userId: number) {
-    await this.notificationsRepository.delete({ user: { id: userId } });
+    const notifications = await this.notificationsRepository.find({
+      where: { user: { id: userId } },
+    });
+    if (notifications.length > 0) {
+      await this.notificationsRepository.remove(notifications);
+    }
   }
 
   async getAiAdvice(notificationId: number, userId: number) {
