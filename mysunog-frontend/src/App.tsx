@@ -604,6 +604,12 @@ export default function App() {
               )}
               {userEmail && (
                 <div className="flex items-center gap-2">
+                  <Link to="/notifications" className="p-2 relative text-gray-500 hover:text-orange-600 transition" title="Notifications" onClick={() => setMenuOpen(false)}>
+                    <Bell className="w-6 h-6" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] min-w-[16px] h-4 flex items-center justify-center rounded-full font-bold px-1 border-2 border-white">{unreadCount}</span>
+                    )}
+                  </Link>
                   <div className="hidden lg:flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600 font-mono text-xs shadow-sm" title="Philippine Standard Time">
                     <Clock className="w-3.5 h-3.5 text-orange-500" />
                     {currentTime.toLocaleString('en-US', {
@@ -613,12 +619,6 @@ export default function App() {
                       hour12: false
                     }).replace(',', '')}
                   </div>
-                  <Link to="/notifications" className="p-2 relative text-gray-500 hover:text-orange-600 transition" title="Notifications" onClick={() => setMenuOpen(false)}>
-                    <Bell className="w-6 h-6" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] min-w-[16px] h-4 flex items-center justify-center rounded-full font-bold px-1 border-2 border-white">{unreadCount}</span>
-                    )}
-                  </Link>
                 </div>
               )}
               <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 text-gray-600">
