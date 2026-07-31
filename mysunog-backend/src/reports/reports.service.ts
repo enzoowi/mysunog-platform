@@ -359,16 +359,28 @@ export class ReportsService {
       }
 
       if (imagesArray.length > 0) {
+        // Start a new page immediately after the report
         doc.addPage();
         pageNum++;
-        doc.fontSize(16).font('Helvetica-Bold').text('Incident Images', { align: 'center' });
+
+        // Draw the same government header for continuity
+        this.drawGovHeader(doc);
+        doc.moveDown(0.3);
+
+        // Section title styled like the report
+        doc.fontSize(14).font('Helvetica-Bold').text('INCIDENT IMAGES', { align: 'center' });
+        doc.fontSize(9).font('Helvetica').text(
+          `Fire Incident #${String(incident.id).padStart(4, '0')}  —  ${incident.barangay}  —  ${incident.incidentDate}`,
+          { align: 'center' },
+        );
         doc.moveDown(1);
+
         this.drawFooter(doc, pageNum);
 
         let currentY = doc.y;
-        const imgWidth = 450;
-        const imgHeight = 300;
-        const gap = 30;
+        const maxImgWidth = 420;
+        const maxImgHeight = 280;
+        const gap = 25;
 
         for (let i = 0; i < imagesArray.length; i++) {
           const url = imagesArray[i];
@@ -377,18 +389,32 @@ export class ReportsService {
             if (!response.ok) continue;
             const arrayBuffer = await response.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
-            
-            if (currentY + imgHeight > 750) {
+
+            // Check if image fits on current page, otherwise add a new one
+            if (currentY + maxImgHeight + 25 > doc.page.height - 60) {
               doc.addPage();
               pageNum++;
               this.drawFooter(doc, pageNum);
               currentY = 40;
             }
 
-            const x = (doc.page.width - imgWidth) / 2;
-            doc.image(buffer, x, currentY, { fit: [imgWidth, imgHeight], align: 'center', valign: 'center' });
-            
-            currentY += imgHeight + gap;
+            // Center the image horizontally
+            const x = (doc.page.width - maxImgWidth) / 2;
+            doc.image(buffer, x, currentY, {
+              fit: [maxImgWidth, maxImgHeight],
+              align: 'center',
+              valign: 'center',
+            });
+
+            // Label below the image
+            doc.fontSize(8).font('Helvetica').fillColor('#666666').text(
+              `Image ${i + 1} of ${imagesArray.length}`,
+              x, currentY + maxImgHeight + 4,
+              { width: maxImgWidth, align: 'center' },
+            );
+            doc.fillColor('#000000');
+
+            currentY += maxImgHeight + gap + 12;
           } catch (e) {
             console.error('Failed to load image for PDF', e);
           }
