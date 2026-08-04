@@ -70,7 +70,6 @@ export class DetectionGateway
       latitude:       event.latitude,
       longitude:      event.longitude,
       rawDetections:  event.rawDetections,
-      imageUrl:       event.imageUrl,
       createdAt:      event.createdAt,
     });
   }

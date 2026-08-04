@@ -51,6 +51,7 @@ export default function App() {
     latitude?: number;
     longitude?: number;
     rawDetections?: any[];
+    imageUrl?: string;
   } | null>(null);
   const [aiAdviceModal, setAiAdviceModal] = useState(false);
   const [aiAdviceLoading, setAiAdviceLoading] = useState(false);
