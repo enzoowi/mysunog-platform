@@ -111,7 +111,7 @@ export class NotificationsService {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_VISION_MODEL || 'gemini-1.5-flash';
+    const model = process.env.GEMINI_VISION_MODEL || 'gemini-3.1-flash-lite';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator (Missing GEMINI_API_KEY).' };
@@ -228,7 +228,7 @@ A CCTV frame image is attached (if available). Perform your two-phase visual ana
     imageUrl?: string;
   }) {
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_VISION_MODEL || 'gemini-1.5-flash';
+    const model = process.env.GEMINI_VISION_MODEL || 'gemini-3.1-flash-lite';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator (Missing GEMINI_API_KEY).' };
@@ -381,6 +381,7 @@ You MUST provide ALL of the following sections in your response:
 📞 **COORDINATION**: Specific agencies to alert.
 
 CRITICAL RULES:
+- If the AI DETECTION DATA indicates a confidence of 70% or higher, you MUST assume the detection is accurate and provide a full tactical response for a real incident. Do not dismiss it as a false alarm.
 - You MUST output ALL the sections listed above (Visual Assessment, Severity, Actions, Hazards, Deployment, Prediction, Coordination).
 - Your advice MUST be grounded in what you SEE in the image — do NOT give generic advice.
 - Keep total response under 350 words.
