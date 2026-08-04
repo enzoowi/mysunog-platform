@@ -494,6 +494,7 @@ export default function App() {
                     style={{ fontSize: '14px', color: '#374151', lineHeight: 1.7 }}
                     dangerouslySetInnerHTML={{
                       __html: aiAdviceContent
+                        .replace(/</g, '&lt;').replace(/>/g, '&gt;')
                         .replace(/## (.*)/g, '<h3 style="margin:18px 0 8px;font-size:16px;font-weight:700;color:#111827;">$1</h3>')
                         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                         .replace(/^\d+\.\s+(.*)/gm, '<li style="margin:4px 0;font-size:14px;color:#374151;line-height:1.6;">$1</li>')
