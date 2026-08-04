@@ -250,6 +250,7 @@ export default function App() {
           latitude: alert.latitude,
           longitude: alert.longitude,
           rawDetections: alert.rawDetections,
+          imageUrl: alert.imageUrl,
         });
         sendBrowserNotification(title, message);
       });
@@ -262,7 +263,16 @@ export default function App() {
         const title = `🔥 AI Detection: ${incident.priority || 'HIGH'} Priority`;
         const message = `${incident.detectionType || 'Fire/Smoke'} detected on camera "${incident.cameraName || incident.cameraId || 'Unknown'}".`;
         const link = incident.id ? `/admin/ai-incidents/${incident.id}` : null;
-        setFireAlertToast({ title, message, link });
+        setFireAlertToast({
+          title, message, link,
+          detectionType: incident.detectionType,
+          confidence: incident.detectionConfidence,
+          severity: incident.severityScore > 80 ? 'CRITICAL' : 'HIGH',
+          cameraSource: incident.cameraName || incident.cameraId,
+          latitude: incident.latitude,
+          longitude: incident.longitude,
+          imageUrl: incident.imageUrl,
+        });
         sendBrowserNotification(title, message);
       });
     }
@@ -376,6 +386,7 @@ export default function App() {
                     latitude: fireAlertToast.latitude,
                     longitude: fireAlertToast.longitude,
                     rawDetections: fireAlertToast.rawDetections,
+                    imageUrl: fireAlertToast.imageUrl,
                   };
                   setAiAdviceContext({ title: ctx.title, message: ctx.message, latitude: ctx.latitude, longitude: ctx.longitude });
                   setAiAdviceContent('');
