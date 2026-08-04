@@ -365,24 +365,15 @@ You MUST provide ALL of the following sections in your response:
 
 🔍 **VISUAL ASSESSMENT**: 2-3 sentences describing exactly what you see in the CCTV image — flame location, smoke behavior, structure type, and environment. Reference specific visual details.
 
-🚨 **SITUATION SEVERITY**: Classify as INCIPIENT / GROWING / FULLY DEVELOPED / DECAY based on visual cues and AI growth data. Explain why.
+🛡️ **SCENE SAFETY**: Specific tactical advice for ensuring firefighter and civilian safety (e.g., evacuation zones, staging areas, SCBA requirements) based on the image.
 
-⚡ **IMMEDIATE ACTIONS**:
-1. (specific action based on what you see)
-2. (action based on fire behavior)
-3. (action based on environment)
+🚒 **SUPPRESSION STRATEGY**: Specific tactical advice for fire suppression (e.g., recommended extinguishing agents, hose line deployment, ventilation tactics) based on what you see.
 
-⚠️ **HAZARDS**: Specific hazards you can identify from the image.
-
-📋 **DEPLOYMENT RECOMMENDATION**: Team size and specific equipment.
-
-🔄 **FIRE BEHAVIOR PREDICTION**: Predict how this fire will develop in the next 5-10 minutes.
-
-📞 **COORDINATION**: Specific agencies to alert.
+⚠️ **HAZARD CONTROL**: Specific tactical advice for mitigating identified hazards (e.g., electrical shutoff, fuel isolation, structural collapse risks).
 
 CRITICAL RULES:
 - If the AI DETECTION DATA indicates a confidence of 70% or higher, you MUST assume the detection is accurate and provide a full tactical response for a real incident. Do not dismiss it as a false alarm.
-- You MUST output ALL the sections listed above (Visual Assessment, Severity, Actions, Hazards, Deployment, Prediction, Coordination).
+- You MUST output ALL the sections listed above (Visual Assessment, Scene Safety, Suppression Strategy, Hazard Control).
 - Your advice MUST be grounded in what you SEE in the image — do NOT give generic advice.
 - Keep total response under 350 words.
 - Use **bold** for critical information.
