@@ -111,7 +111,7 @@ export class NotificationsService {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_VISION_MODEL || 'gemini-1.5-flash';
+    const model = process.env.GEMINI_VISION_MODEL || 'gemini-3.6-flash';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator (Missing GEMINI_API_KEY).' };
@@ -228,7 +228,7 @@ A CCTV frame image is attached (if available). Perform your two-phase visual ana
     imageUrl?: string;
   }) {
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_VISION_MODEL || 'gemini-1.5-flash';
+    const model = process.env.GEMINI_VISION_MODEL || 'gemini-3.6-flash';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator (Missing GEMINI_API_KEY).' };
