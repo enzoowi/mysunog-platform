@@ -110,11 +110,11 @@ export class NotificationsService {
       throw new NotFoundException('Notification not found');
     }
 
-    const apiKey = process.env.GROQ_API_KEY;
-    const model = process.env.GROQ_VISION_MODEL || 'meta-llama/llama-4-maverick-17b-128e-instruct';
+    const apiKey = process.env.GEMINI_API_KEY;
+    const model = process.env.GEMINI_VISION_MODEL || 'gemini-1.5-flash';
 
     if (!apiKey) {
-      return { advice: 'AI advice service is currently unavailable. Please contact your system administrator.' };
+      return { advice: 'AI advice service is currently unavailable. Please contact your system administrator (Missing GEMINI_API_KEY).' };
     }
 
     // ── Enrich with AI Incident data if available ──
@@ -144,48 +144,56 @@ export class NotificationsService {
     const hour = now.getHours();
     const timeContext = hour >= 6 && hour < 18 ? 'DAYTIME operation' : 'NIGHTTIME operation — limited visibility, residents likely sleeping';
 
-    const userPrompt = `ALERT: ${notification.title}
+    const userPromptText = `ALERT: ${notification.title}
 DETAILS: ${notification.message}
 TIME: ${new Date(notification.createdAt).toLocaleString()}
 TIME CONTEXT: ${timeContext}
 ${incidentContext}
 
-A CCTV frame image is attached. Perform your two-phase visual analysis on this image and the data above, then give situation-specific tactical advice for the responding fire team.`;
+A CCTV frame image is attached (if available). Perform your two-phase visual analysis on this image and the data above, then give situation-specific tactical advice for the responding fire team.`;
+
+    const userParts: any[] = [{ text: userPromptText }];
 
     // Always try to include the captured frame for visual analysis
-    let userMessageContent: any = userPrompt;
     if (notification.imageUrl) {
-      const imageContent = this._loadImageAsBase64(notification.imageUrl);
-      if (imageContent) {
-        userMessageContent = [
-          { type: 'text', text: userPrompt },
-          { type: 'image_url', image_url: { url: imageContent } },
-        ];
+      const imgData = this._loadImageAsBase64(notification.imageUrl);
+      if (imgData) {
+        userParts.push({
+          inlineData: {
+            mimeType: imgData.mimeType,
+            data: imgData.data,
+          }
+        });
       }
     }
 
     try {
       const response = await axios.post(
-        'https://api.groq.com/openai/v1/chat/completions',
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
         {
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessageContent },
+          system_instruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: [
+            {
+              role: 'user',
+              parts: userParts,
+            }
           ],
-          temperature: 0.3,
-          max_tokens: 800,
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 800,
+          }
         },
         {
           headers: {
-            Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
           timeout: 30000,
         },
       );
 
-      const advice = response.data?.choices?.[0]?.message?.content || 'Unable to generate advice at this time.';
+      const advice = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Unable to generate advice at this time.';
 
       // Try to extract the camera name from the notification message and look up its GPS coordinates
       let latitude: number | null = null;
@@ -202,7 +210,7 @@ A CCTV frame image is attached. Perform your two-phase visual analysis on this i
 
       return { advice, latitude, longitude, imageUrl: notification.imageUrl };
     } catch (error) {
-      this.logger.error('GROQ AI advice error:', error?.response?.data || error.message);
+      this.logger.error('Gemini AI advice error:', error?.response?.data || error.message);
       return { advice: 'AI advice service is temporarily unavailable. Please try again in a moment.' };
     }
   }
@@ -219,11 +227,11 @@ A CCTV frame image is attached. Perform your two-phase visual analysis on this i
     rawDetections?: any[];
     imageUrl?: string;
   }) {
-    const apiKey = process.env.GROQ_API_KEY;
-    const model = process.env.GROQ_VISION_MODEL || 'meta-llama/llama-4-maverick-17b-128e-instruct';
+    const apiKey = process.env.GEMINI_API_KEY;
+    const model = process.env.GEMINI_VISION_MODEL || 'gemini-1.5-flash';
 
     if (!apiKey) {
-      return { advice: 'AI advice service is currently unavailable. Please contact your system administrator.' };
+      return { advice: 'AI advice service is currently unavailable. Please contact your system administrator (Missing GEMINI_API_KEY).' };
     }
 
     // ── Build CCTV situational analysis from raw detection data ──
@@ -281,46 +289,53 @@ A CCTV frame image is attached. Perform your two-phase visual analysis on this i
 
     const systemPrompt = this._buildVisualAnalysisSystemPrompt();
 
-    const userPrompt = `${cctvReport}${incidentContext}\nALERT TITLE: ${data.title}\nALERT MESSAGE: ${data.message}\n\nA CCTV frame image is attached (if available). Perform your two-phase visual analysis on the image and the detection data above, then give situation-specific tactical advice for the responding fire team.`;
+    const userPromptText = `${cctvReport}${incidentContext}\nALERT TITLE: ${data.title}\nALERT MESSAGE: ${data.message}\n\nA CCTV frame image is attached (if available). Perform your two-phase visual analysis on the image and the detection data above, then give situation-specific tactical advice for the responding fire team.`;
 
-    let userMessageContent: any = userPrompt;
+    const userParts: any[] = [{ text: userPromptText }];
 
     // Always try to include the captured frame for visual analysis
     if (data.imageUrl) {
-      const imageContent = this._loadImageAsBase64(data.imageUrl);
-      if (imageContent) {
-        userMessageContent = [
-          { type: 'text', text: userPrompt },
-          { type: 'image_url', image_url: { url: imageContent } },
-        ];
+      const imgData = this._loadImageAsBase64(data.imageUrl);
+      if (imgData) {
+        userParts.push({
+          inlineData: {
+            mimeType: imgData.mimeType,
+            data: imgData.data,
+          }
+        });
       }
     }
 
     try {
       const response = await axios.post(
-        'https://api.groq.com/openai/v1/chat/completions',
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
         {
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessageContent },
+          system_instruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: [
+            {
+              role: 'user',
+              parts: userParts,
+            }
           ],
-          temperature: 0.3,
-          max_tokens: 800,
+          generationConfig: {
+            temperature: 0.3,
+            maxOutputTokens: 800,
+          }
         },
         {
           headers: {
-            Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
           timeout: 30000,
         },
       );
 
-      const advice = response.data?.choices?.[0]?.message?.content || 'Unable to generate advice at this time.';
+      const advice = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Unable to generate advice at this time.';
       return { advice };
     } catch (error) {
-      this.logger.error('GROQ AI advice error:', error?.response?.data || error.message);
+      this.logger.error('Gemini AI advice error:', error?.response?.data || error.message);
       return { advice: 'AI advice service is temporarily unavailable. Please try again in a moment.' };
     }
   }
@@ -422,9 +437,9 @@ CRITICAL RULES:
   }
 
   /**
-   * Load an image from the uploads directory and return as a data URI string.
+   * Load an image from the uploads directory and return as an object with mimeType and raw base64 data for Gemini API.
    */
-  private _loadImageAsBase64(imageUrl: string): string | null {
+  private _loadImageAsBase64(imageUrl: string): { mimeType: string, data: string } | null {
     try {
       const fs = require('fs');
       const path = require('path');
@@ -432,7 +447,7 @@ CRITICAL RULES:
       if (fs.existsSync(imgPath)) {
         const imgBase64 = fs.readFileSync(imgPath).toString('base64');
         const mime = imgPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-        return `data:${mime};base64,${imgBase64}`;
+        return { mimeType: mime, data: imgBase64 };
       }
     } catch (e) {
       this.logger.warn(`Failed to load image for AI advice: ${e.message}`);
