@@ -1,18 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Notification, NotificationType } from './notification.entity';
 import { User } from '../users/user.entity';
 import { Camera } from '../detection/camera.entity';
+import { AiIncident } from '../ai-incidents/ai-incident.entity';
 import axios from 'axios';
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectRepository(Notification)
     private notificationsRepository: Repository<Notification>,
     @InjectRepository(Camera)
     private cameraRepository: Repository<Camera>,
+    @InjectRepository(AiIncident)
+    private aiIncidentRepository: Repository<AiIncident>,
   ) {}
 
   async createNotification(
@@ -106,60 +111,56 @@ export class NotificationsService {
     }
 
     const apiKey = process.env.GROQ_API_KEY;
-    const model = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
+    const model = process.env.GROQ_VISION_MODEL || 'meta-llama/llama-4-maverick-17b-128e-instruct';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator.' };
     }
 
-    const systemPrompt = `You are a rapid-response fire safety tactical advisor for BFP Malvar, Batangas, Philippines.
-
-You are analyzing a stored detection alert notification. The notification message contains CCTV AI analysis data including: detection type, confidence, severity, location, fire/smoke zone counts, and frame coverage percentages. Use ALL of this data to give CUSTOMIZED advice.
-
-CRITICAL RULES:
-- Analyze the detection data in the message: fire/smoke zones, area coverage %, spread indicators, severity
-- Your advice MUST differ based on the situation:
-  * Small localized fire vs large spreading fire = different approach
-  * Smoke-only (hidden fire) vs active flame = different priorities
-  * High severity vs low severity = different urgency
-  * Daytime vs nighttime = different considerations
-- Use **bold** on critical information
-- Be specific and actionable — NO generic fire safety tips
-- Keep response under 200 words
-
-FORMAT:
-
-🚨 **SITUATION**: 1-2 sentences analyzing what the CCTV detected (reference actual data from the message).
-
-⚡ **DO NOW**:
-1. (action based on fire size/type)
-2. (action based on location/camera)
-3. (action based on severity)
-
-⚠️ **HAZARDS**: Specific hazards based on the detection analysis.
-
-📋 **DEPLOY**: Equipment and team size based on severity and coverage.
-
-📞 **COORDINATE**: Who to notify based on location and severity.`;
-
-    const userPrompt = `ALERT: ${notification.title}\nDETAILS: ${notification.message}\nTIME: ${new Date(notification.createdAt).toLocaleString()}\n\nAnalyze this detection alert and give situation-specific tactical advice.`;
-
-    let userMessageContent: any = userPrompt;
-    if (notification.imageUrl && model.toLowerCase().includes('vision')) {
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        const imgPath = path.join(__dirname, '..', '..', notification.imageUrl);
-        if (fs.existsSync(imgPath)) {
-          const imgBase64 = fs.readFileSync(imgPath).toString('base64');
-          const mime = imgPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-          userMessageContent = [
-            { type: 'text', text: userPrompt },
-            { type: 'image_url', image_url: { url: `data:${mime};base64,${imgBase64}` } }
-          ];
+    // ── Enrich with AI Incident data if available ──
+    let incidentContext = '';
+    try {
+      const cameraMatch = notification.message.match(/\(([^)]+)\)/);
+      if (cameraMatch) {
+        const cameraName = cameraMatch[1];
+        const camera = await this.cameraRepository.findOne({ where: { name: cameraName } });
+        if (camera) {
+          const recentIncident = await this.aiIncidentRepository.findOne({
+            where: { cameraId: camera.id.toString() },
+            order: { createdAt: 'DESC' },
+          });
+          if (recentIncident) {
+            incidentContext = this._buildIncidentContext(recentIncident);
+          }
         }
-      } catch (e) {
-        console.error('Failed to load image for AI advice', e);
+      }
+    } catch (e) {
+      this.logger.warn(`Could not enrich AI advice with incident data: ${e.message}`);
+    }
+
+    const systemPrompt = this._buildVisualAnalysisSystemPrompt();
+
+    const now = new Date();
+    const hour = now.getHours();
+    const timeContext = hour >= 6 && hour < 18 ? 'DAYTIME operation' : 'NIGHTTIME operation — limited visibility, residents likely sleeping';
+
+    const userPrompt = `ALERT: ${notification.title}
+DETAILS: ${notification.message}
+TIME: ${new Date(notification.createdAt).toLocaleString()}
+TIME CONTEXT: ${timeContext}
+${incidentContext}
+
+A CCTV frame image is attached. Perform your two-phase visual analysis on this image and the data above, then give situation-specific tactical advice for the responding fire team.`;
+
+    // Always try to include the captured frame for visual analysis
+    let userMessageContent: any = userPrompt;
+    if (notification.imageUrl) {
+      const imageContent = this._loadImageAsBase64(notification.imageUrl);
+      if (imageContent) {
+        userMessageContent = [
+          { type: 'text', text: userPrompt },
+          { type: 'image_url', image_url: { url: imageContent } },
+        ];
       }
     }
 
@@ -173,14 +174,14 @@ FORMAT:
             { role: 'user', content: userMessageContent },
           ],
           temperature: 0.3,
-          max_tokens: 500,
+          max_tokens: 800,
         },
         {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
-          timeout: 20000,
+          timeout: 30000,
         },
       );
 
@@ -201,7 +202,7 @@ FORMAT:
 
       return { advice, latitude, longitude, imageUrl: notification.imageUrl };
     } catch (error) {
-      console.error('GROQ AI advice error:', error?.response?.data || error.message);
+      this.logger.error('GROQ AI advice error:', error?.response?.data || error.message);
       return { advice: 'AI advice service is temporarily unavailable. Please try again in a moment.' };
     }
   }
@@ -216,9 +217,10 @@ FORMAT:
     latitude?: number;
     longitude?: number;
     rawDetections?: any[];
+    imageUrl?: string;
   }) {
     const apiKey = process.env.GROQ_API_KEY;
-    const model = process.env.GROQ_VISION_MODEL || 'llama-3.2-11b-vision-preview';
+    const model = process.env.GROQ_VISION_MODEL || 'meta-llama/llama-4-maverick-17b-128e-instruct';
 
     if (!apiKey) {
       return { advice: 'AI advice service is currently unavailable. Please contact your system administrator.' };
@@ -234,7 +236,7 @@ FORMAT:
     const maxSmokeConf = smokeZones.length > 0 ? Math.max(...smokeZones.map((d: any) => d.confidence || 0)) : 0;
     const confPct = Math.round((data.confidence || 0) * 100);
 
-    let cctvReport = `CCTV AI ANALYSIS REPORT:\n`;
+    let cctvReport = `CCTV AI DETECTION DATA:\n`;
     cctvReport += `- Detection type: ${(data.detectionType || 'unknown').toUpperCase()}\n`;
     cctvReport += `- Overall confidence: ${confPct}%\n`;
     cctvReport += `- Severity level: ${(data.severity || 'unknown').toUpperCase()}\n`;
@@ -258,58 +260,39 @@ FORMAT:
     const timeContext = hour >= 6 && hour < 18 ? 'DAYTIME operation' : 'NIGHTTIME operation — limited visibility, residents likely sleeping';
     cctvReport += `- Time context: ${timeContext}\n`;
 
-    const systemPrompt = `You are a rapid-response fire safety tactical advisor for BFP Malvar, Batangas, Philippines.
+    // ── Enrich with AI Incident data if available ──
+    let incidentContext = '';
+    try {
+      if (data.cameraSource) {
+        // Try to find matching camera by name
+        const camera = await this.cameraRepository.findOne({ where: { name: data.cameraSource } });
+        const cameraId = camera ? camera.id.toString() : data.cameraSource;
+        const recentIncident = await this.aiIncidentRepository.findOne({
+          where: { cameraId },
+          order: { createdAt: 'DESC' },
+        });
+        if (recentIncident) {
+          incidentContext = this._buildIncidentContext(recentIncident);
+        }
+      }
+    } catch (e) {
+      this.logger.warn(`Could not enrich AI advice with incident data: ${e.message}`);
+    }
 
-You are receiving a REAL-TIME CCTV AI analysis report. The AI system has scanned the camera feed and detected fire/smoke. Your job is to analyze the SPECIFIC detection data below and give CUSTOMIZED tactical advice.
+    const systemPrompt = this._buildVisualAnalysisSystemPrompt();
 
-CRITICAL RULES:
-- Analyze the CCTV data carefully: number of fire/smoke zones, area coverage, spread indicators, severity
-- Your advice MUST differ based on the situation:
-  * Small localized fire vs large spreading fire = different approach
-  * Smoke-only (hidden fire) vs active flame = different priorities  
-  * Single zone vs multiple zones = different deployment
-  * Daytime vs nighttime = different considerations
-  * High severity vs low severity = different urgency
-- Use **bold** on critical information
-- Be specific and actionable — NO generic fire safety tips
-- Keep response under 200 words
-
-FORMAT:
-
-🚨 **SITUATION**: 1-2 sentences analyzing what the CCTV shows (use the actual data: zones, coverage %, spread indicators).
-
-⚡ **DO NOW**:
-1. (action based on fire size/type)
-2. (action based on location/camera)
-3. (action based on severity)
-
-⚠️ **HAZARDS**: Specific hazards based on what the CCTV analysis reveals (smoke density, fire spread, etc.)
-
-📋 **DEPLOY**: Equipment and team size based on the detected severity and coverage area.
-
-📞 **COORDINATE**: Who to notify based on location and severity.`;
-
-    const userPrompt = `${cctvReport}\nALERT TITLE: ${data.title}\nALERT MESSAGE: ${data.message}\n\nAnalyze this CCTV detection and give situation-specific tactical advice.`;
+    const userPrompt = `${cctvReport}${incidentContext}\nALERT TITLE: ${data.title}\nALERT MESSAGE: ${data.message}\n\nA CCTV frame image is attached (if available). Perform your two-phase visual analysis on the image and the detection data above, then give situation-specific tactical advice for the responding fire team.`;
 
     let userMessageContent: any = userPrompt;
 
-    // Check if we have an image URL. It usually comes from data.imageUrl which we can add to the controller body
-    const imageUrl = (data as any).imageUrl;
-    if (imageUrl && model.toLowerCase().includes('vision')) {
-      try {
-        const fs = require('fs');
-        const path = require('path');
-        const imgPath = path.join(__dirname, '..', '..', imageUrl);
-        if (fs.existsSync(imgPath)) {
-          const imgBase64 = fs.readFileSync(imgPath).toString('base64');
-          const mime = imgPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-          userMessageContent = [
-            { type: 'text', text: userPrompt },
-            { type: 'image_url', image_url: { url: `data:${mime};base64,${imgBase64}` } }
-          ];
-        }
-      } catch (e) {
-        console.error('Failed to load image for AI advice', e);
+    // Always try to include the captured frame for visual analysis
+    if (data.imageUrl) {
+      const imageContent = this._loadImageAsBase64(data.imageUrl);
+      if (imageContent) {
+        userMessageContent = [
+          { type: 'text', text: userPrompt },
+          { type: 'image_url', image_url: { url: imageContent } },
+        ];
       }
     }
 
@@ -323,23 +306,138 @@ FORMAT:
             { role: 'user', content: userMessageContent },
           ],
           temperature: 0.3,
-          max_tokens: 500,
+          max_tokens: 800,
         },
         {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
           },
-          timeout: 20000,
+          timeout: 30000,
         },
       );
 
       const advice = response.data?.choices?.[0]?.message?.content || 'Unable to generate advice at this time.';
       return { advice };
     } catch (error) {
-      console.error('GROQ AI advice error:', error?.response?.data || error.message);
+      this.logger.error('GROQ AI advice error:', error?.response?.data || error.message);
       return { advice: 'AI advice service is temporarily unavailable. Please try again in a moment.' };
     }
+  }
+
+  // ── PRIVATE HELPERS: AI Advice ─────────────────────────────────────────────
+
+  /**
+   * Two-phase visual analysis system prompt.
+   * Phase 1 forces the model to describe what it sees in the CCTV frame.
+   * Phase 2 generates tactical advice grounded in those observations.
+   */
+  private _buildVisualAnalysisSystemPrompt(): string {
+    return `You are an expert fire scene analyst and tactical advisor for the Bureau of Fire Protection (BFP) Malvar, Batangas, Philippines. You are assisting firefighters responding to a fire/smoke detection from a CCTV camera.
+
+You will receive TWO types of input:
+1. A CCTV frame image captured at the moment of detection
+2. AI detection data (fire/smoke zones, confidence scores, area coverage, severity, growth trends)
+
+You MUST perform a TWO-PHASE analysis:
+
+═══ PHASE 1: VISUAL ASSESSMENT ═══
+Carefully examine the CCTV image and identify:
+- What is burning or producing smoke (materials, structure type)
+- Flame characteristics: color (orange/red = ordinary combustibles, blue = gas, white = metals/chemicals), size relative to surroundings, location within the frame
+- Smoke characteristics: color (black = petroleum/plastics, white/gray = wood/vegetation, yellow = chemical), density (thin/moderate/thick), direction of travel
+- Environment: building type (residential, commercial, industrial, open area), proximity to other structures, visible hazards (power lines, gas tanks, vehicles, vegetation)
+- Signs of fire spread: multiple fire fronts, embers, structural compromise
+- Visibility conditions and time of day
+
+═══ PHASE 2: TACTICAL ADVICE ═══
+Based on your visual assessment AND the AI detection data, provide:
+
+🔍 **VISUAL ASSESSMENT**: 2-3 sentences describing exactly what you see in the CCTV image — flame location, smoke behavior, structure type, and environment. Reference specific visual details.
+
+🚨 **SITUATION SEVERITY**: Classify as INCIPIENT / GROWING / FULLY DEVELOPED / DECAY based on visual cues and AI growth data. Explain why.
+
+⚡ **IMMEDIATE ACTIONS**:
+1. (specific action based on what you see — e.g., "Establish water supply from [direction] — fire is concentrated on [location]")
+2. (action based on fire behavior — e.g., "Prioritize ventilation — heavy black smoke indicates flashover risk")
+3. (action based on environment — e.g., "Evacuate adjacent structures within [X]m radius")
+
+⚠️ **HAZARDS**: Specific hazards you can identify from the image (structural collapse risk, toxic smoke from materials, electrical hazards, explosive materials nearby).
+
+📋 **DEPLOYMENT RECOMMENDATION**: Team size and specific equipment based on what you observe:
+- For small/incipient: minimum team, portable extinguisher or single hose line
+- For growing: full engine company, primary + backup lines
+- For fully developed: multiple engine companies, aerial ladder consideration
+- Always specify SCBA requirement based on smoke density
+
+🔄 **FIRE BEHAVIOR PREDICTION**: Based on the AI growth trend data and what you see, predict how this fire will develop in the next 5-10 minutes.
+
+📞 **COORDINATION**: Specific agencies to alert based on situation severity.
+
+CRITICAL RULES:
+- Your advice MUST be grounded in what you SEE in the image — do NOT give generic advice
+- If the image shows a small localized fire, do NOT recommend a massive multi-engine response
+- If the image shows heavy smoke with no visible flame, emphasize search for hidden fire source
+- Reference specific visual details ("the smoke is moving [direction]", "the fire appears to be on the [floor/area]")
+- Keep total response under 350 words
+- Use **bold** for critical information
+- If no image is available, clearly state you are basing advice on AI detection data only`;
+  }
+
+  /**
+   * Build enrichment context from an AI incident record (growth trends, area history, severity reasons).
+   */
+  private _buildIncidentContext(incident: AiIncident): string {
+    let ctx = `\nAI INCIDENT ENRICHMENT DATA:\n`;
+    ctx += `- Incident ID: ${incident.id}\n`;
+    ctx += `- Detection type: ${incident.detectionType}\n`;
+    ctx += `- Detection confidence: ${(Number(incident.detectionConfidence) * 100).toFixed(0)}%\n`;
+    ctx += `- Duration: ${Number(incident.durationSeconds).toFixed(0)} seconds of continuous detection\n`;
+    ctx += `- Consecutive frames: ${incident.consecutiveFrameCount}\n`;
+    ctx += `- Fire growth status: ${incident.growthStatus}\n`;
+    ctx += `- Severity score: ${incident.severityScore}/100\n`;
+    ctx += `- Priority: ${incident.priority}\n`;
+
+    if (incident.fireAreaHistory && incident.fireAreaHistory.length > 0) {
+      const history = incident.fireAreaHistory;
+      const latest = history[history.length - 1];
+      const earliest = history[0];
+      const trend = latest > earliest ? 'INCREASING' : latest < earliest ? 'DECREASING' : 'STABLE';
+      ctx += `- Fire area trend: ${trend} (${earliest.toFixed(1)}% → ${latest.toFixed(1)}% over ${history.length} samples)\n`;
+    }
+
+    if (incident.smokeAreaHistory && incident.smokeAreaHistory.length > 0) {
+      const history = incident.smokeAreaHistory;
+      const latest = history[history.length - 1];
+      const earliest = history[0];
+      const trend = latest > earliest ? 'INCREASING' : latest < earliest ? 'DECREASING' : 'STABLE';
+      ctx += `- Smoke area trend: ${trend} (${earliest.toFixed(1)}% → ${latest.toFixed(1)}% over ${history.length} samples)\n`;
+    }
+
+    if (incident.severityReasons && incident.severityReasons.length > 0) {
+      ctx += `- Severity reasons: ${incident.severityReasons.join('; ')}\n`;
+    }
+
+    return ctx;
+  }
+
+  /**
+   * Load an image from the uploads directory and return as a data URI string.
+   */
+  private _loadImageAsBase64(imageUrl: string): string | null {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const imgPath = path.join(__dirname, '..', '..', imageUrl);
+      if (fs.existsSync(imgPath)) {
+        const imgBase64 = fs.readFileSync(imgPath).toString('base64');
+        const mime = imgPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
+        return `data:${mime};base64,${imgBase64}`;
+      }
+    } catch (e) {
+      this.logger.warn(`Failed to load image for AI advice: ${e.message}`);
+    }
+    return null;
   }
 
   /**

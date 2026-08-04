@@ -52,6 +52,7 @@ export class NotificationsController {
     latitude?: number;
     longitude?: number;
     rawDetections?: any[];
+    imageUrl?: string;
   }) {
     return this.notificationsService.getAiAdviceFromAlert(body);
   }
