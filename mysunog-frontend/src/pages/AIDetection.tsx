@@ -290,7 +290,7 @@ export default function AIDetection() {
                 <div className="bg-gray-950 aspect-video relative flex items-center justify-center">
                   {isLive && expandedCamera?.id !== cam.id ? (
                     <img 
-                      src={`${AI_SERVICE_URL}/stream/mjpeg/${cam.id}?detect=true&fps=3&quality=50`} 
+                      src={`${AI_SERVICE_URL}/stream/mjpeg/${cam.id}?detect=true&fps=10&quality=50`} 
                       className="w-full h-full object-contain"
                       alt={cam.name}
                       loading="lazy"
@@ -456,7 +456,7 @@ export default function AIDetection() {
             <div className="flex-1 bg-gray-950 rounded-2xl overflow-hidden border border-gray-800 shadow-2xl relative flex items-center justify-center">
               {streamStatuses[expandedCamera.id.toString()]?.connected ? (
                 <img 
-                  src={`${AI_SERVICE_URL}/stream/mjpeg/${expandedCamera.id}?detect=true&fps=5&quality=65`} 
+                  src={`${AI_SERVICE_URL}/stream/mjpeg/${expandedCamera.id}?detect=true&fps=15&quality=70`} 
                   className="w-full h-full object-contain"
                   alt={expandedCamera.name}
                 />
