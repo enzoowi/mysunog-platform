@@ -46,23 +46,26 @@ function createIcon(svgPath: string, bgClass: string, textClass: string) {
 // Custom PNG Icons
 export const stationIcon = new L.Icon({
     iconUrl: homeImg,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
+    shadowUrl: '',
+    iconSize: [40, 40] as L.PointTuple,
+    iconAnchor: [20, 40] as L.PointTuple,
+    popupAnchor: [0, -40] as L.PointTuple,
 });
 
 export const hydrantIcon = new L.Icon({
     iconUrl: hydrantImg,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
+    shadowUrl: '',
+    iconSize: [40, 40] as L.PointTuple,
+    iconAnchor: [20, 40] as L.PointTuple,
+    popupAnchor: [0, -40] as L.PointTuple,
 });
 
 export const incidentIcon = new L.Icon({
     iconUrl: fireImg,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
+    shadowUrl: '',
+    iconSize: [40, 40] as L.PointTuple,
+    iconAnchor: [20, 40] as L.PointTuple,
+    popupAnchor: [0, -40] as L.PointTuple,
 });
 
 export const getIncidentIcon = (_severity: string) => {
