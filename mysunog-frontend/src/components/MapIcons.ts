@@ -1,6 +1,9 @@
 import L from 'leaflet';
+import homeImg from '../assets/images/home.png';
+import hydrantImg from '../assets/images/fire_hydrant.png';
+import fireImg from '../assets/images/fire.png';
 
-// Create a wrapper function to build circular icon markers with a shadow
+// Create a wrapper function to build circular icon markers with a shadow (for camera icon)
 function createIcon(svgPath: string, bgClass: string, textClass: string) {
   const html = `
     <div style="
@@ -40,42 +43,37 @@ function createIcon(svgPath: string, bgClass: string, textClass: string) {
   });
 }
 
-// Blue Hydrant Icon (Droplet / Cylinder combination) - using lucide-like path or custom
-// We will use a standard Fire Hydrant SVG path
-const hydrantPath = `
-  <path d="M12 22v-4" />
-  <path d="M12 18H8v-4h8v4h-4z" />
-  <path d="M8 14V8a4 4 0 0 1 8 0v6" />
-  <path d="M6 10h2" />
-  <path d="M16 10h2" />
-  <path d="M12 8v-2" />
-  <path d="M10 6h4" />
-`;
+// Custom PNG Icons
+export const stationIcon = new L.Icon({
+    iconUrl: homeImg,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+});
 
-// Green House Icon (BFP Station)
-const housePath = `
-  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-  <polyline points="9 22 9 12 15 12 15 22" />
-`;
+export const hydrantIcon = new L.Icon({
+    iconUrl: hydrantImg,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+});
 
-// Orange/Red Fire Icon (Incidents)
-const firePath = `
-  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-`;
+export const incidentIcon = new L.Icon({
+    iconUrl: fireImg,
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+});
 
-// Purple Camera Icon
+export const getIncidentIcon = (_severity: string) => {
+    // We only have one fire.png, so we return it for all severities
+    return incidentIcon;
+};
+
+// Purple Camera Icon (SVG)
 const cameraPath = `
   <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
   <circle cx="12" cy="13" r="3" />
 `;
 
-export const hydrantIcon = createIcon(hydrantPath, 'bg-blue-600', 'text-white');
-export const stationIcon = createIcon(housePath, 'bg-green-600', 'text-white');
-export const incidentIcon = createIcon(firePath, 'bg-red-500', 'text-white');
 export const cameraIcon = createIcon(cameraPath, 'bg-purple-500', 'text-white');
-
-// We also have some generic icons used in the maps. Let's provide a generic function.
-export const getIncidentIcon = (severity: string) => {
-  const bg = severity === 'High' || severity === 'Critical' ? 'bg-red-600' : 'bg-orange-500';
-  return createIcon(firePath, bg, 'text-white');
-};
