@@ -447,9 +447,10 @@ export default function Home() {
       <footer className="bg-slate-900 pt-12 pb-8 text-center text-slate-400 text-sm">
           <div className="max-w-7xl mx-auto px-6">
               <div className="flex flex-col items-center mb-8">
-                  <span className="font-bold text-xl text-white tracking-wide mb-6">mySunog - BFP Malvar</span>
+                  <span className="font-bold text-xl text-white tracking-wide mb-8">mySunog - BFP Malvar</span>
                   
                   {/* Contact Info */}
+                  <h3 className="text-sm font-semibold text-slate-400 mb-4 tracking-widest uppercase">Contact Us</h3>
                   <div className="flex flex-wrap justify-center gap-6 text-slate-300">
                       <a href="https://www.facebook.com/MalvarFSBatangas/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition">
                           <Facebook className="w-5 h-5" />
