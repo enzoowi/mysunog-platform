@@ -550,10 +550,13 @@ export default function App() {
                 <button onClick={() => handleNavClick('/#map')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'map' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Map</button>
                 <button onClick={() => handleNavClick('/#hotlines')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'hotlines' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Hotlines</button>
 
-                <div className="hidden md:block w-px h-6 bg-gray-200 mx-2" />
-
-                {/* Staff/Admin links */}
-                <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide px-3 py-1 md:hidden mt-4">Account</span>
+                {userEmail && (
+                  <>
+                    <div className="hidden md:block w-px h-6 bg-gray-200 mx-2" />
+                    {/* Staff/Admin links */}
+                    <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide px-3 py-1 md:hidden mt-4">Account</span>
+                  </>
+                )}
                 {/* Dashboard — bfp_staff and admin */}
                 {(userRole === 'admin' || userRole === 'bfp_staff' || userRole === 'fire_investigator') && (
                   <Link to="/admin/dashboard" className="px-3 py-2 text-sm text-orange-600 font-bold hover:bg-orange-50 rounded-lg transition" onClick={() => setMenuOpen(false)}>Dashboard</Link>
