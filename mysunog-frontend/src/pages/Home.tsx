@@ -106,7 +106,7 @@ export default function Home() {
                                   </svg>
                                   Vision
                               </h4>
-                              <p className="text-gray-800 font-semibold text-lg leading-snug">"A modern fire service fully capable of ensuring a fire-safe nation by 2034."</p>
+                              <p className="text-gray-800 font-semibold text-lg leading-snug">"A modern and trusted fire and emergency service building safe and resilient communities."</p>
                           </div>
                           
                           {/* Mission */}
@@ -117,7 +117,7 @@ export default function Home() {
                                   </svg>
                                   Mission
                               </h4>
-                              <p className="text-gray-800 font-semibold text-[15px] leading-relaxed">"We commit to prevent and suppress destructive fires; investigate its causes; enforce the Fire Code and other related laws; and respond to man-made and natural disasters and other emergencies."</p>
+                              <p className="text-gray-800 font-semibold text-[15px] leading-relaxed">"We protect life, property, and the environment through an integrated system of prevention, response, and investigation, strengthening public safety and community resilience."</p>
                           </div>
 
                           {/* Core Values */}
@@ -128,11 +128,16 @@ export default function Home() {
                                   </svg>
                                   Core Values
                               </h4>
-                              <div className="flex flex-wrap gap-3">
-                                  {['Responsiveness', 'Integrity', 'Spirituality', 'Excellence'].map(value => (
-                                      <span key={value} className="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold border border-slate-200">
-                                          {value}
-                                      </span>
+                              <div className="flex flex-col gap-3">
+                                  {[
+                                      { title: 'Tapat na Paglilingkod', desc: 'Integrity grounded in faith and respect' },
+                                      { title: 'Galing sa Gawain', desc: 'Competence that responds with reliability' },
+                                      { title: 'Pusong Nag-aalab', desc: 'Compassion rooted in courage and service' }
+                                  ].map(value => (
+                                      <div key={value.title} className="bg-slate-50 border border-slate-100 p-3.5 rounded-xl">
+                                          <span className="block text-sm font-extrabold text-orange-700 mb-0.5">{value.title}</span>
+                                          <span className="block text-sm font-medium text-slate-600 leading-snug">{value.desc}</span>
+                                      </div>
                                   ))}
                               </div>
                           </div>
