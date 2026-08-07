@@ -559,9 +559,7 @@ export default function App() {
                   <Link to="/admin/dashboard" className="px-3 py-2 text-sm text-orange-600 font-bold hover:bg-orange-50 rounded-lg transition" onClick={() => setMenuOpen(false)}>Dashboard</Link>
                 )}
 
-                {!userEmail && (
-                  <Link to="/login" className="px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition font-medium" onClick={() => setMenuOpen(false)}>Login</Link>
-                )}
+
                 {userEmail && (
                   <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium md:hidden flex items-center gap-1">
                     <LogOut className="w-4 h-4" /> Logout
