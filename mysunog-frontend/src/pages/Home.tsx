@@ -5,6 +5,8 @@ import EducationHub from './EducationHub';
 import EmergencyHotlines from './EmergencyHotlines';
 import PublicCommunityMap from '../components/PublicCommunityMap';
 import bfpStationImg from '../assets/images/bfpstation.jpg';
+import bfpLogo from '../assets/images/bfp-logo.jpg';
+import malvarLogo from '../assets/images/malvar-logo.png';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
@@ -28,7 +30,7 @@ export default function Home() {
     <div className="bg-gray-50 flex flex-col min-h-screen">
       {/* Hero Section */}
       <section 
-        className="bg-slate-900 text-white relative py-24 px-6 md:px-12 overflow-hidden"
+        className="bg-slate-900 text-white relative py-12 px-6 md:px-12 overflow-hidden"
         style={{ 
           backgroundImage: `url(${heroImage || bfpStationImg})`, 
           backgroundSize: 'cover', 
@@ -40,10 +42,15 @@ export default function Home() {
         {/* Abstract background graphics to mimic government agency feel */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-400 via-red-900 to-transparent"></div>
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight shadow-sm text-white">Bureau of Fire Protection - Malvar</h1>
-            <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-medium">
-                Protecting lives and properties. Empowering the community with real-time fire safety management, reporting, and hazard prevention.
-            </p>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-2">
+              <img src={malvarLogo} alt="Malvar Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain" />
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-sm md:text-lg font-semibold tracking-widest text-slate-200 mb-1">REPUBLIC OF THE PHILIPPINES</p>
+                <h1 className="text-3xl md:text-5xl font-extrabold my-2 tracking-tight shadow-sm text-white">BUREAU OF FIRE PROTECTION</h1>
+                <p className="text-lg md:text-2xl font-bold tracking-widest text-orange-400 mt-1">MUNICIPALITY OF MALVAR</p>
+              </div>
+              <img src={bfpLogo} alt="BFP Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain rounded-full" />
+            </div>
             <div className="mt-8 flex gap-4">
                 <a href="#hotlines" className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition-all duration-200">
                     Emergency Hotlines

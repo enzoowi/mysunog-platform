@@ -8,7 +8,6 @@ import EmergencyRouteMap from './components/EmergencyRouteMap';
 import Home from './pages/Home';
 import ChatbotWidget from './components/ChatbotWidget';
 import RequireRole from './components/RequireRole';
-import bfpLogo from './assets/images/bfp-logo.jpg';
 
 import Login from './pages/Login';
 import Notifications from './pages/Notifications';
@@ -538,7 +537,6 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center h-16">
             <Link to="/" className="flex items-center gap-2 z-50">
-              <img src={bfpLogo} alt="BFP Logo" className="w-8 h-8 rounded-full object-cover" />
               <Flame className="w-8 h-8 text-orange-600" />
               <span className="font-bold text-xl text-gray-800">mySunog</span>
             </Link>
