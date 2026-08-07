@@ -70,6 +70,77 @@ export default function Home() {
               </div>
           </section>
 
+          {/* About Us Section */}
+          <section id="about" className="w-full py-20 scroll-mt-16 bg-slate-50 border-b border-gray-200">
+              <div className="max-w-7xl mx-auto px-4 md:px-8">
+                  <div className="text-center mb-14">
+                      <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">About BFP Malvar</h2>
+                      <div className="w-24 h-1.5 bg-orange-600 mx-auto mt-5 rounded-full"></div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
+                      {/* Profile & Location */}
+                      <div className="lg:col-span-5 bg-white p-8 md:p-10 rounded-3xl border border-gray-200 shadow-sm flex flex-col justify-center relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-bl-[100px] -z-0"></div>
+                          <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-3 relative z-10">
+                              <span className="p-2.5 bg-orange-100 text-orange-600 rounded-xl">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                              </span>
+                              Profile & Location
+                          </h3>
+                          <p className="text-gray-600 leading-relaxed relative z-10 text-[15px]">
+                              The Bureau of Fire Protection (BFP) Malvar Fire Station is committed to ensuring the safety and security of the municipality of Malvar, Batangas. Strategically located to serve the growing community and its commercial hubs, the station is equipped with dedicated personnel and modern firefighting resources to respond swiftly to fire incidents, medical emergencies, and natural disasters. Beyond emergency response, BFP Malvar actively champions fire safety awareness, conducts comprehensive inspections, and partners closely with local barangays to build a highly resilient and prepared municipality.
+                          </p>
+                      </div>
+
+                      {/* Vision, Mission, Core Values */}
+                      <div className="lg:col-span-7 flex flex-col gap-5 justify-center">
+                          {/* Vision */}
+                          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:border-orange-200 transition-colors">
+                              <h4 className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-2.5 flex items-center gap-2">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                  Vision
+                              </h4>
+                              <p className="text-gray-800 font-semibold text-lg leading-snug">"A modern fire service fully capable of ensuring a fire-safe nation by 2034."</p>
+                          </div>
+                          
+                          {/* Mission */}
+                          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:border-orange-200 transition-colors">
+                              <h4 className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-2.5 flex items-center gap-2">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                  </svg>
+                                  Mission
+                              </h4>
+                              <p className="text-gray-800 font-semibold text-[15px] leading-relaxed">"We commit to prevent and suppress destructive fires; investigate its causes; enforce the Fire Code and other related laws; and respond to man-made and natural disasters and other emergencies."</p>
+                          </div>
+
+                          {/* Core Values */}
+                          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:border-orange-200 transition-colors">
+                              <h4 className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-3.5 flex items-center gap-2">
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                  </svg>
+                                  Core Values
+                              </h4>
+                              <div className="flex flex-wrap gap-3">
+                                  {['Responsiveness', 'Integrity', 'Spirituality', 'Excellence'].map(value => (
+                                      <span key={value} className="bg-slate-100 text-slate-700 px-4 py-2 rounded-xl text-sm font-bold border border-slate-200">
+                                          {value}
+                                      </span>
+                                  ))}
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </section>
+
           {/* Education Hub Section */}
           <section id="education" className="w-full py-16 scroll-mt-16 bg-slate-50 border-b border-gray-200">
               <div className="max-w-7xl mx-auto px-4 md:px-8">
