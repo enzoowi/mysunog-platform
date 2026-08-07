@@ -18,9 +18,10 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Droplet, ShieldPlus, RefreshCw, Cloud, Thermometer, Wind, CloudRain } from 'lucide-react';
+import { Droplet, Droplets, ShieldPlus, RefreshCw, Cloud, Wind, CloudRain } from 'lucide-react';
 import type { RiskZone } from './RiskZoneLayer';
 import { RiskZonePolygons, RiskLegendItems } from './RiskZoneLayer';
+import { hydrantIcon, stationIcon } from './MapIcons';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
@@ -30,24 +31,6 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-});
-
-const createPin = (color: string) => `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12c0 7.872 11.233 23.36 11.602 23.86a.5.5 0 0 0 .796 0C12.767 35.36 24 19.872 24 12c0-6.627-5.373-12-12-12zm0 17.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" fill="${color}" stroke="white" stroke-width="1.5"/></svg>`;
-
-const hydrantIcon = new L.DivIcon({
-    html: createPin('#3b82f6'),
-    className: '',
-    iconSize: [24, 36],
-    iconAnchor: [12, 36],
-    popupAnchor: [0, -36],
-});
-
-const stationIcon = new L.DivIcon({
-    html: createPin('#16a34a'),
-    className: '',
-    iconSize: [24, 36],
-    iconAnchor: [12, 36],
-    popupAnchor: [0, -36],
 });
 
 type Hydrant  = { id: number; name: string; lat: number; lng: number; description?: string; photoUrl?: string; };
