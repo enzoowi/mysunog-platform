@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapContainer, LayersControl, TileLayer, CircleMarker, Popup, Marker, Pane } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer,  Popup, Marker, Pane } from 'react-leaflet';
 import L from 'leaflet';
 import { ArrowLeft, Map as MapIcon, Filter, Calendar, Flame, Droplet, ShieldPlus, AlertTriangle, RefreshCw } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import type { RiskZone } from '../components/RiskZoneLayer';
 import { RiskZonePolygons, RiskDetailPanel, RiskLegendItems } from '../components/RiskZoneLayer';
-import { hydrantIcon, stationIcon } from '../components/MapIcons';
+import {  hydrantIcon, stationIcon , incidentIcon } from '../components/MapIcons';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
@@ -332,12 +332,12 @@ export default function AdminIncidentMap() {
                                     {incidents.map((incident) => {
                                         const damage = Number(incident.estimatedDamage || 0);
                                         return (
-                                            <CircleMarker
+                                            <Marker 
                                                 key={`inc-${incident.id}`}
-                                                center={[Number(incident.latitude), Number(incident.longitude)]}
-                                                radius={7}
-                                                pathOptions={{ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.8, weight: 2 }}
-                                            >
+                                                position={[Number(incident.latitude), Number(incident.longitude)]}
+                                                
+                                                
+                                             icon={incidentIcon}>
                                                 <Popup pane="popupPane">
                                                     <div style={{ minWidth: '220px', maxHeight: '250px', overflowY: 'auto' }}>
                                                         {incident.photoUrl && <img src={incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`)} />}
@@ -355,7 +355,7 @@ export default function AdminIncidentMap() {
                                                         {incident.landmark && <p className="text-xs"><strong>Landmark:</strong> {incident.landmark}</p>}
                                                     </div>
                                                 </Popup>
-                                            </CircleMarker>
+                                            </Marker>
                                         );
                                     })}
                                 </Pane>

@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { MapContainer, LayersControl, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { Map as MapIcon, Droplet, ShieldPlus } from 'lucide-react';
-import { hydrantIcon, stationIcon } from '../components/MapIcons';
+import {  hydrantIcon, stationIcon , incidentIcon } from '../components/MapIcons';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
@@ -154,10 +154,10 @@ export default function IncidentMap() {
 
                     {/* Incident markers */}
                     {isAdmin && showIncidents && filteredIncidents.map((incident) => (
-                        <CircleMarker key={`inc-${incident.id}`}
-                            center={[Number(incident.latitude), Number(incident.longitude)]}
-                            radius={6}
-                            pathOptions={{ color: '#dc2626', fillColor: '#ef4444', fillOpacity: 0.8 }}>
+                        <Marker  key={`inc-${incident.id}`}
+                            position={[Number(incident.latitude), Number(incident.longitude)]}
+                            
+                             icon={incidentIcon}>
                             <Popup>
                                 <div style={{ minWidth: '200px' }}>
                                     {incident.photoUrl && <img src={incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`} alt="" className="w-full h-32 object-cover rounded mb-2 cursor-pointer hover:opacity-90 transition" onClick={() => setFullImageUrl(incident.photoUrl?.startsWith('http') ? incident.photoUrl : `${BACKEND_URL}${incident.photoUrl}`)} />}
@@ -168,7 +168,7 @@ export default function IncidentMap() {
                                     <p><strong>Damage:</strong> ₱{incident.estimatedDamage ?? 0}</p>
                                 </div>
                             </Popup>
-                        </CircleMarker>
+                        </Marker>
                     ))}
 
                     {/* Fire hydrants */}

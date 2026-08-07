@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapContainer, LayersControl, TileLayer, CircleMarker, Popup, Marker } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer,  Popup, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import { ArrowLeft, Map as MapIcon, Eye, Flame, Wind, Filter } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
+import { incidentIcon } from '../components/MapIcons';
 
 // Fix default Leaflet marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -40,20 +41,6 @@ type Camera = {
   latitude: number;
   longitude: number;
   isActive: boolean;
-};
-
-const severityColors: Record<string, { color: string; fill: string }> = {
-  low: { color: '#16a34a', fill: '#22c55e' },
-  medium: { color: '#ca8a04', fill: '#eab308' },
-  high: { color: '#ea580c', fill: '#f97316' },
-  critical: { color: '#dc2626', fill: '#ef4444' },
-};
-
-const severityRadius: Record<string, number> = {
-  low: 6,
-  medium: 8,
-  high: 10,
-  critical: 13,
 };
 
 export default function DetectionMap() {
@@ -185,21 +172,14 @@ export default function DetectionMap() {
 
             {/* Detection markers */}
             {showDetections && mappableEvents.map((event) => {
-              const colors = severityColors[event.severity] || severityColors.low;
-              const radius = severityRadius[event.severity] || 6;
-
+                            
               return (
-                <CircleMarker
+                <Marker 
                   key={`det-${event.id}`}
-                  center={[Number(event.latitude), Number(event.longitude)]}
-                  radius={radius}
-                  pathOptions={{
-                    color: colors.color,
-                    fillColor: colors.fill,
-                    fillOpacity: 0.8,
-                    weight: 2,
-                  }}
-                >
+                  position={[Number(event.latitude), Number(event.longitude)]}
+                  
+                  
+                 icon={incidentIcon}>
                   <Popup>
                     <div style={{ minWidth: '220px' }}>
                       <div className="flex items-center gap-2 mb-2 border-b pb-2">
@@ -218,7 +198,7 @@ export default function DetectionMap() {
                       <p className="text-xs"><strong>Time:</strong> {new Date(event.createdAt).toLocaleString()}</p>
                     </div>
                   </Popup>
-                </CircleMarker>
+                </Marker>
               );
             })}
 

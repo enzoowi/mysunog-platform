@@ -4,8 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   MapContainer,
   LayersControl, TileLayer,
-  CircleMarker,
+  
   Popup,
+  Marker,
   Pane,
 } from 'react-leaflet';
 import L from 'leaflet';
@@ -30,8 +31,10 @@ import {
   TrendingUp,
   Cloud,
 } from 'lucide-react';
+import { incidentIcon } from '../components/MapIcons';
 import type { RiskZone } from '../components/RiskZoneLayer';
 import {
+
   RiskZonePolygons,
   RiskLegendItems,
 } from '../components/RiskZoneLayer';
@@ -541,20 +544,15 @@ export default function FireRiskMap() {
                   {incidents
                     .filter((inc) => !selectedZone || inc.barangay === selectedZone.name)
                     .map((inc) => (
-                    <CircleMarker
+                    <Marker 
                       key={`inc-${inc.id}`}
-                      center={[
+                      position={[
                         Number(inc.latitude),
                         Number(inc.longitude),
                       ]}
-                      radius={7}
-                      pathOptions={{
-                        color: '#dc2626',
-                        fillColor: '#ef4444',
-                        fillOpacity: 0.8,
-                        weight: 2,
-                      }}
-                    >
+                      
+                      
+                     icon={incidentIcon}>
                       <Popup pane="popupPane">
                         <div style={{ minWidth: '200px', maxHeight: '250px', overflowY: 'auto' }}>
                           <div className="flex items-center gap-2 mb-2 border-b pb-2">
@@ -578,7 +576,7 @@ export default function FireRiskMap() {
                           </p>
                         </div>
                       </Popup>
-                    </CircleMarker>
+                    </Marker>
                   ))}
                 </Pane>
               )}
