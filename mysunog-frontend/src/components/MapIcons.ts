@@ -43,33 +43,23 @@ function createIcon(svgPath: string, bgClass: string, textClass: string) {
   });
 }
 
+// Helper to create a DivIcon from a PNG image URL
+function createPngIcon(imgUrl: string, size: number = 36) {
+  return new L.DivIcon({
+    html: `<img src="${imgUrl}" style="width:${size}px;height:${size}px;display:block;" />`,
+    className: '',
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, -size],
+  });
+}
+
 // Custom PNG Icons
-export const stationIcon = new L.Icon({
-    iconUrl: homeImg,
-    shadowUrl: '',
-    iconSize: [40, 40] as L.PointTuple,
-    iconAnchor: [20, 40] as L.PointTuple,
-    popupAnchor: [0, -40] as L.PointTuple,
-});
-
-export const hydrantIcon = new L.Icon({
-    iconUrl: hydrantImg,
-    shadowUrl: '',
-    iconSize: [40, 40] as L.PointTuple,
-    iconAnchor: [20, 40] as L.PointTuple,
-    popupAnchor: [0, -40] as L.PointTuple,
-});
-
-export const incidentIcon = new L.Icon({
-    iconUrl: fireImg,
-    shadowUrl: '',
-    iconSize: [40, 40] as L.PointTuple,
-    iconAnchor: [20, 40] as L.PointTuple,
-    popupAnchor: [0, -40] as L.PointTuple,
-});
+export const stationIcon = createPngIcon(homeImg, 40);
+export const hydrantIcon = createPngIcon(hydrantImg, 40);
+export const incidentIcon = createPngIcon(fireImg, 40);
 
 export const getIncidentIcon = (_severity: string) => {
-    // We only have one fire.png, so we return it for all severities
     return incidentIcon;
 };
 
