@@ -119,7 +119,7 @@ export default function App() {
   // Scroll spy logic
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['alerts', 'education', 'services', 'map', 'hotlines'];
+      const sections = ['alerts', 'about', 'education', 'services', 'map', 'hotlines'];
       let current = '';
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -545,6 +545,7 @@ export default function App() {
               <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
                 {/* Public nav links */}
                 <button onClick={() => handleNavClick('/#alerts')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'alerts' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Alerts</button>
+                <button onClick={() => handleNavClick('/#about')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'about' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>About Us</button>
                 <button onClick={() => handleNavClick('/#education')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'education' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Education</button>
                 <button onClick={() => handleNavClick('/#services')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'services' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Services</button>
                 <button onClick={() => handleNavClick('/#map')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'map' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Map</button>
