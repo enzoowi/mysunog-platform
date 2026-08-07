@@ -219,14 +219,13 @@ export default function EducationHub() {
                   <div className={`w-full h-full border-0 rounded-[2rem] overflow-hidden bg-white flex flex-col transition-all duration-500 ${offset === 0 ? 'shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-gray-900/5' : 'shadow-lg'}`}>
                     {c.imageUrl ? (
                       <div 
-                        className={`w-full ${(!c.title && !c.content) ? 'h-full flex-1' : 'h-64 md:h-72 shrink-0'} overflow-hidden bg-slate-900 flex items-center justify-center relative group cursor-zoom-in`}
+                        className={`w-full ${(!c.title && !c.content) ? 'h-full flex-1' : 'h-64 md:h-72 shrink-0'} overflow-hidden bg-gray-50 flex items-center justify-center relative group cursor-zoom-in`}
                         onClick={(e) => { e.stopPropagation(); setLightboxImage(c.imageUrl?.startsWith('http') ? c.imageUrl : `${BACKEND_URL}${c.imageUrl}`); }}
                       >
-                        <img src={c.imageUrl?.startsWith('http') ? c.imageUrl : `${BACKEND_URL}${c.imageUrl}`} alt={c.title} className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-110" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/20 backdrop-blur-md rounded-full p-3 shadow-2xl border border-white/30">
-                            <ZoomIn className="w-6 h-6 text-white" />
+                        <img src={c.imageUrl?.startsWith('http') ? c.imageUrl : `${BACKEND_URL}${c.imageUrl}`} alt={c.title} className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all duration-300 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/70 backdrop-blur-md rounded-full p-3 shadow-2xl border border-white/50">
+                            <ZoomIn className="w-6 h-6 text-gray-800" />
                           </div>
                         </div>
                         {/* Category Badge over image */}
