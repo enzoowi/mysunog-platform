@@ -125,7 +125,7 @@ export default function PublicCommunityMap() {
         
         {/* Floating Weather Widget */}
         {weather && (
-          <div className="absolute top-3 left-3 z-[1000] bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-md border border-white/40 pointer-events-none flex flex-col gap-1 max-w-[200px]">
+          <div className="absolute bottom-3 left-3 z-[1000] bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-md border border-white/40 pointer-events-none flex flex-col gap-1 max-w-[200px]">
             <div className="flex justify-between items-center mb-1">
               <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
                 <Cloud className="w-3 h-3" /> Malvar Weather
