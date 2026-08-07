@@ -19,7 +19,6 @@ import AdminAlerts from './pages/AdminAlerts';
 import AdminEducation from './pages/AdminEducation';
 import Reports from './pages/Reports';
 import AdminDashboard from './pages/AdminDashboard';
-import AdminSiteImages from './pages/AdminSiteImages';
 import AdminHotlines from './pages/AdminHotlines';
 import AdminServices from './pages/AdminServices';
 import AdminMapAssets from './pages/AdminMapAssets';
@@ -670,7 +669,6 @@ export default function App() {
           {/* Admin-only routes */}
           <Route path="/admin/alerts" element={<RequireRole allowedRoles={['admin']}><AdminAlerts /></RequireRole>} />
           <Route path="/admin/education" element={<RequireRole allowedRoles={['admin']}><AdminEducation /></RequireRole>} />
-          <Route path="/admin/site-images" element={<RequireRole allowedRoles={['admin']}><AdminSiteImages /></RequireRole>} />
           <Route path="/admin/hotlines" element={<RequireRole allowedRoles={['admin']}><AdminHotlines /></RequireRole>} />
           <Route path="/admin/services" element={<RequireRole allowedRoles={['admin']}><AdminServices /></RequireRole>} />
           <Route path="/admin/map-assets" element={<RequireRole allowedRoles={['admin', 'bfp_staff', 'fire_investigator']}><AdminMapAssets /></RequireRole>} />

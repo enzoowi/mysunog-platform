@@ -120,7 +120,6 @@ export default function AdminDashboard() {
     { label: 'Map Assets',           path: '/admin/map-assets',   icon: <MapPin className="w-6 h-6" />,       adminOnly: false },
     { label: 'Manage Hotlines',      path: '/admin/hotlines',     icon: <PhoneCall className="w-6 h-6" />,    adminOnly: true },
     { label: 'Manage Users',         path: '/admin/users',        icon: <Users className="w-6 h-6" />,        adminOnly: true },
-    { label: 'Site Media',           path: '/admin/site-images',  icon: <ImageIcon className="w-6 h-6" />,    adminOnly: true },
     { label: 'Reports & Export',     path: '/reports',            icon: <LineChart className="w-6 h-6" />,    adminOnly: false },
   ];
 
