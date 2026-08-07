@@ -21,7 +21,7 @@ export default function Chatbot() {
     const [messages, setMessages] = useState<Message[]>([
         {
             sender: 'bot',
-            text: 'Hello! I\'m the mySunog assistant for BFP Malvar.\n\nI can help you with reporting emergencies, viewing active fire alerts, reading fire safety tips, checking emergency hotlines, and more.\n\nTry one of the quick prompts below or type your own question!',
+            text: 'Hello! I\'m the mySunog assistant for BFP Malvar.\n\nTry one of the quick prompts below or type your own question!',
         },
     ]);
     const [loading, setLoading] = useState(false);
