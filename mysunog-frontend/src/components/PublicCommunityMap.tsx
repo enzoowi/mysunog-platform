@@ -18,7 +18,7 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Droplet, ShieldPlus, RefreshCw } from 'lucide-react';
+import { Droplet, ShieldPlus, RefreshCw, Cloud, Thermometer, Wind, CloudRain } from 'lucide-react';
 import type { RiskZone } from './RiskZoneLayer';
 import { RiskZonePolygons, RiskLegendItems } from './RiskZoneLayer';
 
@@ -57,6 +57,7 @@ const defaultCenter: [number, number] = [14.0412, 121.1470];
 
 export default function PublicCommunityMap() {
   const [zones, setZones]       = useState<RiskZone[]>([]);
+  const [weather, setWeather]   = useState<any>(null);
   const [hydrants, setHydrants] = useState<Hydrant[]>([]);
   const [stations, setStations] = useState<Station[]>([]);
   const [selectedZone, setSelectedZone] = useState<RiskZone | null>(null);
@@ -77,6 +78,7 @@ export default function PublicCommunityMap() {
           api.get('/map/stations'),
         ]);
         setZones(riskRes.data?.zones ?? []);
+        setWeather(riskRes.data?.weather ?? null);
         setHydrants(hydRes.data ?? []);
         setStations(stnRes.data ?? []);
       } catch (err) {
@@ -135,8 +137,38 @@ export default function PublicCommunityMap() {
         </label>
       </div>
 
-      {/* Map */}
-      <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+      {/* Map Container Wrapper */}
+      <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+        
+        {/* Floating Weather Widget */}
+        {weather && (
+          <div className="absolute top-3 left-3 z-[1000] bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-md border border-white/40 pointer-events-none flex flex-col gap-1 max-w-[200px]">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+                <Cloud className="w-3 h-3" /> Malvar Weather
+              </span>
+              {weather.is_live && <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>}
+            </div>
+            <div className="flex items-end gap-2">
+              <span className="text-2xl font-black text-slate-800 leading-none">{weather.temperature_c}°C</span>
+              <span className="text-xs font-medium text-slate-500 mb-0.5 capitalize truncate">{weather.description}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 mt-2">
+              <div className="flex items-center gap-1 text-[10px] text-slate-600">
+                <Droplets className="w-3 h-3 text-blue-500" /> {weather.humidity_pct}%
+              </div>
+              <div className="flex items-center gap-1 text-[10px] text-slate-600">
+                <Wind className="w-3 h-3 text-teal-500" /> {weather.wind_speed_kph}km/h
+              </div>
+              {weather.rainfall_mm > 0 && (
+                <div className="flex items-center gap-1 text-[10px] text-slate-600 col-span-2">
+                  <CloudRain className="w-3 h-3 text-indigo-500" /> {weather.rainfall_mm}mm rain
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <MapContainer
           center={defaultCenter}
           zoom={13}
