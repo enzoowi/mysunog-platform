@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { api } from '../services/api';
-import { Send, Bot, FileText, ClipboardList, Calendar, Flame, Droplets, ShieldQuestion, Clock } from 'lucide-react';
+import { Send, Bot, FileText, ClipboardList, Flame, Droplets, ShieldQuestion, Clock } from 'lucide-react';
 
 type Message = {
     sender: 'user' | 'bot';
@@ -8,12 +8,11 @@ type Message = {
 };
 
 const QUICK_PROMPTS = [
-    { label: 'Apply for permit', message: 'How do I apply for a fire permit in Malvar?', icon: <ClipboardList className="w-3 h-3 mr-1" /> },
-    { label: 'Requirements', message: 'What documents are needed for a fire permit application?', icon: <FileText className="w-3 h-3 mr-1" /> },
-    { label: 'Schedule', message: 'How can I schedule a fire safety inspection?', icon: <Calendar className="w-3 h-3 mr-1" /> },
-    { label: 'FSIC Info', message: 'What is an FSIC and how do I get one?', icon: <ShieldQuestion className="w-3 h-3 mr-1" /> },
-    { label: 'Fire tips', message: 'What are some fire prevention tips for homes?', icon: <Flame className="w-3 h-3 mr-1" /> },
+    { label: 'Report Emergency', message: 'How do I report a fire emergency in Malvar?', icon: <Flame className="w-3 h-3 mr-1" /> },
+    { label: 'Emergency Hotlines', message: 'What are the emergency hotlines in Malvar?', icon: <FileText className="w-3 h-3 mr-1" /> },
+    { label: 'Fire tips', message: 'What are some fire prevention tips for homes?', icon: <ShieldQuestion className="w-3 h-3 mr-1" /> },
     { label: 'LPG safety', message: 'How do I handle LPG safely at home?', icon: <Droplets className="w-3 h-3 mr-1" /> },
+    { label: 'Evacuation Routes', message: 'Where can I find emergency evacuation routes?', icon: <ClipboardList className="w-3 h-3 mr-1" /> },
     { label: 'Business Hours', message: 'What are the business hours of the BFP Malvar station?', icon: <Clock className="w-3 h-3 mr-1" /> },
 ];
 
@@ -22,7 +21,7 @@ export default function Chatbot() {
     const [messages, setMessages] = useState<Message[]>([
         {
             sender: 'bot',
-            text: 'Hello! I\'m the mySunog assistant for BFP Malvar.\n\nI can help you with fire permits, FSIC tracking, inspection scheduling, fire safety tips, and more.\n\nTry one of the quick prompts below or type your own question!',
+            text: 'Hello! I\'m the mySunog assistant for BFP Malvar.\n\nI can help you with reporting emergencies, viewing active fire alerts, reading fire safety tips, checking emergency hotlines, and more.\n\nTry one of the quick prompts below or type your own question!',
         },
     ]);
     const [loading, setLoading] = useState(false);
