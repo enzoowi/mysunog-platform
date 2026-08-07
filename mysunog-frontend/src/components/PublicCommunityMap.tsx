@@ -12,7 +12,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import {
   MapContainer,
-  TileLayer,
+  LayersControl, TileLayer,
   Marker,
   Popup,
 } from 'react-leaflet';
@@ -144,10 +144,17 @@ export default function PublicCommunityMap() {
           minZoom={12}
           style={{ height: '520px', width: '100%' }}
         >
-          <TileLayer
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Map">
+              <TileLayer
             attribution="&copy; OpenStreetMap contributors"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="&copy; Esri" />
+            </LayersControl.BaseLayer>
+          </LayersControl>
 
           {/* Risk zone polygons — click to open info panel */}
           {showRiskZones && zones.length > 0 && (

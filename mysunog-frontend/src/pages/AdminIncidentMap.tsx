@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, CircleMarker, Popup, Marker, Pane } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, CircleMarker, Popup, Marker, Pane } from 'react-leaflet';
 import L from 'leaflet';
 import { ArrowLeft, Map as MapIcon, Filter, Calendar, Flame, Droplet, ShieldPlus, AlertTriangle, RefreshCw } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
@@ -325,10 +325,17 @@ export default function AdminIncidentMap() {
                             minZoom={12}
                             style={{ height: '550px', width: '100%' }}
                         >
-                            <TileLayer
+                            <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Map">
+              <TileLayer
                                 attribution='&copy; OpenStreetMap contributors'
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="&copy; Esri" />
+            </LayersControl.BaseLayer>
+          </LayersControl>
 
                             {/* Risk Zone Polygons */}
                             {showRiskZones && (

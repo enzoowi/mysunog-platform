@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ArrowLeft, MapPin, X } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -357,7 +357,14 @@ export default function IncidentCreate() {
                                 maxBounds={[[13.98, 121.08], [14.10, 121.25]]}
                                 style={{ height: '100%', width: '100%' }}
                             >
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Map">
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="&copy; Esri" />
+            </LayersControl.BaseLayer>
+          </LayersControl>
                                 <MapClickHandler setLocation={(lat, lng) => setForm(prev => ({ ...prev, latitude: lat.toString(), longitude: lng.toString() }))} />
                                 {form.latitude && form.longitude && (
                                     <Marker position={[Number(form.latitude), Number(form.longitude)]} />

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { api } from '../services/api';
 
@@ -157,10 +157,17 @@ export default function EmergencyRouteMap({ incidentLat, incidentLng }: { incide
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom={false}
         >
-          <TileLayer
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Map">
+              <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution="&copy; OpenStreetMap"
           />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="&copy; Esri" />
+            </LayersControl.BaseLayer>
+          </LayersControl>
           <Marker position={[route.origin.lat, route.origin.lng]} icon={stationIcon}>
             <Popup>
               <strong>🚒 {route.origin.label}</strong><br/>

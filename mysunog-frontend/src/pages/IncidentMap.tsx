@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, Marker, Popup, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import { Map as MapIcon, Droplet, ShieldPlus } from 'lucide-react';
 
@@ -151,10 +151,17 @@ export default function IncidentMap() {
                 <MapContainer center={defaultCenter} zoom={13}
                     maxBounds={[[13.98, 121.08], [14.10, 121.25]]} minZoom={13}
                     style={{ height: '550px', width: '100%', borderRadius: '12px', overflow: 'hidden' }}>
-                    <TileLayer
+                    <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Map">
+              <TileLayer
                         attribution='&copy; OpenStreetMap contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="&copy; Esri" />
+            </LayersControl.BaseLayer>
+          </LayersControl>
 
                     {/* Incident markers */}
                     {isAdmin && showIncidents && filteredIncidents.map((incident) => (

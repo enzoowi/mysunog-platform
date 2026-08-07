@@ -6,7 +6,7 @@ import {
   ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 
 const createPin = (color: string) => `<svg viewBox="0 0 24 36" width="24" height="36" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12c0 7.872 11.233 23.36 11.602 23.86a.5.5 0 0 0 .796 0C12.767 35.36 24 19.872 24 12c0-6.627-5.373-12-12-12zm0 17.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z" fill="${color}" stroke="white" stroke-width="1.5"/></svg>`;
@@ -385,7 +385,14 @@ export default function AIDetection() {
                 <p className="text-xs text-gray-500 mb-2">Click on the map to set the exact location for the camera in Malvar, Batangas.</p>
                 <div className="h-[250px] w-full rounded-lg overflow-hidden border border-gray-300 relative z-0">
                   <MapContainer center={[14.0412, 121.1583]} zoom={14} className="h-full w-full">
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+                    <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Map">
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Satellite">
+              <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="&copy; Esri" />
+            </LayersControl.BaseLayer>
+          </LayersControl>
                     <MapClickHandler onPlace={(lat, lng) => setNewCamera({ ...newCamera, latitude: lat, longitude: lng })} />
                     {newCamera.latitude && newCamera.longitude && (
                       <Marker position={[newCamera.latitude, newCamera.longitude]} icon={cameraIcon} />
