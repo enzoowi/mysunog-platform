@@ -7,6 +7,7 @@ import PublicCommunityMap from '../components/PublicCommunityMap';
 import bfpStationImg from '../assets/images/bfpstation.jpg';
 import bfpLogo from '../assets/images/bfp-logo.jpg';
 import malvarLogo from '../assets/images/malvar-logo.png';
+import { Facebook, Instagram, Mail, Phone, Video } from 'lucide-react';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:3000`;
 
@@ -443,13 +444,40 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-slate-900 py-10 text-center text-slate-400 text-sm">
+      <footer className="bg-slate-900 pt-12 pb-8 text-center text-slate-400 text-sm">
           <div className="max-w-7xl mx-auto px-6">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className="font-bold text-lg text-white tracking-wide">mySunog</span>
+              <div className="flex flex-col items-center mb-8">
+                  <span className="font-bold text-xl text-white tracking-wide mb-6">mySunog - BFP Malvar</span>
+                  
+                  {/* Contact Info */}
+                  <div className="flex flex-wrap justify-center gap-6 text-slate-300">
+                      <a href="https://www.facebook.com/MalvarFSBatangas/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition">
+                          <Facebook className="w-5 h-5" />
+                          <span>Facebook</span>
+                      </a>
+                      <a href="https://www.instagram.com/bfprivamalvar" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition">
+                          <Instagram className="w-5 h-5" />
+                          <span>Instagram</span>
+                      </a>
+                      <a href="https://www.tiktok.com/@bfprivamalvarfs" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition">
+                          <Video className="w-5 h-5" />
+                          <span>TikTok</span>
+                      </a>
+                      <a href="mailto:malvar.pis@gmail.com" className="flex items-center gap-2 hover:text-white transition">
+                          <Mail className="w-5 h-5" />
+                          <span>malvar.pis@gmail.com</span>
+                      </a>
+                      <a href="tel:09276987802" className="flex items-center gap-2 hover:text-white transition">
+                          <Phone className="w-5 h-5" />
+                          <span>0927 698 7802</span>
+                      </a>
+                  </div>
               </div>
-              <p>© {new Date().getFullYear()} Bureau of Fire Protection - Malvar. All Rights Reserved.</p>
-              <p className="mt-2 text-slate-500 text-xs">A unified command and digital modernization initiative.</p>
+              
+              <div className="border-t border-slate-800 pt-6">
+                <p>© {new Date().getFullYear()} Bureau of Fire Protection - Malvar. All Rights Reserved.</p>
+                <p className="mt-2 text-slate-500 text-xs">A unified command and digital modernization initiative.</p>
+              </div>
           </div>
       </footer>
     </div>
