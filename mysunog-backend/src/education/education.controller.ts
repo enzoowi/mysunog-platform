@@ -27,8 +27,24 @@ export class EducationController {
   ) {}
 
   @Post()
-  create(@Body() dto: CreateEducationDto) {
-    return this.educationService.create(dto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      fileFilter: (_req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) cb(null, true);
+        else cb(new Error('Only image files are allowed'), false);
+      },
+    }),
+  )
+  async create(
+    @Body() dto: CreateEducationDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    let imageUrl = dto.imageUrl;
+    if (file) {
+      imageUrl = await this.uploadService.uploadFile(file, 'education');
+    }
+    return this.educationService.create({ ...dto, imageUrl });
   }
 
   @Get()
@@ -42,8 +58,28 @@ export class EducationController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: Partial<CreateEducationDto>) {
-    return this.educationService.update(Number(id), dto);
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: memoryStorage(),
+      fileFilter: (_req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) cb(null, true);
+        else cb(new Error('Only image files are allowed'), false);
+      },
+    }),
+  )
+  async update(
+    @Param('id') id: string, 
+    @Body() dto: Partial<CreateEducationDto>,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    let imageUrl = dto.imageUrl;
+    if (file) {
+      imageUrl = await this.uploadService.uploadFile(file, 'education');
+    }
+    const updateData = { ...dto };
+    if (imageUrl) updateData.imageUrl = imageUrl;
+    
+    return this.educationService.update(Number(id), updateData);
   }
 
   @Delete(':id')

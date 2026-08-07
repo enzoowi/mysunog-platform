@@ -10,7 +10,7 @@ type Content = { id: number; title: string; content: string; category: string; i
 export default function AdminEducation() {
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ title: '', content: '', category: 'general', imageUrl: '' });
+  const [form, setForm] = useState<{ title: string; content: string; category: string; imageUrl: string; imageFile: File | null }>({ title: '', content: '', category: 'general', imageUrl: '', imageFile: null });
   const [editingId, setEditingId] = useState<number | null>(null);
   const [uploadingId, setUploadingId] = useState<number | null>(null);
 
@@ -25,15 +25,26 @@ export default function AdminEducation() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const payload = { ...form, imageUrl: form.imageUrl || undefined };
+      const formData = new FormData();
+      formData.append('title', form.title || '');
+      formData.append('content', form.content || '');
+      formData.append('category', form.category);
+      if (form.imageFile) {
+        formData.append('image', form.imageFile);
+      }
+      
       if (editingId) {
-        await api.patch(`/education/${editingId}`, payload);
+        await api.patch(`/education/${editingId}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         alert('Content updated!');
       } else {
-        await api.post('/education', payload);
+        await api.post('/education', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         alert('Content created!');
       }
-      setForm({ title: '', content: '', category: 'general', imageUrl: '' });
+      setForm({ title: '', content: '', category: 'general', imageUrl: '', imageFile: null });
       setEditingId(null);
       fetchContents();
     } catch (err) { console.error(err); alert('Failed to save content.'); }
@@ -41,7 +52,7 @@ export default function AdminEducation() {
 
   function startEdit(c: Content) {
     setEditingId(c.id);
-    setForm({ title: c.title, content: c.content, category: c.category, imageUrl: c.imageUrl || '' });
+    setForm({ title: c.title || '', content: c.content || '', category: c.category, imageUrl: c.imageUrl || '', imageFile: null });
   }
 
   async function handleDelete(id: number) {
@@ -80,12 +91,12 @@ export default function AdminEducation() {
 
       <form onSubmit={handleSubmit} className="bg-white border rounded-xl p-5 mb-6 space-y-3">
         <h3 className="font-semibold">{editingId ? 'Edit Content' : 'Add New Content'}</h3>
-        <input type="text" placeholder="Title" value={form.title}
+        <input type="text" placeholder="Title (optional)" value={form.title}
           onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
-          className="w-full border rounded-lg px-4 py-2" required />
-        <textarea placeholder="Content body" value={form.content} rows={5}
+          className="w-full border rounded-lg px-4 py-2" />
+        <textarea placeholder="Content body (optional)" value={form.content} rows={5}
           onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))}
-          className="w-full border rounded-lg px-4 py-2" required />
+          className="w-full border rounded-lg px-4 py-2" />
         <div className="grid grid-cols-2 gap-3">
           <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
             className="border rounded-lg px-4 py-2">
@@ -95,16 +106,16 @@ export default function AdminEducation() {
             <option value="emergency">Emergency Preparedness</option>
             <option value="home_safety">Home Safety</option>
           </select>
-          <input type="text" placeholder="Image URL (optional)" value={form.imageUrl}
-            onChange={(e) => setForm((p) => ({ ...p, imageUrl: e.target.value }))}
-            className="border rounded-lg px-4 py-2" />
+          <input type="file" accept="image/*"
+            onChange={(e) => setForm((p) => ({ ...p, imageFile: e.target.files?.[0] || null }))}
+            className="border rounded-lg px-4 py-1.5 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
         </div>
         <div className="flex gap-2">
           <button type="submit" className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition font-medium">
             {editingId ? 'Update' : 'Publish'}
           </button>
           {editingId && (
-            <button type="button" onClick={() => { setEditingId(null); setForm({ title: '', content: '', category: 'general', imageUrl: '' }); }}
+            <button type="button" onClick={() => { setEditingId(null); setForm({ title: '', content: '', category: 'general', imageUrl: '', imageFile: null }); }}
               className="bg-gray-200 px-6 py-2 rounded-lg hover:bg-gray-300 transition font-medium">Cancel</button>
           )}
         </div>
@@ -119,8 +130,8 @@ export default function AdminEducation() {
                 alt="thumb" className="w-16 h-16 object-cover rounded shadow-sm border mt-1" />
             )}
             <div>
-              <p className="font-semibold">{c.title} <span className="text-xs text-gray-400">({c.category})</span></p>
-              <p className="text-sm text-gray-600 mt-1">{c.content.substring(0, 120)}...</p>
+              <p className="font-semibold">{c.title || 'Untitled Image'} <span className="text-xs text-gray-400">({c.category})</span></p>
+              <p className="text-sm text-gray-600 mt-1">{c.content ? c.content.substring(0, 120) + '...' : 'No description provided.'}</p>
             </div>
           </div>
           

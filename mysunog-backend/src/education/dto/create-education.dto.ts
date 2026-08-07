@@ -3,12 +3,12 @@ import { EducationCategory } from '../education.entity';
 
 export class CreateEducationDto {
   @IsString()
-  @IsNotEmpty()
-  title: string;
+  @IsOptional()
+  title?: string;
 
   @IsString()
-  @IsNotEmpty()
-  content: string;
+  @IsOptional()
+  content?: string;
 
   @IsEnum(EducationCategory)
   category: EducationCategory;
