@@ -228,13 +228,7 @@ export default function EducationHub() {
                             <ZoomIn className="w-6 h-6 text-gray-800" />
                           </div>
                         </div>
-                        {/* Category Badge over image */}
-                        <div className="absolute top-4 left-4">
-                          <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm">
-                            <span className="scale-75">{CATEGORY_ICONS[c.category] || <BookOpen className="w-5 h-5 text-blue-600" />}</span>
-                            <span className="text-[10px] font-bold text-gray-800 uppercase tracking-widest">{CATEGORY_LABELS[c.category] || c.category}</span>
-                          </div>
-                        </div>
+
                       </div>
                     ) : (
                        <div className="w-full h-48 shrink-0 bg-gradient-to-br from-orange-100 to-red-50 flex items-center justify-center p-6 text-center border-b border-gray-100">
@@ -244,14 +238,18 @@ export default function EducationHub() {
                          </div>
                        </div>
                     )}
-                    {(c.title || c.content) && (
-                      <div className="p-6 md:p-8 flex flex-col flex-1 overflow-y-auto custom-scrollbar bg-white">
-                        {c.title && <h3 className="font-extrabold text-gray-900 text-xl md:text-2xl mb-4 leading-tight shrink-0">{c.title}</h3>}
-                        {c.content && <div className="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                          {c.content}
-                        </div>}
-                      </div>
-                    )}
+                    <div className={`flex flex-col flex-1 overflow-y-auto custom-scrollbar bg-white ${(!c.title && !c.content) ? 'p-4 border-t border-gray-100 shrink-0 flex-none' : 'p-6 md:p-8'}`}>
+                      {c.imageUrl && (
+                        <div className={`flex items-center gap-1.5 ${(!c.title && !c.content) ? 'justify-center' : 'mb-3'}`}>
+                          <span className="text-gray-500 scale-90">{CATEGORY_ICONS[c.category] || <BookOpen className="w-5 h-5" />}</span>
+                          <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">{CATEGORY_LABELS[c.category] || c.category}</span>
+                        </div>
+                      )}
+                      {c.title && <h3 className="font-extrabold text-gray-900 text-xl md:text-2xl mb-4 leading-tight shrink-0">{c.title}</h3>}
+                      {c.content && <div className="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+                        {c.content}
+                      </div>}
+                    </div>
                   </div>
                 </div>
               );
