@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Ba
 import {
   Flame, Coins, BarChart2, UserX, Hospital, Timer,
   BellRing, BookOpen, ShieldCheck,
-  Users, Image as ImageIcon, MapPin, PhoneCall, LineChart,
+  Users, MapPin, PhoneCall, LineChart,
   Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home, Map, Eye
 } from 'lucide-react';
 
