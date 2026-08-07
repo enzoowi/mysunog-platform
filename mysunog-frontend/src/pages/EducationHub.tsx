@@ -219,7 +219,7 @@ export default function EducationHub() {
                   <div className={`w-full h-full border-0 rounded-[2rem] overflow-hidden bg-white flex flex-col transition-all duration-500 ${offset === 0 ? 'shadow-[0_20px_50px_rgba(0,0,0,0.15)] ring-1 ring-gray-900/5' : 'shadow-lg'}`}>
                     {c.imageUrl ? (
                       <div 
-                        className="w-full h-64 md:h-72 shrink-0 overflow-hidden bg-slate-900 flex items-center justify-center relative group cursor-zoom-in"
+                        className={`w-full ${(!c.title && !c.content) ? 'h-full flex-1' : 'h-64 md:h-72 shrink-0'} overflow-hidden bg-slate-900 flex items-center justify-center relative group cursor-zoom-in`}
                         onClick={(e) => { e.stopPropagation(); setLightboxImage(c.imageUrl?.startsWith('http') ? c.imageUrl : `${BACKEND_URL}${c.imageUrl}`); }}
                       >
                         <img src={c.imageUrl?.startsWith('http') ? c.imageUrl : `${BACKEND_URL}${c.imageUrl}`} alt={c.title} className="w-full h-full object-cover opacity-90 transition-transform duration-700 group-hover:scale-110" />
@@ -245,12 +245,14 @@ export default function EducationHub() {
                          </div>
                        </div>
                     )}
-                    <div className="p-6 md:p-8 flex flex-col flex-1 overflow-y-auto custom-scrollbar bg-white">
-                      <h3 className="font-extrabold text-gray-900 text-xl md:text-2xl mb-4 leading-tight shrink-0">{c.title}</h3>
-                      <div className="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                        {c.content}
+                    {(c.title || c.content) && (
+                      <div className="p-6 md:p-8 flex flex-col flex-1 overflow-y-auto custom-scrollbar bg-white">
+                        {c.title && <h3 className="font-extrabold text-gray-900 text-xl md:text-2xl mb-4 leading-tight shrink-0">{c.title}</h3>}
+                        {c.content && <div className="text-gray-600 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+                          {c.content}
+                        </div>}
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               );
