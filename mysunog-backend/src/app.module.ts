@@ -19,6 +19,7 @@ import { RiskMapModule } from './risk-map/risk-map.module';
 import { AiIncidentsModule } from './ai-incidents/ai-incidents.module';
 import { EmailAlertsModule } from './email-alerts/email-alerts.module';
 import { UploadModule } from './upload/upload.module';
+import { CalendarEventsModule } from './calendar-events/calendar-events.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { UploadModule } from './upload/upload.module';
     AiIncidentsModule,
     EmailAlertsModule,
     UploadModule,
+    CalendarEventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

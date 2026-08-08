@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { BookOpen, ShieldCheck, Droplets, AlertTriangle, Home, BookMarked, Inbox, ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react';
+import { BookOpen, ShieldCheck, Droplets, AlertTriangle, Home, BookMarked, Inbox, ChevronLeft, ChevronRight, X, ZoomIn, Megaphone } from 'lucide-react';
 
 type Content = {
   id: number;
@@ -12,6 +12,7 @@ type Content = {
 };
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  announcement: <Megaphone className="w-5 h-5 text-yellow-600" />,
   general: <BookOpen className="w-5 h-5 text-blue-600" />,
   prevention: <ShieldCheck className="w-5 h-5 text-green-600" />,
   lpg: <Droplets className="w-5 h-5 text-orange-600" />,
@@ -20,6 +21,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
+  announcement: 'Announcements',
   general: 'General',
   prevention: 'Fire Prevention',
   lpg: 'LPG Safety',
@@ -101,8 +103,8 @@ export default function EducationHub() {
           <img src={bannerUrl} alt="Education Hub Banner" className="w-full h-full object-cover" />
           <div className="absolute inset-0 z-20 flex flex-col justify-center items-center text-white text-center p-4">
             <BookMarked className="w-12 h-12 mb-2 drop-shadow-md" />
-            <h2 className="text-3xl md:text-4xl font-extrabold drop-shadow-md mb-2">Fire Safety Education</h2>
-            <p className="text-sm md:text-base font-medium drop-shadow-md">Learn how to stay safe and prevent fires in your community.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold drop-shadow-md mb-2">Updates & Education</h2>
+            <p className="text-sm md:text-base font-medium drop-shadow-md">Announcements, educational resources, and latest updates from BFP.</p>
           </div>
         </div>
       )}
@@ -111,10 +113,10 @@ export default function EducationHub() {
         {!bannerUrl && (
           <div className="mb-8">
             <div className="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-              <BookMarked className="w-3.5 h-3.5" /> Learning Center
+              <BookMarked className="w-3.5 h-3.5" /> Updates & Learning Center
             </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Fire Safety Education Hub</h2>
-            <p className="text-gray-500 mt-2 text-lg">Learn how to stay safe and prevent fires in your community.</p>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">BFP Updates & Education Hub</h2>
+            <p className="text-gray-500 mt-2 text-lg">Announcements, educational resources, and latest updates from BFP.</p>
           </div>
         )}
 

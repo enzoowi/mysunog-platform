@@ -10,11 +10,11 @@ function processDir(dir) {
         } else if (fullPath.endsWith('.tsx') || fullPath.endsWith('.ts')) {
             let content = fs.readFileSync(fullPath, 'utf8');
             const originalContent = content;
-            
+
             const regex = /\`\$\{BACKEND_URL\}\$\{([^}]+)\}\`/g;
-            
+
             content = content.replace(regex, (match, varName) => {
-                if (content.includes('.startsWith')) return match; 
+                if (content.includes('.startsWith')) return match;
                 return `${varName}?.startsWith('http') ? ${varName} : \`\${BACKEND_URL}\${${varName}}\``;
             });
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 interface BfpEvent {
   id: string;
@@ -8,46 +8,7 @@ interface BfpEvent {
   location?: string;
   type: 'training' | 'inspection' | 'community' | 'drill';
 }
-
-const getMockEvents = (currentDate: Date): BfpEvent[] => {
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  return [
-    {
-      id: '1',
-      title: 'Barangay Fire Drill',
-      date: new Date(year, month, 5),
-      time: '08:00 AM - 12:00 PM',
-      location: 'Brgy. Poblacion Covered Court',
-      type: 'drill',
-    },
-    {
-      id: '2',
-      title: 'Commercial Establishments Inspection',
-      date: new Date(year, month, 12),
-      time: '09:00 AM - 04:00 PM',
-      location: 'Malvar Commercial Center',
-      type: 'inspection',
-    },
-    {
-      id: '3',
-      title: 'Fire Safety Seminar for Schools',
-      date: new Date(year, month, 18),
-      time: '01:00 PM - 03:00 PM',
-      location: 'Malvar National High School',
-      type: 'community',
-    },
-    {
-      id: '4',
-      title: 'Volunteer Fire Brigade Training',
-      date: new Date(year, month, 25),
-      time: '07:00 AM - 05:00 PM',
-      location: 'BFP Malvar Station',
-      type: 'training',
-    },
-  ];
-};
+import { api } from '../services/api';
 
 const TYPE_COLORS = {
   training: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -58,7 +19,24 @@ const TYPE_COLORS = {
 
 export default function BfpCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const events = getMockEvents(currentDate);
+  const [events, setEvents] = useState<BfpEvent[]>([]);
+
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const res = await api.get('/calendar-events');
+        // Parse date strings to Date objects
+        const formattedEvents = res.data.map((e: any) => ({
+          ...e,
+          date: new Date(e.date)
+        }));
+        setEvents(formattedEvents);
+      } catch (err) {
+        console.error('Failed to load events', err);
+      }
+    }
+    fetchEvents();
+  }, []);
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -102,41 +80,45 @@ export default function BfpCalendar() {
     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden flex flex-col lg:flex-row">
       
       {/* Sidebar: Upcoming Events */}
-      <div className="lg:w-1/3 bg-slate-900 p-8 flex flex-col justify-between">
-        <div>
+      <div className="lg:w-1/3 bg-gradient-to-br from-orange-600 to-red-700 p-8 flex flex-col justify-between relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-orange-500/20 rounded-xl">
-              <CalendarIcon className="w-6 h-6 text-orange-400" />
+            <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner">
+              <CalendarIcon className="w-6 h-6 text-white" />
             </div>
-            <h3 className="text-2xl font-bold text-white">BFP Calendar</h3>
+            <h3 className="text-2xl font-bold text-white tracking-tight">BFP Calendar</h3>
           </div>
-          <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+          <p className="text-red-50 text-sm mb-8 leading-relaxed">
             Stay updated with the latest events, trainings, and community activities organized by BFP Malvar.
           </p>
 
-          <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Upcoming Events</h4>
+          <h4 className="text-xs font-bold text-red-200 uppercase tracking-widest mb-4">Upcoming Events</h4>
           
           <div className="flex flex-col gap-4">
             {displayEvents.map((event) => (
-              <div key={event.id} className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-4 hover:border-orange-500/50 transition-colors">
+              <div key={event.id} className="bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl p-4 hover:bg-white/20 hover:border-white/40 transition-all shadow-sm">
                 <div className="flex items-start justify-between mb-2">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${TYPE_COLORS[event.type].replace('bg-', 'bg-opacity-20 bg-').replace('border-', 'border-opacity-20 border-')}`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${TYPE_COLORS[event.type].replace('bg-', 'bg-white text-').replace('text-', 'text-').replace('border-', 'border-white border-')}`}>
                     {event.type}
                   </span>
-                  <span className="text-orange-400 text-xs font-bold bg-orange-400/10 px-2 py-1 rounded-lg">
+                  <span className="text-white text-xs font-bold bg-white/20 px-2.5 py-1 rounded-lg">
                     {monthNames[event.date.getMonth()].substring(0, 3)} {event.date.getDate()}
                   </span>
                 </div>
-                <h5 className="font-bold text-white text-sm mb-2">{event.title}</h5>
+                <h5 className="font-bold text-white text-sm mb-2 leading-tight">{event.title}</h5>
                 {event.time && (
-                  <div className="flex items-center gap-2 text-slate-400 text-xs mt-1">
-                    <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                  <div className="flex items-center gap-2 text-red-100 text-xs mt-1.5 font-medium">
+                    <Clock className="w-3.5 h-3.5 flex-shrink-0 opacity-80" />
                     <span>{event.time}</span>
                   </div>
                 )}
                 {event.location && (
-                  <div className="flex items-center gap-2 text-slate-400 text-xs mt-1">
-                    <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                  <div className="flex items-center gap-2 text-red-100 text-xs mt-1.5 font-medium">
+                    <MapPin className="w-3.5 h-3.5 flex-shrink-0 opacity-80" />
                     <span className="truncate">{event.location}</span>
                   </div>
                 )}
@@ -145,7 +127,7 @@ export default function BfpCalendar() {
           </div>
         </div>
         
-        <div className="mt-8 pt-6 border-t border-slate-800 text-xs text-slate-500">
+        <div className="mt-8 pt-6 border-t border-white/20 text-xs text-red-100/80 font-medium relative z-10">
           * Schedule may change without prior notice. Contact us for verification.
         </div>
       </div>

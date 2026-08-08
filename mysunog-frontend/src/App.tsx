@@ -30,6 +30,7 @@ import ChangePassword from './pages/ChangePassword';
 import AdminManageUsers from './pages/AdminManageUsers';
 import AdminDeactivatedUsers from './pages/AdminDeactivatedUsers';
 import AiIncidentDetail from './pages/AiIncidentDetail';
+import AdminCalendar from './pages/AdminCalendar'; // Force IDE refresh
 
 export default function App() {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -118,7 +119,7 @@ export default function App() {
   // Scroll spy logic
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['alerts', 'about', 'education', 'services', 'map', 'hotlines'];
+      const sections = ['alerts', 'about', 'calendar', 'education', 'services', 'map', 'hotlines'];
       let current = '';
       for (const section of sections) {
         const element = document.getElementById(section);
@@ -545,7 +546,8 @@ export default function App() {
                 {/* Public nav links */}
                 <button onClick={() => handleNavClick('/#alerts')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'alerts' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Alerts</button>
                 <button onClick={() => handleNavClick('/#about')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'about' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>About Us</button>
-                <button onClick={() => handleNavClick('/#education')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'education' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Education</button>
+                <button onClick={() => handleNavClick('/#calendar')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'calendar' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Calendar</button>
+                <button onClick={() => handleNavClick('/#education')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'education' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Updates & Education</button>
                 <button onClick={() => handleNavClick('/#services')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'services' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Services</button>
                 <button onClick={() => handleNavClick('/#map')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'map' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Map</button>
                 <button onClick={() => handleNavClick('/#hotlines')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'hotlines' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Hotlines</button>
@@ -622,17 +624,20 @@ export default function App() {
                       <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] min-w-[16px] h-4 flex items-center justify-center rounded-full font-bold px-1 border-2 border-white">{unreadCount}</span>
                     )}
                   </Link>
-                  <div className="hidden lg:flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600 font-mono text-xs shadow-sm" title="Philippine Standard Time">
-                    <Clock className="w-3.5 h-3.5 text-orange-500" />
-                    {currentTime.toLocaleString('en-US', {
-                      timeZone: 'Asia/Manila',
-                      year: 'numeric', month: 'short', day: '2-digit',
-                      hour: '2-digit', minute: '2-digit', second: '2-digit',
-                      hour12: false
-                    }).replace(',', '')}
-                  </div>
                 </div>
               )}
+              
+              {/* Always show clock */}
+              <div className="hidden lg:flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600 font-mono text-xs shadow-sm" title="Philippine Standard Time">
+                <Clock className="w-3.5 h-3.5 text-orange-500" />
+                {currentTime.toLocaleString('en-US', {
+                  timeZone: 'Asia/Manila',
+                  year: 'numeric', month: 'short', day: '2-digit',
+                  hour: '2-digit', minute: '2-digit', second: '2-digit',
+                  hour12: false
+                }).replace(',', '')}
+              </div>
+
               <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 text-gray-600">
                 <span className="text-2xl">{menuOpen ? '✕' : '☰'}</span>
               </button>
@@ -667,9 +672,11 @@ export default function App() {
 
           <Route path="/admin/ai-incidents/:id" element={<RequireRole allowedRoles={['bfp_staff', 'admin', 'fire_investigator']}><AiIncidentDetail /></RequireRole>} />
 
-          {/* Admin-only routes */}
-          <Route path="/admin/alerts" element={<RequireRole allowedRoles={['admin']}><AdminAlerts /></RequireRole>} />
-          <Route path="/admin/education" element={<RequireRole allowedRoles={['admin']}><AdminEducation /></RequireRole>} />
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={<RequireRole allowedRoles={['admin', 'bfp_staff', 'fire_investigator']}><AdminDashboard /></RequireRole>} />
+          <Route path="/admin/alerts" element={<RequireRole allowedRoles={['admin', 'bfp_staff']}><AdminAlerts /></RequireRole>} />
+          <Route path="/admin/calendar" element={<RequireRole allowedRoles={['admin', 'bfp_staff']}><AdminCalendar /></RequireRole>} />
+          <Route path="/admin/education" element={<RequireRole allowedRoles={['admin', 'bfp_staff']}><AdminEducation /></RequireRole>} />
           <Route path="/admin/hotlines" element={<RequireRole allowedRoles={['admin']}><AdminHotlines /></RequireRole>} />
           <Route path="/admin/services" element={<RequireRole allowedRoles={['admin']}><AdminServices /></RequireRole>} />
           <Route path="/admin/map-assets" element={<RequireRole allowedRoles={['admin', 'bfp_staff', 'fire_investigator']}><AdminMapAssets /></RequireRole>} />

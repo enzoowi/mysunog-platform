@@ -87,7 +87,7 @@ export default function AdminEducation() {
       <Link to="/admin/dashboard" className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 mb-4">
         <ArrowLeft className="w-4 h-4" /> Back to Dashboard
       </Link>
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Manage Education Content</h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Manage Announcements & Education Content</h2>
 
       <form onSubmit={handleSubmit} className="bg-white border rounded-xl p-5 mb-6 space-y-3">
         <h3 className="font-semibold">{editingId ? 'Edit Content' : 'Add New Content'}</h3>
@@ -100,6 +100,7 @@ export default function AdminEducation() {
         <div className="grid grid-cols-2 gap-3">
           <select value={form.category} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
             className="border rounded-lg px-4 py-2">
+            <option value="announcement">Announcements</option>
             <option value="general">General</option>
             <option value="prevention">Fire Prevention</option>
             <option value="lpg">LPG Safety</option>
