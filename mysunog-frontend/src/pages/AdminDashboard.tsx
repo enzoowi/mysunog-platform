@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import {
   Flame, Coins, BarChart2, UserX, Hospital, Timer,
-  BellRing, BookOpen, ShieldCheck,
+  BellRing, BookOpen,
   Users, MapPin, PhoneCall, LineChart,
   Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home, Map, Eye, Loader
 } from 'lucide-react';
