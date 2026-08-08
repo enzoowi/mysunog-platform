@@ -541,32 +541,31 @@ export default function App() {
               <span className="font-bold text-xl text-gray-800">mySunog</span>
             </Link>
 
-            <div className={`${menuOpen ? 'block absolute top-16 left-0 right-0 bg-white border-b shadow-lg p-4' : 'hidden'} md:flex md:items-center md:mx-auto`}>
-              <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+            <div className={`${menuOpen ? 'block absolute top-16 left-0 right-0 bg-white border-b shadow-lg p-4' : 'hidden'} xl:flex xl:items-center xl:justify-center flex-1 mx-4`}>
+              <div className="flex flex-col xl:flex-row xl:items-center gap-1 xl:gap-1 2xl:gap-2">
                 {/* Public nav links */}
-                <button onClick={() => handleNavClick('/#alerts')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'alerts' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Alerts</button>
-                <button onClick={() => handleNavClick('/#about')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'about' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>About Us</button>
-                <button onClick={() => handleNavClick('/#calendar')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'calendar' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Calendar</button>
-                <button onClick={() => handleNavClick('/#education')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'education' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Updates & Education</button>
-                <button onClick={() => handleNavClick('/#services')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'services' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Services</button>
-                <button onClick={() => handleNavClick('/#map')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'map' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Map</button>
-                <button onClick={() => handleNavClick('/#hotlines')} className={`px-3 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'hotlines' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Hotlines</button>
+                <button onClick={() => handleNavClick('/#alerts')} className={`px-2.5 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'alerts' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Alerts</button>
+                <button onClick={() => handleNavClick('/#about')} className={`px-2.5 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'about' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>About</button>
+                <button onClick={() => handleNavClick('/#calendar')} className={`px-2.5 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'calendar' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Calendar</button>
+                <button onClick={() => handleNavClick('/#education')} className={`px-2.5 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'education' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Updates</button>
+                <button onClick={() => handleNavClick('/#services')} className={`px-2.5 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'services' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Services</button>
+                <button onClick={() => handleNavClick('/#map')} className={`px-2.5 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'map' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Map</button>
+                <button onClick={() => handleNavClick('/#hotlines')} className={`px-2.5 py-2 text-sm rounded-lg transition text-left font-medium ${activeTab === 'hotlines' ? 'bg-orange-50 text-orange-600' : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600'}`}>Hotlines</button>
 
                 {userEmail && (
                   <>
-                    <div className="hidden md:block w-px h-6 bg-gray-200 mx-2" />
+                    <div className="hidden xl:block w-px h-6 bg-gray-200 mx-1" />
                     {/* Staff/Admin links */}
-                    <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide px-3 py-1 md:hidden mt-4">Account</span>
+                    <span className="text-xs text-gray-400 font-semibold uppercase tracking-wide px-3 py-1 xl:hidden mt-4">Account</span>
                   </>
                 )}
                 {/* Dashboard — bfp_staff and admin */}
                 {(userRole === 'admin' || userRole === 'bfp_staff' || userRole === 'fire_investigator') && (
-                  <Link to="/admin/dashboard" className="px-3 py-2 text-sm text-orange-600 font-bold hover:bg-orange-50 rounded-lg transition" onClick={() => setMenuOpen(false)}>Dashboard</Link>
+                  <Link to="/admin/dashboard" className="px-2.5 py-2 text-sm text-orange-600 font-bold hover:bg-orange-50 rounded-lg transition" onClick={() => setMenuOpen(false)}>Dashboard</Link>
                 )}
 
-
                 {userEmail && (
-                  <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium md:hidden flex items-center gap-1">
+                  <button onClick={() => { setMenuOpen(false); handleLogout(); }} className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition font-medium xl:hidden flex items-center gap-1">
                     <LogOut className="w-4 h-4" /> Logout
                   </button>
                 )}
@@ -576,6 +575,17 @@ export default function App() {
             {/* Always visible top-right section */}
             <div className="flex items-center gap-2 ml-auto z-50">
               {userEmail && (
+                <div className="flex items-center gap-2">
+                  <Link to="/notifications" className="p-2 relative text-gray-500 hover:text-orange-600 transition hover:bg-orange-50 rounded-full" title="Notifications" onClick={() => setMenuOpen(false)}>
+                    <Bell className="w-5 h-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 bg-red-500 text-white text-[9px] min-w-[16px] h-4 flex items-center justify-center rounded-full font-bold px-1 border-2 border-white">{unreadCount}</span>
+                    )}
+                  </Link>
+                </div>
+              )}
+              
+              {userEmail && (
                 <div className="hidden md:flex items-center gap-2" ref={profileRef}>
                   {/* Clickable email pill */}
                   <div className="relative">
@@ -584,7 +594,7 @@ export default function App() {
                       className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 hover:bg-orange-100 rounded-full border border-orange-100 transition cursor-pointer"
                     >
                       <User className="w-3.5 h-3.5 text-orange-600" />
-                      <span className="text-xs font-medium text-orange-700 max-w-[180px] truncate" title={userEmail}>{userEmail}</span>
+                      <span className="text-xs font-medium text-orange-700 max-w-[160px] truncate" title={userEmail}>{userEmail}</span>
                       <ChevronDown className={`w-3 h-3 text-orange-500 transition-transform ${profileOpen ? 'rotate-180' : ''}`} />
                     </button>
 
@@ -616,19 +626,9 @@ export default function App() {
                   </div>
                 </div>
               )}
-              {userEmail && (
-                <div className="flex items-center gap-2">
-                  <Link to="/notifications" className="p-2 relative text-gray-500 hover:text-orange-600 transition" title="Notifications" onClick={() => setMenuOpen(false)}>
-                    <Bell className="w-6 h-6" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1.5 right-1.5 bg-red-500 text-white text-[9px] min-w-[16px] h-4 flex items-center justify-center rounded-full font-bold px-1 border-2 border-white">{unreadCount}</span>
-                    )}
-                  </Link>
-                </div>
-              )}
               
               {/* Always show clock */}
-              <div className="hidden lg:flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600 font-mono text-xs shadow-sm" title="Philippine Standard Time">
+              <div className="hidden 2xl:flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600 font-mono text-xs shadow-sm" title="Philippine Standard Time">
                 <Clock className="w-3.5 h-3.5 text-orange-500" />
                 {currentTime.toLocaleString('en-US', {
                   timeZone: 'Asia/Manila',
