@@ -199,7 +199,7 @@ export default function BfpCalendar() {
                     <div 
                       key={event.id}
                       onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
-                      className={`text-[10px] md:text-xs font-medium px-1.5 py-1 rounded border leading-tight line-clamp-2 cursor-pointer transition-transform hover:scale-105 ${TYPE_COLORS[event.type]}`}
+                      className={`text-[10px] md:text-xs font-medium px-1.5 py-1 rounded border leading-tight line-clamp-2 cursor-pointer hover:opacity-80 transition-opacity ${TYPE_COLORS[event.type]}`}
                       title={event.title}
                     >
                       {event.title}
