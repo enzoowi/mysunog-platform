@@ -44,14 +44,21 @@ export default function Home() {
         {/* Abstract background graphics to mimic government agency feel */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-orange-400 via-red-900 to-transparent"></div>
         <div className="max-w-7xl mx-auto relative z-10 flex flex-col items-center text-center">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8 mb-2">
-              <img src={malvarLogo} alt="Malvar Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain" />
-              <div className="flex flex-col items-center justify-center">
-                <p className="text-sm md:text-lg font-semibold tracking-widest text-slate-200 mb-1">REPUBLIC OF THE PHILIPPINES</p>
-                <h1 className="text-3xl md:text-5xl font-extrabold my-2 tracking-tight shadow-sm text-white">BUREAU OF FIRE PROTECTION</h1>
-                <p className="text-lg md:text-2xl font-bold tracking-widest text-orange-400 mt-1">MUNICIPALITY OF MALVAR</p>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10 mb-6 mt-4">
+              <img src={malvarLogo} alt="Malvar Logo" className="w-24 h-24 md:w-36 md:h-36 object-contain drop-shadow-2xl" />
+              <div className="flex flex-col items-center justify-center font-serif text-center">
+                <p className="text-xs md:text-sm font-semibold tracking-[0.3em] text-amber-400 mb-2 uppercase drop-shadow-md">
+                  Republic of the Philippines
+                </p>
+                <h1 className="text-4xl md:text-6xl font-black my-1 tracking-wide text-white drop-shadow-2xl" style={{ textShadow: '2px 2px 10px rgba(0,0,0,0.8)' }}>
+                  BUREAU OF FIRE PROTECTION
+                </h1>
+                <div className="w-3/4 h-[2px] bg-gradient-to-r from-transparent via-amber-500 to-transparent my-3 opacity-80"></div>
+                <p className="text-lg md:text-2xl font-bold tracking-[0.2em] text-amber-500 uppercase drop-shadow-md">
+                  Municipality of Malvar
+                </p>
               </div>
-              <img src={bfpLogo} alt="BFP Logo" className="w-20 h-20 md:w-32 md:h-32 object-contain rounded-full" />
+              <img src={bfpLogo} alt="BFP Logo" className="w-24 h-24 md:w-36 md:h-36 object-contain rounded-full drop-shadow-2xl bg-white p-1" />
             </div>
             <div className="mt-8 flex gap-4">
                 <a href="#hotlines" className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold shadow-lg transition-all duration-200">
