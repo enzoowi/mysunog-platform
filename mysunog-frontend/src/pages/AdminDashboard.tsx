@@ -6,7 +6,7 @@ import {
   Flame, Coins, BarChart2, UserX, Hospital, Timer,
   BellRing, BookOpen, ShieldCheck,
   Users, MapPin, PhoneCall, LineChart,
-  Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home, Map, Eye
+  Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home, Map, Eye, Loader
 } from 'lucide-react';
 
 type DashboardSummary = {
@@ -101,7 +101,12 @@ export default function AdminDashboard() {
       .finally(() => setStatsLoading(false));
   }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (loading) return <div className="p-6">Loading admin dashboard...</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <Loader className="w-12 h-12 animate-spin text-orange-600" />
+      <p className="text-gray-500 font-medium animate-pulse">Loading dashboard statistics...</p>
+    </div>
+  );
 
   const cards = [
     { label: 'Total Incidents', value: summary?.totalIncidents || 0, color: 'bg-red-500', icon: <Flame className="w-8 h-8" /> },
