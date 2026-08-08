@@ -107,9 +107,17 @@ export default function AdminEducation() {
             <option value="emergency">Emergency Preparedness</option>
             <option value="home_safety">Home Safety</option>
           </select>
-          <input type="file" accept="image/*"
-            onChange={(e) => setForm((p) => ({ ...p, imageFile: e.target.files?.[0] || null }))}
-            className="border rounded-lg px-4 py-1.5 text-sm file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+          <div className="flex flex-col gap-2">
+            {form.imageUrl && !form.imageFile && (
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <img src={form.imageUrl.startsWith('http') ? form.imageUrl : `${BACKEND_URL}${form.imageUrl}`} alt="Current" className="h-8 w-8 object-cover rounded shadow-sm border" />
+                <span>Current image (upload new to replace)</span>
+              </div>
+            )}
+            <input type="file" accept="image/*"
+              onChange={(e) => setForm((p) => ({ ...p, imageFile: e.target.files?.[0] || null }))}
+              className="border rounded-lg px-4 py-1.5 text-sm w-full file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+          </div>
         </div>
         <div className="flex gap-2">
           <button type="submit" className="bg-orange-600 text-white px-6 py-2 rounded-lg hover:bg-orange-700 transition font-medium">
