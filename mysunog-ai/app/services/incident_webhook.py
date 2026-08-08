@@ -193,7 +193,7 @@ async def post_incident_to_backend(
             async with httpx.AsyncClient(timeout=8.0) as client:
                 response = await client.post(
                     url,
-                    content=payload.model_dump_json(),
+                    content=payload.model_dump_json(exclude={"payload_version", "generated_at"}),
                     headers=headers,
                 )
 

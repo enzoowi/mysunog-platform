@@ -4,6 +4,7 @@ import Alerts from './Alerts';
 import EducationHub from './EducationHub';
 import EmergencyHotlines from './EmergencyHotlines';
 import PublicCommunityMap from '../components/PublicCommunityMap';
+import BfpCalendar from '../components/BfpCalendar';
 import bfpStationImg from '../assets/images/bfpstation.jpg';
 import bfpLogo from '../assets/images/bfp-logo.jpg';
 import malvarLogo from '../assets/images/malvar-logo.png';
@@ -144,6 +145,18 @@ export default function Home() {
                           </div>
                       </div>
                   </div>
+              </div>
+          </section>
+
+          {/* Calendar Section */}
+          <section id="calendar" className="w-full py-16 scroll-mt-16 bg-white border-b border-gray-200">
+              <div className="max-w-7xl mx-auto px-4 md:px-8">
+                  <div className="text-center mb-10">
+                      <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Activities & Events</h2>
+                      <div className="w-24 h-1.5 bg-orange-600 mx-auto mt-5 rounded-full mb-6"></div>
+                      <p className="text-gray-500 max-w-2xl mx-auto text-base leading-relaxed">Stay up to date with BFP Malvar's trainings, inspections, community drills, and other upcoming events.</p>
+                  </div>
+                  <BfpCalendar />
               </div>
           </section>
 
