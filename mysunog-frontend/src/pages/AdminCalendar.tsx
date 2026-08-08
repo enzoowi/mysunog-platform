@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { Plus, Edit2, Trash2, Shield, Loader, X, Calendar as CalendarIcon, Clock, MapPin, Tag } from 'lucide-react';
+import { Plus, Edit2, Trash2, Shield, Loader, X, Calendar as CalendarIcon, Clock, MapPin, Tag, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface CalendarEvent {
   id: string;
@@ -99,6 +100,10 @@ export default function AdminCalendar() {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <Link to="/admin/dashboard" className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 mb-6 font-medium">
+        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+      </Link>
+      
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
