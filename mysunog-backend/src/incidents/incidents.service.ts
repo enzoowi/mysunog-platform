@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm';
+import axios from 'axios';
 import { FireIncident } from './fire-incident.entity';
 import { CreateIncidentDto } from './dto/create-incident.dto';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -278,6 +279,48 @@ export class IncidentsService {
       avgResponseTimeMinutes: Math.round(avgResponseTime * 10) / 10,
       recentIncidents,
     };
+  }
+
+  async generateDashboardInsights(summaryData: any) {
+    const apiKey = process.env.GROQ_API_KEY;
+    const model = process.env.GROQ_CHAT_MODEL || 'llama-3.3-70b-versatile';
+
+    if (!apiKey) {
+      throw new InternalServerErrorException('Missing GROQ_API_KEY in .env');
+    }
+
+    const systemPrompt = `You are an expert fire safety data analyst for the Bureau of Fire Protection (BFP) Malvar.
+Analyze the following fire incident statistics and provide a short, dynamic, and actionable insight useful for firemen and officers.
+Focus heavily on the "Time of Day", "Causes", and "Barangays" data.
+Keep your response extremely concise (maximum 3-4 short sentences).
+Do not use markdown formatting like asterisks or bolding, just plain readable text.
+Provide practical advice based on the data provided.`;
+
+    try {
+      const response = await axios.post(
+        'https://api.groq.com/openai/v1/chat/completions',
+        {
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Here is the current dashboard summary data:\n${JSON.stringify(summaryData, null, 2)}` }
+          ],
+          temperature: 0.7,
+          max_tokens: 150,
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      return { insight: response.data.choices[0]?.message?.content || 'Unable to generate insights at this time.' };
+    } catch (error: any) {
+      console.error('Groq API Error in dashboard insights:', error?.response?.data || error.message);
+      throw new InternalServerErrorException('Failed to generate AI insights');
+    }
   }
 
   private timeToMinutes(time: string): number {

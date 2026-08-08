@@ -63,6 +63,13 @@ export class IncidentsController {
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
+  @Post('ai-insights')
+  getAiInsights(@Body() summaryData: any) {
+    return this.incidentsService.generateDashboardInsights(summaryData);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.BFP_STAFF, UserRole.ADMIN, UserRole.FIRE_INVESTIGATOR)
   @Get('response-performance')
   getResponsePerformance() {
     return this.incidentsService.getResponsePerformance();

@@ -6,7 +6,7 @@ import {
   Flame, Coins, BarChart2, UserX, Hospital, Timer,
   BellRing, BookOpen,
   Users, MapPin, PhoneCall, LineChart,
-  Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home, Map, Eye, Loader
+  Shield, Clock, Target, Activity, AlertTriangle, TrendingUp, Home, Map, Eye, Loader, Sparkles
 } from 'lucide-react';
 
 type DashboardSummary = {
@@ -51,6 +51,8 @@ export default function AdminDashboard() {
   const [authorized, setAuthorized] = useState(false);
   const [period, setPeriod] = useState<Period>('annually');
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   const navigate = useNavigate();
 
   // Check if user is admin or bfp_staff
@@ -100,6 +102,19 @@ export default function AdminDashboard() {
       .catch((err) => console.error(err))
       .finally(() => setStatsLoading(false));
   }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch AI Insights whenever the summary changes
+  useEffect(() => {
+    if (!summary) return;
+    setAiLoading(true);
+    api.post('/incidents/ai-insights', summary)
+      .then(res => setAiInsight(res.data.insight))
+      .catch(err => {
+        console.error('Failed to get AI insights:', err);
+        setAiInsight('AI insights are currently unavailable.');
+      })
+      .finally(() => setAiLoading(false));
+  }, [summary]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -221,6 +236,29 @@ export default function AdminDashboard() {
                 </p>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic AI Insights */}
+      {summary && (
+        <div className="mb-8 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-5 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-[100px] -z-0 opacity-50"></div>
+          <div className="flex items-center gap-2 mb-3 relative z-10">
+            <Sparkles className="w-5 h-5 text-orange-600" />
+            <h3 className="font-bold text-gray-800 text-lg">AI Analysis & Recommendations</h3>
+          </div>
+          <div className="relative z-10">
+            {aiLoading ? (
+              <div className="flex items-center gap-3 text-orange-600 animate-pulse">
+                <Loader className="w-5 h-5 animate-spin" />
+                <span className="text-sm font-medium">Generating AI insights based on current statistics...</span>
+              </div>
+            ) : (
+              <p className="text-gray-700 text-[15px] leading-relaxed whitespace-pre-line font-medium">
+                {aiInsight || 'No AI insights available at the moment.'}
+              </p>
+            )}
           </div>
         </div>
       )}
