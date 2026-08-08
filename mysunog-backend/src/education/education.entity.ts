@@ -6,6 +6,7 @@ import {
 } from 'typeorm';
 
 export enum EducationCategory {
+  ANNOUNCEMENT = 'announcement',
   GENERAL = 'general',
   PREVENTION = 'prevention',
   LPG = 'lpg',
