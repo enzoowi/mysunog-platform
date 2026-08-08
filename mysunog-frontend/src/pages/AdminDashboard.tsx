@@ -255,9 +255,9 @@ export default function AdminDashboard() {
                 <span className="text-sm font-medium">Generating AI insights based on current statistics...</span>
               </div>
             ) : (
-              <p className="text-gray-700 text-[15px] leading-relaxed whitespace-pre-line font-medium">
+              <div className="text-gray-700 text-[15px] leading-relaxed whitespace-pre-line font-medium space-y-2">
                 {aiInsight || 'No AI insights available at the moment.'}
-              </p>
+              </div>
             )}
           </div>
         </div>

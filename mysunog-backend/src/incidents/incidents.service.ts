@@ -290,10 +290,10 @@ export class IncidentsService {
     }
 
     const systemPrompt = `You are an expert fire safety data analyst for the Bureau of Fire Protection (BFP) Malvar.
-Analyze the following fire incident statistics and provide a short, dynamic, and actionable insight useful for firemen and officers.
+Analyze the following fire incident statistics and provide a dynamic, actionable insight useful for firemen and officers.
 Focus heavily on the "Time of Day", "Causes", and "Barangays" data.
-Keep your response extremely concise (maximum 3-4 short sentences).
-Do not use markdown formatting like asterisks or bolding, just plain readable text.
+Format your response as a clean, highly readable bulleted list using emojis. Do NOT use markdown bolding (**) or hashtags.
+Keep your response concise and structured. Use one short sentence per bullet point.
 Provide practical advice based on the data provided.`;
 
     try {
@@ -306,7 +306,7 @@ Provide practical advice based on the data provided.`;
             { role: 'user', content: `Here is the current dashboard summary data:\n${JSON.stringify(summaryData, null, 2)}` }
           ],
           temperature: 0.7,
-          max_tokens: 150,
+          max_tokens: 300,
         },
         {
           headers: {
