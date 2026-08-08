@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, MapPin, X } from 'lucide-react';
 interface BfpEvent {
   id: string;
   title: string;
@@ -20,6 +20,7 @@ const TYPE_COLORS = {
 export default function BfpCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<BfpEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<BfpEvent | null>(null);
 
   useEffect(() => {
     async function fetchEvents() {
@@ -100,7 +101,11 @@ export default function BfpCalendar() {
           
           <div className="flex flex-col gap-4">
             {displayEvents.map((event) => (
-              <div key={event.id} className="bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl p-4 hover:bg-white/20 hover:border-white/40 transition-all shadow-sm">
+              <div 
+                key={event.id} 
+                onClick={() => setSelectedEvent(event)}
+                className="bg-white/10 border border-white/20 backdrop-blur-sm rounded-2xl p-4 hover:bg-white/20 hover:border-white/40 transition-all shadow-sm cursor-pointer"
+              >
                 <div className="flex items-start justify-between mb-2">
                   <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${TYPE_COLORS[event.type].replace('bg-', 'bg-white text-').replace('text-', 'text-').replace('border-', 'border-white border-')}`}>
                     {event.type}
@@ -193,7 +198,8 @@ export default function BfpCalendar() {
                   {dayEvents.map(event => (
                     <div 
                       key={event.id}
-                      className={`text-[10px] md:text-xs font-medium px-1.5 py-1 rounded border leading-tight line-clamp-2 ${TYPE_COLORS[event.type]}`}
+                      onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
+                      className={`text-[10px] md:text-xs font-medium px-1.5 py-1 rounded border leading-tight line-clamp-2 cursor-pointer transition-transform hover:scale-105 ${TYPE_COLORS[event.type]}`}
                       title={event.title}
                     >
                       {event.title}
@@ -226,6 +232,76 @@ export default function BfpCalendar() {
         </div>
 
       </div>
+
+      {/* Event Details Modal */}
+      {selectedEvent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className={`p-6 text-white ${
+              selectedEvent.type === 'training' ? 'bg-blue-600' :
+              selectedEvent.type === 'inspection' ? 'bg-amber-500' :
+              selectedEvent.type === 'community' ? 'bg-emerald-600' :
+              'bg-red-600'
+            }`}>
+              <div className="flex justify-between items-start mb-4">
+                <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+                  {selectedEvent.type}
+                </span>
+                <button onClick={() => setSelectedEvent(null)} className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <h3 className="text-xl font-bold leading-tight mb-2">{selectedEvent.title}</h3>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3 text-slate-700">
+                <div className="p-2.5 bg-slate-100 rounded-xl text-slate-500">
+                  <CalendarIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Date</p>
+                  <p className="font-semibold text-slate-800">
+                    {selectedEvent.date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+              
+              {selectedEvent.time && (
+                <div className="flex items-center gap-3 text-slate-700">
+                  <div className="p-2.5 bg-slate-100 rounded-xl text-slate-500">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Time</p>
+                    <p className="font-semibold text-slate-800">{selectedEvent.time}</p>
+                  </div>
+                </div>
+              )}
+              
+              {selectedEvent.location && (
+                <div className="flex items-center gap-3 text-slate-700">
+                  <div className="p-2.5 bg-slate-100 rounded-xl text-slate-500">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Location</p>
+                    <p className="font-semibold text-slate-800">{selectedEvent.location}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setSelectedEvent(null)}
+                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-semibold transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
