@@ -30,6 +30,7 @@ export class UsersController {
       role: body.role,
       firstName: body.firstName,
       lastName: body.lastName,
+      phone: body.phone,
     });
   }
 
