@@ -17,7 +17,7 @@ from pathlib import Path
 
 from app.config import settings
 from app.detection.detector import detector
-from app.routes import detect, health, risk_scoring, stream
+from app.routes import detect, health, risk_scoring, stream, video_stream
 
 
 @asynccontextmanager
@@ -73,6 +73,7 @@ app.include_router(health.router, tags=["Health"])
 app.include_router(detect.router, tags=["Detection"])
 app.include_router(risk_scoring.router, tags=["Risk Prediction"])
 app.include_router(stream.router, tags=["Camera Stream"])
+app.include_router(video_stream.router, tags=["Video Upload"])
 
 
 @app.get("/")

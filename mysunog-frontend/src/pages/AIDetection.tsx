@@ -3,8 +3,10 @@ import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
 import {
-  ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail, Loader
+  ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail, Loader,
+  Upload, Film, Square, Play
 } from 'lucide-react';
+import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
 import { MapContainer, LayersControl, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { cameraIcon } from '../components/MapIcons';
@@ -68,6 +70,13 @@ export default function AIDetection() {
   const [newEmailAddress, setNewEmailAddress] = useState('');
   const [newEmailName, setNewEmailName] = useState('');
   const [isAddingEmail, setIsAddingEmail] = useState(false);
+
+  // Video Upload State
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  const [activeVideoName, setActiveVideoName] = useState<string | null>(null);
+  const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -200,6 +209,41 @@ export default function AIDetection() {
       fetchEmailRecipients();
     }
   }, [showEmailModal]);
+
+  async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setVideoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('camera_name', file.name);
+      const res = await axios.post(`${AI_SERVICE_URL}/video/upload`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data.success) {
+        setActiveVideoId(res.data.video_id);
+        setActiveVideoName(file.name);
+      } else {
+        alert('Failed to upload video: ' + (res.data.message || 'Unknown error'));
+      }
+    } catch (err: any) {
+      alert('Failed to upload video: ' + (err?.response?.data?.detail || err.message));
+    } finally {
+      setVideoUploading(false);
+      if (videoInputRef.current) videoInputRef.current.value = '';
+    }
+  }
+
+  async function handleStopVideo() {
+    if (!activeVideoId) return;
+    try {
+      await axios.delete(`${AI_SERVICE_URL}/video/stop/${activeVideoId}`);
+    } catch { /* ignore */ }
+    setActiveVideoId(null);
+    setActiveVideoName(null);
+    setExpandedVideoId(null);
+  }
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -344,6 +388,110 @@ export default function AIDetection() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Video Upload Section */}
+      <div className="mt-10 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+            <Film className="w-5 h-5 text-gray-500" /> Video Analysis
+          </h3>
+        </div>
+
+        {!activeVideoId ? (
+          <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-purple-300 transition">
+            <Upload className="w-10 h-10 mx-auto mb-3 text-gray-300" />
+            <p className="text-base font-semibold text-gray-700 mb-1">Upload Video for AI Detection</p>
+            <p className="text-sm text-gray-500 mb-4">Upload a video file to run fire & smoke detection with live bounding boxes.</p>
+            <input
+              ref={videoInputRef}
+              type="file"
+              accept=".mp4,.avi,.mov,.mkv,.webm"
+              onChange={handleVideoUpload}
+              className="hidden"
+              id="video-upload-input"
+            />
+            <button
+              onClick={() => videoInputRef.current?.click()}
+              disabled={videoUploading}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-lg text-sm font-semibold inline-flex items-center gap-2 transition disabled:opacity-70"
+            >
+              {videoUploading ? (
+                <><Loader className="w-4 h-4 animate-spin" /> Uploading...</>
+              ) : (
+                <><Upload className="w-4 h-4" /> Choose Video File</>
+              )}
+            </button>
+            <p className="text-xs text-gray-400 mt-3">Supported: MP4, AVI, MOV, MKV, WebM</p>
+          </div>
+        ) : (
+          <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-gray-950 aspect-video relative flex items-center justify-center cursor-pointer group" onClick={() => setExpandedVideoId(activeVideoId)}>
+              <img
+                src={`${AI_SERVICE_URL}/stream/mjpeg/${activeVideoId}?detect=true&fps=15&quality=60`}
+                className="w-full h-full object-contain"
+                alt="Video Analysis"
+              />
+              <div className="absolute top-2 left-2 z-10">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-purple-500/90 text-white">
+                  <Play className="w-3 h-3" /> AI Analysis
+                </span>
+              </div>
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+                  <Maximize2 className="w-6 h-6 text-white" />
+                </div>
+              </div>
+            </div>
+            <div className="p-4 flex items-center justify-between">
+              <div>
+                <h4 className="font-bold text-gray-800 text-sm flex items-center gap-2">
+                  <Film className="w-4 h-4 text-purple-500" />
+                  {activeVideoName || 'Uploaded Video'}
+                </h4>
+                <p className="text-xs text-gray-500 mt-0.5">AI detection is running on every frame</p>
+              </div>
+              <button
+                onClick={handleStopVideo}
+                className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition"
+              >
+                <Square className="w-3.5 h-3.5" /> Stop
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Expanded Video Modal */}
+      {expandedVideoId && (
+        <div className="fixed inset-0 bg-black/90 z-[10000] flex items-center justify-center p-4 lg:p-8 backdrop-blur-sm">
+          <div className="w-full max-w-7xl h-full flex flex-col">
+            <div className="flex justify-between items-center mb-4 text-white">
+              <div>
+                <h3 className="font-bold text-xl md:text-2xl flex items-center gap-2">
+                  {activeVideoName || 'Video Analysis'}
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                    <Play className="w-3 h-3" /> AI Analysis
+                  </span>
+                </h3>
+                <p className="text-gray-400 text-sm mt-1">Video playback with real-time fire & smoke detection</p>
+              </div>
+              <button
+                onClick={() => setExpandedVideoId(null)}
+                className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 bg-gray-950 rounded-2xl overflow-hidden border border-gray-800 shadow-2xl relative flex items-center justify-center">
+              <img
+                src={`${AI_SERVICE_URL}/stream/mjpeg/${expandedVideoId}?detect=true&fps=15&quality=70`}
+                className="w-full h-full object-contain"
+                alt="Video Analysis Fullscreen"
+              />
+            </div>
+          </div>
         </div>
       )}
 
