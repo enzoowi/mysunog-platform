@@ -292,7 +292,7 @@ export class IncidentsService {
     const systemPrompt = `You are an expert fire safety data analyst for the Bureau of Fire Protection (BFP) Malvar.
 Analyze the following fire incident statistics and provide a dynamic, actionable insight useful for firemen and officers.
 Focus heavily on the "Time of Day", "Causes", and "Barangays" data.
-Format your response as a clean, highly readable bulleted list using emojis. Do NOT use markdown bolding (**) or hashtags.
+Format your response as a clean, highly readable bulleted list using standard dashes (-). Do NOT use any emojis, markdown bolding (**), or hashtags.
 Keep your response concise and structured. Use one short sentence per bullet point.
 Provide practical advice based on the data provided.`;
 

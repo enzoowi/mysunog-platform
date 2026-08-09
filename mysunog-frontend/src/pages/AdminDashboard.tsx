@@ -242,23 +242,39 @@ export default function AdminDashboard() {
 
       {/* Dynamic AI Insights */}
       {summary && (
-        <div className="mb-8 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-5 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-orange-100 rounded-bl-[100px] -z-0 opacity-50"></div>
-          <div className="flex items-center gap-2 mb-3 relative z-10">
-            <Sparkles className="w-5 h-5 text-orange-600" />
-            <h3 className="font-bold text-gray-800 text-lg">AI Analysis & Recommendations</h3>
-          </div>
-          <div className="relative z-10">
-            {aiLoading ? (
-              <div className="flex items-center gap-3 text-orange-600 animate-pulse">
-                <Loader className="w-5 h-5 animate-spin" />
-                <span className="text-sm font-medium">Generating AI insights based on current statistics...</span>
-              </div>
-            ) : (
-              <div className="text-gray-700 text-[15px] leading-relaxed whitespace-pre-line font-medium space-y-2">
-                {aiInsight || 'No AI insights available at the moment.'}
-              </div>
-            )}
+        <div className="mb-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-full blur-3xl -z-10 group-hover:scale-110 transition-transform duration-700"></div>
+          
+          <div className="flex flex-col md:flex-row md:items-start gap-6 relative z-10">
+            <div className="flex-shrink-0 bg-indigo-50 border border-indigo-100 p-4 rounded-xl">
+              <Sparkles className="w-8 h-8 text-indigo-600" />
+            </div>
+            
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 text-xl tracking-tight mb-4">AI Analysis & Recommendations</h3>
+              
+              {aiLoading ? (
+                <div className="flex items-center gap-3 text-indigo-600 bg-indigo-50/50 p-4 rounded-xl">
+                  <Loader className="w-5 h-5 animate-spin" />
+                  <span className="text-sm font-medium">Analyzing dashboard metrics to generate insights...</span>
+                </div>
+              ) : (
+                <div className="bg-gray-50/50 border border-gray-100 p-5 rounded-xl">
+                  {aiInsight ? (
+                    <ul className="space-y-3 list-none pl-0 m-0">
+                      {aiInsight.split('\n').filter(line => line.trim() !== '').map((line, i) => (
+                        <li key={i} className="flex gap-3 items-start">
+                          <span className="text-indigo-500 font-bold text-lg leading-tight mt-0.5">•</span>
+                          <span className="text-gray-700 text-[15px] leading-relaxed">{line.replace(/^[-*•]\s*/, '')}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <span className="text-gray-500">No AI insights available at the moment.</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
