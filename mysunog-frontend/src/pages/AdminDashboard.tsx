@@ -255,8 +255,32 @@ export default function AdminDashboard() {
                 <span className="text-sm font-medium">Generating AI insights based on current statistics...</span>
               </div>
             ) : (
-              <div className="text-gray-700 text-[15px] leading-relaxed whitespace-pre-line font-medium space-y-2">
-                {aiInsight || 'No AI insights available at the moment.'}
+              <div className="text-gray-700 text-[15px] leading-relaxed font-medium space-y-1">
+                {!aiInsight ? 'No AI insights available at the moment.' : 
+                  aiInsight.split('\n').map((line, i) => {
+                    const isBullet = /^[-*•]\s+/.test(line);
+                    const content = line.replace(/^[-*•]\s+/, '');
+                    
+                    const parts = content.split(/(\*\*.*?\*\*)/g);
+                    const renderedLine = parts.map((part, j) => {
+                      if (part.startsWith('**') && part.endsWith('**')) {
+                        return <strong key={j} className="text-gray-900 font-bold">{part.slice(2, -2)}</strong>;
+                      }
+                      return part;
+                    });
+
+                    if (isBullet) {
+                      return (
+                        <div key={i} className="ml-5 flex items-start gap-2.5 my-1.5">
+                          <span className="text-orange-500 mt-[8px] text-[8px]">●</span>
+                          <span className="flex-1">{renderedLine}</span>
+                        </div>
+                      );
+                    }
+                    
+                    return content.trim() ? <div key={i} className="mb-2">{renderedLine}</div> : null;
+                  })
+                }
               </div>
             )}
           </div>
