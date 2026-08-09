@@ -4,13 +4,13 @@ import { Repository } from 'typeorm';
 import { SmsRecipient } from './sms-recipient.entity';
 import { DetectionEvent } from '../detection/detection-event.entity';
 import { ConfigService } from '@nestjs/config';
-import { Twilio } from 'twilio';
+import axios from 'axios';
 
 @Injectable()
 export class SmsAlertsService implements OnModuleInit {
   private readonly logger = new Logger(SmsAlertsService.name);
-  private twilioClient: Twilio | null = null;
-  private twilioFromNumber: string | null = null;
+  private smsApiPhKey: string | null = null;
+  private smsApiPhEndpoint = 'https://smsapiph.onrender.com/api/v1/send/sms';
 
   constructor(
     @InjectRepository(SmsRecipient)
@@ -19,16 +19,8 @@ export class SmsAlertsService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID');
-    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
-    this.twilioFromNumber = this.configService.get<string>('TWILIO_PHONE_NUMBER') || null;
-
-    if (accountSid && authToken && this.twilioFromNumber) {
-      this.twilioClient = new Twilio(accountSid, authToken);
-      this.logger.log('Twilio client initialized successfully.');
-    } else {
-      this.logger.warn('Twilio credentials (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER) not fully configured. SMS alerts will not be sent, only logged.');
-    }
+    this.smsApiPhKey = this.configService.get<string>('SMSAPIPH_API_KEY') || 'sk-2b10iqxgq469hq1i0bhc5hjml2zn6iti';
+    this.logger.log('SMS API PH initialized with ' + (this.smsApiPhKey ? 'provided key.' : 'no key.'));
   }
 
   async getAllRecipients(): Promise<SmsRecipient[]> {
@@ -87,22 +79,30 @@ Please check the MySunog dashboard immediately.`;
 
     this.logger.log(`Preparing to send SMS alert to ${recipients.length} recipients...`);
 
-    if (!this.twilioClient || !this.twilioFromNumber) {
-      this.logger.warn('Twilio not configured. Logging SMS message instead:');
+    if (!this.smsApiPhKey) {
+      this.logger.warn('SMSAPIPH_API_KEY not configured. Logging SMS message instead:');
       this.logger.log(`\n=== SMS START ===\n${smsBody}\n=== SMS END ===`);
       return;
     }
 
     for (const recipient of recipients) {
       try {
-        const message = await this.twilioClient.messages.create({
-          body: smsBody,
-          from: this.twilioFromNumber,
-          to: recipient.phoneNumber
-        });
-        this.logger.log(`Successfully sent SMS to ${recipient.phoneNumber} (SID: ${message.sid})`);
+        const response = await axios.post(
+          this.smsApiPhEndpoint,
+          {
+            recipient: recipient.phoneNumber,
+            message: smsBody
+          },
+          {
+            headers: {
+              'x-api-key': this.smsApiPhKey,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        this.logger.log(`Successfully sent SMS to ${recipient.phoneNumber}. Response: ${JSON.stringify(response.data)}`);
       } catch (error) {
-        this.logger.error(`Exception while sending SMS to ${recipient.phoneNumber}: ${error.message}`);
+        this.logger.error(`Exception while sending SMS to ${recipient.phoneNumber}: ${error.response?.data?.error || error.message}`);
       }
     }
   }
