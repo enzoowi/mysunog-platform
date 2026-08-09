@@ -7,7 +7,7 @@ import { AiIncidentsController } from './ai-incidents.controller';
 import { DetectionModule } from '../detection/detection.module';
 import { UsersModule } from '../users/users.module';
 import { NotificationsModule } from '../notifications/notifications.module';
-import { EmailAlertsModule } from '../email-alerts/email-alerts.module';
+import { SmsAlertsModule } from '../sms-alerts/sms-alerts.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { EmailAlertsModule } from '../email-alerts/email-alerts.module';
     DetectionModule,
     UsersModule,
     NotificationsModule,
-    EmailAlertsModule,
+    SmsAlertsModule,
   ],
   controllers: [AiIncidentsController],
   providers:   [AiIncidentsService],

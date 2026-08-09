@@ -17,7 +17,7 @@ import { MapAssetsModule } from './map-assets/map-assets.module';
 import { DetectionModule } from './detection/detection.module';
 import { RiskMapModule } from './risk-map/risk-map.module';
 import { AiIncidentsModule } from './ai-incidents/ai-incidents.module';
-import { EmailAlertsModule } from './email-alerts/email-alerts.module';
+import { SmsAlertsModule } from './sms-alerts/sms-alerts.module';
 import { UploadModule } from './upload/upload.module';
 import { CalendarEventsModule } from './calendar-events/calendar-events.module';
 
@@ -49,7 +49,7 @@ import { CalendarEventsModule } from './calendar-events/calendar-events.module';
     DetectionModule,
     RiskMapModule,
     AiIncidentsModule,
-    EmailAlertsModule,
+    SmsAlertsModule,
     UploadModule,
     CalendarEventsModule,
   ],

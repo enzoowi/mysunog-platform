@@ -17,7 +17,7 @@ import {
 import { UsersService } from '../users/users.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { DetectionGateway } from '../detection/detection.gateway';
-import { EmailAlertsService } from '../email-alerts/email-alerts.service';
+import { SmsAlertsService } from '../sms-alerts/sms-alerts.service';
 import { DetectionEvent, DetectionType, SeverityLevel } from '../detection/detection-event.entity';
 
 /**
@@ -51,7 +51,7 @@ export class AiIncidentsService {
     private readonly usersService: UsersService,
     private readonly notificationsService: NotificationsService,
     private readonly gateway: DetectionGateway,
-    private readonly emailAlertsService: EmailAlertsService,
+    private readonly smsAlertsService: SmsAlertsService,
   ) {}
 
   // ── WEBHOOK: Create or update incident ──────────────────────────────────
@@ -145,7 +145,7 @@ export class AiIncidentsService {
         mockEvent.createdAt = incident.createdAt;
         mockEvent.cameraSource = incident.cameraId;
 
-        this.emailAlertsService.sendDetectionAlert(
+        this.smsAlertsService.sendDetectionAlert(
           mockEvent,
           dto.camera_name || dto.camera_id,
           dto.camera_location || 'Unknown'

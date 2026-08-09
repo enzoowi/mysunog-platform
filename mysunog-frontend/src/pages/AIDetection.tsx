@@ -3,8 +3,8 @@ import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
 import {
-  ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail, Loader,
-  Upload, Film, Square, Play
+  ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Loader,
+  Upload, Film, Square, Play, Smartphone, Edit2, Save
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
@@ -64,12 +64,17 @@ export default function AIDetection() {
   });
 
 
-  // Email Alerts Modal
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailRecipients, setEmailRecipients] = useState<{ id: number; emailAddress: string; name: string }[]>([]);
-  const [newEmailAddress, setNewEmailAddress] = useState('');
-  const [newEmailName, setNewEmailName] = useState('');
-  const [isAddingEmail, setIsAddingEmail] = useState(false);
+  // SMS Alerts Modal
+  const [showSmsModal, setShowSmsModal] = useState(false);
+  const [smsRecipients, setSmsRecipients] = useState<{ id: number; phoneNumber: string; name: string }[]>([]);
+  const [newPhoneNumber, setNewPhoneNumber] = useState('');
+  const [newSmsName, setNewSmsName] = useState('');
+  const [isAddingSms, setIsAddingSms] = useState(false);
+
+  const [editingSmsId, setEditingSmsId] = useState<number | null>(null);
+  const [editPhoneNumber, setEditPhoneNumber] = useState('');
+  const [editSmsName, setEditSmsName] = useState('');
+  const [isEditingSms, setIsEditingSms] = useState(false);
 
   // Video Upload State
   const [videoUploading, setVideoUploading] = useState(false);
@@ -169,46 +174,66 @@ export default function AIDetection() {
     }
   }
 
-  async function fetchEmailRecipients() {
+  async function fetchSmsRecipients() {
     try {
-      const res = await api.get('/email-alerts/recipients');
-      setEmailRecipients(res.data);
+      const res = await api.get('/sms-alerts/recipients');
+      setSmsRecipients(res.data);
     } catch (err) {
-      console.error('Failed to fetch Email recipients', err);
+      console.error('Failed to fetch SMS recipients', err);
     }
   }
 
-  async function handleAddEmailRecipient(e: React.FormEvent) {
+  async function handleAddSmsRecipient(e: React.FormEvent) {
     e.preventDefault();
-    if (!newEmailAddress) return;
-    setIsAddingEmail(true);
+    if (!newPhoneNumber) return;
+    setIsAddingSms(true);
     try {
-      await api.post('/email-alerts/recipients', { emailAddress: newEmailAddress, name: newEmailName });
-      setNewEmailAddress('');
-      setNewEmailName('');
-      await fetchEmailRecipients();
+      await api.post('/sms-alerts/recipients', { phoneNumber: newPhoneNumber, name: newSmsName });
+      setNewPhoneNumber('');
+      setNewSmsName('');
+      await fetchSmsRecipients();
     } catch (err) {
-      alert('Failed to add Email recipient');
+      alert('Failed to add SMS recipient');
     } finally {
-      setIsAddingEmail(false);
+      setIsAddingSms(false);
     }
   }
 
-  async function handleDeleteEmailRecipient(id: number) {
+  async function handleDeleteSmsRecipient(id: number) {
     try {
-      await api.delete(`/email-alerts/recipients/${id}`);
-      await fetchEmailRecipients();
+      await api.delete(`/sms-alerts/recipients/${id}`);
+      await fetchSmsRecipients();
     } catch (err) {
-      alert('Failed to delete Email recipient');
+      alert('Failed to delete SMS recipient');
     }
   }
 
-  // Fetch Email recipients when modal opens
-  useEffect(() => {
-    if (showEmailModal) {
-      fetchEmailRecipients();
+  async function handleUpdateSmsRecipient(id: number) {
+    if (!editPhoneNumber) return;
+    setIsEditingSms(true);
+    try {
+      await api.put(`/sms-alerts/recipients/${id}`, { phoneNumber: editPhoneNumber, name: editSmsName });
+      setEditingSmsId(null);
+      await fetchSmsRecipients();
+    } catch (err) {
+      alert('Failed to update SMS recipient');
+    } finally {
+      setIsEditingSms(false);
     }
-  }, [showEmailModal]);
+  }
+
+  function startEditingSms(recipient: { id: number; phoneNumber: string; name: string }) {
+    setEditingSmsId(recipient.id);
+    setEditPhoneNumber(recipient.phoneNumber);
+    setEditSmsName(recipient.name || '');
+  }
+
+  // Fetch SMS recipients when modal opens
+  useEffect(() => {
+    if (showSmsModal) {
+      fetchSmsRecipients();
+    }
+  }, [showSmsModal]);
 
   async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -291,10 +316,10 @@ export default function AIDetection() {
         <div className="flex items-center gap-3">
           {isAdmin && (
             <button 
-              onClick={() => setShowEmailModal(true)}
+              onClick={() => setShowSmsModal(true)}
               className="bg-gray-100 hover:bg-gray-200 text-gray-700 border px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition"
             >
-              <Mail className="w-4 h-4" /> Email Alerts
+              <Smartphone className="w-4 h-4" /> SMS Alerts
             </button>
           )}
           <button 
@@ -625,75 +650,126 @@ export default function AIDetection() {
         </div>
       )}
 
-      {/* Email Alerts Modal */}
-      {showEmailModal && (
+      {/* SMS Alerts Modal */}
+      {showSmsModal && (
         <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
               <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
-                <Mail className="w-5 h-5 text-gray-500" /> Email Alert Recipients
+                <Smartphone className="w-5 h-5 text-gray-500" /> SMS Alert Recipients
               </h3>
-              <button onClick={() => setShowEmailModal(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setShowSmsModal(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <div className="p-6 overflow-y-auto">
               <p className="text-sm text-gray-600 mb-4">
-                These addresses will receive an automated email whenever smoke or fire is detected with a confidence level of 70% or higher.
+                These mobile numbers will receive an automated SMS whenever smoke or fire is detected with a confidence level of 70% or higher.
               </p>
               
               <div className="mb-6">
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Current Recipients ({emailRecipients.length})</h4>
-                {emailRecipients.length === 0 ? (
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Current Recipients ({smsRecipients.length})</h4>
+                {smsRecipients.length === 0 ? (
                   <div className="text-center py-4 bg-gray-50 border border-dashed rounded-lg text-sm text-gray-400">
-                    No email addresses added yet.
+                    No phone numbers added yet.
                   </div>
                 ) : (
                   <ul className="space-y-2">
-                    {emailRecipients.map(recipient => (
+                    {smsRecipients.map(recipient => (
                       <li key={recipient.id} className="flex justify-between items-center bg-gray-50 border px-4 py-3 rounded-lg">
-                        <div>
-                          <p className="font-semibold text-gray-800">{recipient.emailAddress}</p>
-                          {recipient.name && <p className="text-xs text-gray-500">{recipient.name}</p>}
+                        {editingSmsId === recipient.id ? (
+                          <div className="flex-1 mr-4">
+                            <div className="grid grid-cols-2 gap-2">
+                              <input 
+                                type="text"
+                                value={editSmsName} onChange={e => setEditSmsName(e.target.value)}
+                                className="border rounded px-2 py-1 text-sm focus:ring-1 focus:ring-purple-500"
+                                placeholder="Name (Optional)"
+                              />
+                              <input 
+                                type="text"
+                                value={editPhoneNumber} onChange={e => setEditPhoneNumber(e.target.value)}
+                                className="border rounded px-2 py-1 text-sm focus:ring-1 focus:ring-purple-500"
+                                placeholder="Phone (e.g. +63...)"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-800">{recipient.phoneNumber}</p>
+                            {recipient.name && <p className="text-xs text-gray-500">{recipient.name}</p>}
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-1">
+                          {editingSmsId === recipient.id ? (
+                            <>
+                              <button 
+                                onClick={() => handleUpdateSmsRecipient(recipient.id)}
+                                disabled={isEditingSms || !editPhoneNumber}
+                                className="text-green-600 hover:text-green-700 p-1 transition disabled:opacity-50"
+                                title="Save changes"
+                              >
+                                {isEditingSms ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                              </button>
+                              <button 
+                                onClick={() => setEditingSmsId(null)}
+                                className="text-gray-400 hover:text-gray-600 p-1 transition"
+                                title="Cancel"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button 
+                                onClick={() => startEditingSms(recipient)}
+                                className="text-gray-400 hover:text-blue-500 p-1 transition"
+                                title="Edit recipient"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteSmsRecipient(recipient.id)}
+                                className="text-gray-400 hover:text-red-500 p-1 transition"
+                                title="Remove recipient"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </>
+                          )}
                         </div>
-                        <button 
-                          onClick={() => handleDeleteEmailRecipient(recipient.id)}
-                          className="text-gray-400 hover:text-red-500 p-1 transition"
-                          title="Remove recipient"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </li>
                     ))}
                   </ul>
                 )}
               </div>
 
-              <form onSubmit={handleAddEmailRecipient} className="bg-purple-50 p-4 rounded-xl border border-purple-100">
+              <form onSubmit={handleAddSmsRecipient} className="bg-purple-50 p-4 rounded-xl border border-purple-100">
                 <h4 className="text-sm font-bold text-purple-800 mb-3">Add New Recipient</h4>
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">Name (Optional)</label>
                     <input 
                       type="text" 
-                      value={newEmailName} onChange={e => setNewEmailName(e.target.value)}
+                      value={newSmsName} onChange={e => setNewSmsName(e.target.value)}
                       className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
                       placeholder="e.g. John Doe"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Number</label>
                     <input 
-                      type="email" required
-                      value={newEmailAddress} onChange={e => setNewEmailAddress(e.target.value)}
+                      type="text" required
+                      value={newPhoneNumber} onChange={e => setNewPhoneNumber(e.target.value)}
                       className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
-                      placeholder="e.g. john@example.com"
+                      placeholder="e.g. +639123456789"
                     />
                   </div>
                 </div>
-                <button type="submit" disabled={isAddingEmail || !newEmailAddress} className="w-full px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg flex justify-center items-center gap-2 disabled:opacity-70 transition">
-                  {isAddingEmail ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  {isAddingEmail ? 'Adding...' : 'Add Recipient'}
+                <button type="submit" disabled={isAddingSms || !newPhoneNumber} className="w-full px-4 py-2 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-700 rounded-lg flex justify-center items-center gap-2 disabled:opacity-70 transition">
+                  {isAddingSms ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {isAddingSms ? 'Adding...' : 'Add Recipient'}
                 </button>
               </form>
             </div>

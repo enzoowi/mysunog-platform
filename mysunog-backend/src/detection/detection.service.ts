@@ -13,7 +13,7 @@ import { UpdateCameraDto } from './dto/update-camera.dto';
 import axios from 'axios';
 import * as fs from 'fs';
 import * as path from 'path';
-import { EmailAlertsService } from '../email-alerts/email-alerts.service';
+import { SmsAlertsService } from '../sms-alerts/sms-alerts.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { UsersService } from '../users/users.service';
 
@@ -35,7 +35,7 @@ export class DetectionService implements OnModuleInit {
     private detectionEventRepository: Repository<DetectionEvent>,
     @InjectRepository(Camera)
     private cameraRepository: Repository<Camera>,
-    private readonly emailAlertsService: EmailAlertsService,
+    private readonly smsAlertsService: SmsAlertsService,
     private readonly notificationsService: NotificationsService,
     private readonly usersService: UsersService,
   ) {
@@ -127,7 +127,7 @@ export class DetectionService implements OnModuleInit {
               location = cam.location;
             }
           }
-          this.emailAlertsService.sendDetectionAlert(event, cameraName, location).catch(err => this.logger.error(`Email Error: ${err.message}`));
+          this.smsAlertsService.sendDetectionAlert(event, cameraName, location).catch(err => this.logger.error(`SMS Error: ${err.message}`));
 
           // Notify Admins and BFP Personnel
           try {
@@ -222,7 +222,7 @@ export class DetectionService implements OnModuleInit {
           this.logger.log(`Video detection received. Confidence: ${event.confidence}`);
           if (Number(event.confidence) >= 0.70) {
             this.logger.log(`Video detection confidence ${event.confidence} is >= 0.70. Triggering email and in-app alerts...`);
-            this.emailAlertsService.sendDetectionAlert(event, 'Uploaded Video', 'Unknown').catch(err => this.logger.error(`Email Error: ${err.message}`));
+            this.smsAlertsService.sendDetectionAlert(event, 'Uploaded Video', 'Unknown').catch(err => this.logger.error(`SMS Error: ${err.message}`));
 
             // Notify Admins and BFP Personnel
             try {
@@ -500,7 +500,7 @@ export class DetectionService implements OnModuleInit {
     mockEvent.createdAt = new Date();
     mockEvent.cameraSource = body.cameraName || body.cameraId || 'External Camera';
 
-    this.emailAlertsService.sendDetectionAlert(
+    this.smsAlertsService.sendDetectionAlert(
       mockEvent,
       mockEvent.cameraSource,
       'Live Camera Stream'
