@@ -72,8 +72,8 @@ export class AuthService {
     }
 
     // Clear the OTP fields
-    user.otpCode = null;
-    user.otpExpiresAt = null;
+    user.otpCode = undefined;
+    user.otpExpiresAt = undefined;
     await this.usersService.save(user);
 
     const payload = { email: user.email, sub: user.id, role: user.role };
