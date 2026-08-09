@@ -9,8 +9,8 @@ import axios from 'axios';
 @Injectable()
 export class SmsAlertsService implements OnModuleInit {
   private readonly logger = new Logger(SmsAlertsService.name);
-  private smsApiPhKey: string | null = null;
-  private smsApiPhEndpoint = 'https://smsapiph.onrender.com/api/v1/send/sms';
+  private iprogSmsToken: string | null = null;
+  private iprogSmsEndpoint = 'https://www.iprogsms.com/api/v1/sms_messages';
 
   constructor(
     @InjectRepository(SmsRecipient)
@@ -19,8 +19,8 @@ export class SmsAlertsService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    this.smsApiPhKey = this.configService.get<string>('SMSAPIPH_API_KEY') || 'sk-2b10iqxgq469hq1i0bhc5hjml2zn6iti';
-    this.logger.log('SMS API PH initialized with ' + (this.smsApiPhKey ? 'provided key.' : 'no key.'));
+    this.iprogSmsToken = this.configService.get<string>('IPROGSMS_API_TOKEN') || 'a3536a4a66f58f00cb41ac0ab50f4696c7c33131';
+    this.logger.log('iProgSMS initialized with ' + (this.iprogSmsToken ? 'provided token.' : 'no token.'));
   }
 
   async getAllRecipients(): Promise<SmsRecipient[]> {
@@ -79,8 +79,8 @@ Please check the MySunog dashboard immediately.`;
 
     this.logger.log(`Preparing to send SMS alert to ${recipients.length} recipients...`);
 
-    if (!this.smsApiPhKey) {
-      this.logger.warn('SMSAPIPH_API_KEY not configured. Logging SMS message instead:');
+    if (!this.iprogSmsToken) {
+      this.logger.warn('IPROGSMS_API_TOKEN not configured. Logging SMS message instead:');
       this.logger.log(`\n=== SMS START ===\n${smsBody}\n=== SMS END ===`);
       return;
     }
@@ -88,14 +88,14 @@ Please check the MySunog dashboard immediately.`;
     for (const recipient of recipients) {
       try {
         const response = await axios.post(
-          this.smsApiPhEndpoint,
+          this.iprogSmsEndpoint,
           {
-            recipient: recipient.phoneNumber,
+            api_token: this.iprogSmsToken,
+            phone_number: recipient.phoneNumber,
             message: smsBody
           },
           {
             headers: {
-              'x-api-key': this.smsApiPhKey,
               'Content-Type': 'application/json'
             }
           }
