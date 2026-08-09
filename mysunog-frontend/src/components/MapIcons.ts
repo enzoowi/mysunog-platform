@@ -63,10 +63,11 @@ export const getIncidentIcon = (_severity: string) => {
     return incidentIcon;
 };
 
-// Purple Camera Icon (SVG)
-const cameraPath = `
-  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-  <circle cx="12" cy="13" r="3" />
-`;
-
-export const cameraIcon = createIcon(cameraPath, 'bg-purple-500', 'text-white');
+// Purple Camera Icon (Standard Pin)
+export const cameraIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+});

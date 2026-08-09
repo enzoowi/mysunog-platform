@@ -6,7 +6,7 @@ import L from 'leaflet';
 import { ArrowLeft, Map as MapIcon, Eye, Flame, Wind, Filter } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
-import { incidentIcon } from '../components/MapIcons';
+import { incidentIcon, cameraIcon } from '../components/MapIcons';
 
 // Fix default Leaflet marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -16,11 +16,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-const cameraIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34],
-});
 
 type DetectionEvent = {
   id: number;

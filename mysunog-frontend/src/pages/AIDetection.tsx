@@ -3,7 +3,7 @@ import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
 import {
-  ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail
+  ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Mail, Loader
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { MapContainer, LayersControl, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -201,7 +201,12 @@ export default function AIDetection() {
     }
   }, [showEmailModal]);
 
-  if (loading) return <div className="p-6">Loading Multi-Camera AI Dashboard...</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+      <Loader className="w-12 h-12 animate-spin text-purple-600" />
+      <p className="text-gray-500 font-medium animate-pulse">Loading Multi-Camera AI Dashboard...</p>
+    </div>
+  );
 
 
 
