@@ -134,7 +134,7 @@ export default function AdminDashboard() {
 
   const adminLinks = [
     { label: 'Manage Alerts',       path: '/admin/alerts',       icon: <BellRing className="w-6 h-6" />,     adminOnly: true },
-    { label: 'Manage Calendar',      path: '/admin/calendar',     icon: <Clock className="w-6 h-6" />,        adminOnly: false },
+    { label: 'Manage Calendar',      path: '/admin/calendar',     icon: <Clock className="w-6 h-6" />,        adminOnly: true },
     { label: 'Manage Updates',       path: '/admin/education',    icon: <BookOpen className="w-6 h-6" />,     adminOnly: true },
     { label: 'Incident & Risk Map',  path: '/admin/incident-map', icon: <Map className="w-6 h-6" />,          adminOnly: false },
     { label: 'Map Assets',           path: '/admin/map-assets',   icon: <MapPin className="w-6 h-6" />,       adminOnly: false },

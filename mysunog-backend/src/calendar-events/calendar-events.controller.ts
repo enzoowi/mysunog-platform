@@ -16,21 +16,21 @@ export class CalendarEventsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.BFP_STAFF)
+  @Roles(UserRole.ADMIN)
   @Post()
   async create(@Body() data: Partial<CalendarEvent>): Promise<CalendarEvent> {
     return this.calendarEventsService.create(data);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.BFP_STAFF)
+  @Roles(UserRole.ADMIN)
   @Put(':id')
   async update(@Param('id') id: string, @Body() data: Partial<CalendarEvent>): Promise<CalendarEvent> {
     return this.calendarEventsService.update(id, data);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.BFP_STAFF)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<void> {
     return this.calendarEventsService.remove(id);
