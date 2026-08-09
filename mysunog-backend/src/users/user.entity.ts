@@ -57,6 +57,18 @@ export class User {
   @Column({ nullable: true, type: 'timestamp' })
   passwordResetRequestedAt?: Date;
 
+  /** Whether the account requires an OTP to login */
+  @Column({ default: false })
+  requiresOtp: boolean;
+
+  /** Temporary storage for OTP code (should ideally be hashed or stored in redis in a production app) */
+  @Column({ nullable: true })
+  otpCode?: string;
+
+  /** Expiration timestamp for the OTP code */
+  @Column({ nullable: true, type: 'timestamp' })
+  otpExpiresAt?: Date;
+
   /** Whether this account is active. Admins can deactivate/reactivate. */
   @Column({ default: true })
   isActive: boolean;

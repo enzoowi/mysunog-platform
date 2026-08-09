@@ -106,4 +106,32 @@ Please check the MySunog dashboard immediately.`;
       }
     }
   }
+
+  async sendOtp(phoneNumber: string, code: string): Promise<void> {
+    if (!this.iprogSmsToken) {
+      this.logger.warn(`IPROGSMS_API_TOKEN not configured. Logging OTP instead: ${code} for ${phoneNumber}`);
+      return;
+    }
+
+    const message = `Your MySunog login OTP is ${code}. This code expires in 5 minutes. Do not share this with anyone.`;
+
+    try {
+      const response = await axios.post(
+        this.iprogSmsEndpoint,
+        {
+          api_token: this.iprogSmsToken,
+          phone_number: phoneNumber,
+          message: message
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      this.logger.log(`Successfully sent OTP to ${phoneNumber}. Response: ${JSON.stringify(response.data)}`);
+    } catch (error) {
+      this.logger.error(`Exception while sending OTP to ${phoneNumber}: ${error.response?.data?.error || error.message}`);
+    }
+  }
 }

@@ -20,6 +20,7 @@ type UserRecord = {
   passwordResetRequested: boolean;
   passwordResetRequestedAt?: string;
   createdAt: string;
+  requiresOtp: boolean;
 };
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
@@ -49,8 +50,14 @@ export default function AdminManageUsers() {
     password: '',
     firstName: '',
     lastName: '',
+    phone: '',
     role: 'bfp_staff',
   });
+
+  // Inline editing state
+  const [editingPhoneId, setEditingPhoneId] = useState<number | null>(null);
+  const [editPhoneValue, setEditPhoneValue] = useState('');
+  const [togglingOtpId, setTogglingOtpId] = useState<number | null>(null);
 
   async function fetchUsers() {
     setLoading(true);
@@ -131,6 +138,34 @@ export default function AdminManageUsers() {
     }
   }
 
+  async function handlePhoneUpdate(user: UserRecord) {
+    if (user.phone === editPhoneValue) {
+      setEditingPhoneId(null);
+      return;
+    }
+    try {
+      await api.patch(`/users/${user.id}/phone`, { phone: editPhoneValue });
+      showToast('success', `Phone updated for ${user.email}`);
+      setEditingPhoneId(null);
+      fetchUsers();
+    } catch {
+      showToast('error', 'Failed to update phone number.');
+    }
+  }
+
+  async function handleOtpToggle(user: UserRecord, requiresOtp: boolean) {
+    setTogglingOtpId(user.id);
+    try {
+      await api.patch(`/users/${user.id}/otp-requirement`, { requiresOtp });
+      showToast('success', `OTP requirement ${requiresOtp ? 'enabled' : 'disabled'} for ${user.email}`);
+      fetchUsers();
+    } catch (err: any) {
+      showToast('error', err.response?.data?.message || 'Failed to update OTP requirement.');
+    } finally {
+      setTogglingOtpId(null);
+    }
+  }
+
   async function handleCreateUser(e: React.FormEvent) {
     e.preventDefault();
     setIsCreating(true);
@@ -138,7 +173,7 @@ export default function AdminManageUsers() {
       await api.post('/users/admin-create', newUser);
       showToast('success', 'User created successfully');
       setShowCreateModal(false);
-      setNewUser({ email: '', password: '', firstName: '', lastName: '', role: 'bfp_staff' });
+      setNewUser({ email: '', password: '', firstName: '', lastName: '', phone: '', role: 'bfp_staff' });
       fetchUsers();
     } catch (err: any) {
       showToast('error', err.response?.data?.message || 'Failed to create user');
@@ -266,6 +301,10 @@ export default function AdminManageUsers() {
                 <input required type="text" value={newUser.password} onChange={e => setNewUser({ ...newUser, password: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500" />
               </div>
               <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">Phone Number (Optional)</label>
+                <input type="text" value={newUser.phone} onChange={e => setNewUser({ ...newUser, phone: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500" placeholder="e.g. 09123456789" />
+              </div>
+              <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Role</label>
                 <select value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })} className="w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500">
                   <option value="bfp_staff">BFP Staff</option>
@@ -300,6 +339,8 @@ export default function AdminManageUsers() {
                 <tr className="border-b bg-gray-50 text-left text-gray-500 uppercase text-xs tracking-wide">
                   <th className="px-5 py-3.5">User</th>
                   <th className="px-4 py-3.5">Role</th>
+                  <th className="px-4 py-3.5">Phone Number</th>
+                  <th className="px-4 py-3.5 text-center">Requires OTP</th>
                   <th className="px-4 py-3.5">Joined</th>
                   <th className="px-4 py-3.5">Actions</th>
                 </tr>
@@ -349,7 +390,51 @@ export default function AdminManageUsers() {
                       </div>
                     </td>
 
+                    {/* Phone Number */}
+                    <td className="px-4 py-4 text-xs">
+                      {editingPhoneId === user.id ? (
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={editPhoneValue}
+                            onChange={(e) => setEditPhoneValue(e.target.value)}
+                            className="border rounded px-2 py-1 text-xs w-28 focus:outline-none focus:border-orange-500"
+                            placeholder="Phone..."
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handlePhoneUpdate(user)}
+                          />
+                          <button onClick={() => handlePhoneUpdate(user)} className="text-green-600 hover:text-green-800">
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setEditingPhoneId(null)} className="text-red-600 hover:text-red-800">
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 group cursor-pointer" onClick={() => { setEditingPhoneId(user.id); setEditPhoneValue(user.phone || ''); }}>
+                          <span className={user.phone ? 'text-gray-800 font-medium' : 'text-gray-400 italic'}>
+                            {user.phone || 'Not set'}
+                          </span>
+                          <span className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-orange-500 transition-opacity">
+                            ✎
+                          </span>
+                        </div>
+                      )}
+                    </td>
 
+                    {/* OTP Required Toggle */}
+                    <td className="px-4 py-4 text-center">
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={user.requiresOtp}
+                          disabled={togglingOtpId === user.id}
+                          onChange={(e) => handleOtpToggle(user, e.target.checked)}
+                        />
+                        <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600 disabled:opacity-50"></div>
+                      </label>
+                    </td>
 
                     {/* Joined date */}
                     <td className="px-4 py-4 text-xs text-gray-500">

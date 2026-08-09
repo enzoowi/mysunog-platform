@@ -19,6 +19,11 @@ export class AuthController {
     return this.authService.login(dto.email, dto.password);
   }
 
+  @Post('verify-otp')
+  verifyOtp(@Body() body: { userId: number; code: string }) {
+    return this.authService.verifyOtp(body.userId, body.code);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   me(@Req() req: any) {

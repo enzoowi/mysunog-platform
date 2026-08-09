@@ -66,7 +66,7 @@ export class UsersService {
       select: [
         'id', 'email', 'firstName', 'middleName', 'lastName',
         'role', 'isVerified', 'barangay', 'phone',
-        'passwordResetRequested', 'passwordResetRequestedAt', 'createdAt',
+        'passwordResetRequested', 'passwordResetRequestedAt', 'createdAt', 'requiresOtp',
       ],
       order: { createdAt: 'DESC' },
     });
@@ -89,6 +89,28 @@ export class UsersService {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) return null;
     user.role = role;
+    return this.usersRepository.save(user);
+  }
+
+  /** Admin updates a user's phone number */
+  async updatePhone(id: number, phone: string) {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    user.phone = phone;
+    return this.usersRepository.save(user);
+  }
+
+  /** Admin toggles a user's OTP requirement */
+  async toggleOtp(id: number, requiresOtp: boolean) {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    
+    // Validate phone number if trying to enable OTP
+    if (requiresOtp && !user.phone) {
+      throw new ConflictException('Cannot enable OTP for a user without a phone number');
+    }
+    
+    user.requiresOtp = requiresOtp;
     return this.usersRepository.save(user);
   }
 

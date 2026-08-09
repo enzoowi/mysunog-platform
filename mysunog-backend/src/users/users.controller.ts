@@ -57,6 +57,22 @@ export class UsersController {
     return this.usersService.updateRole(Number(id), role);
   }
 
+  /** Admin: update a user's phone */
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/phone')
+  updatePhone(@Param('id') id: string, @Body('phone') phone: string) {
+    return this.usersService.updatePhone(Number(id), phone);
+  }
+
+  /** Admin: update a user's otp requirement */
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @Patch(':id/otp-requirement')
+  toggleOtp(@Param('id') id: string, @Body('requiresOtp') requiresOtp: boolean) {
+    return this.usersService.toggleOtp(Number(id), requiresOtp);
+  }
+
   /** Admin: deactivate a user account */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN)
