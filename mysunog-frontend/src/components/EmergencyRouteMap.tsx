@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, LayersControl, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
+import { MapContainer, LayersControl, TileLayer, Marker, Polyline, Popup, Circle, Tooltip } from 'react-leaflet';
 import { api } from '../services/api';
 import { stationIcon, incidentIcon } from './MapIcons';
+
+/* ── Danger Buffer Zone Config ─────────────────────────────────────────────── */
+const DANGER_BUFFER_RADIUS = 500; // metres
 
 type RouteData = {
   origin: { lat: number; lng: number; label: string };
@@ -125,11 +128,46 @@ export default function EmergencyRouteMap({ incidentLat, incidentLng }: { incide
         </div>
       </div>
 
+      {/* Danger Zone Info Badge */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '8px',
+        marginBottom: '10px', padding: '8px 12px',
+        background: 'linear-gradient(135deg, #fef2f2, #fff1f2)',
+        border: '1px solid #fecaca', borderRadius: '10px',
+      }}>
+        <span style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: '28px', height: '28px', borderRadius: '50%',
+          background: 'rgba(220,38,38,0.12)', flexShrink: 0,
+        }}>
+          <span style={{ fontSize: '14px' }}>⚠️</span>
+        </span>
+        <div>
+          <p style={{ margin: 0, fontSize: '12px', fontWeight: 700, color: '#991b1b' }}>
+            {DANGER_BUFFER_RADIUS}m Danger Buffer Zone Active
+          </p>
+          <p style={{ margin: '1px 0 0', fontSize: '11px', color: '#b91c1c', opacity: 0.8 }}>
+            Dynamic geospatial perimeter around fire coordinates — avoid this area
+          </p>
+        </div>
+      </div>
+
       {/* Route Map */}
       <div style={{
         height: '280px', borderRadius: '12px', overflow: 'hidden',
         border: '2px solid #fecaca', position: 'relative',
       }}>
+        {/* Pulsing animation for the danger buffer zone */}
+        <style>{`
+          @keyframes dangerPulse {
+            0%   { opacity: 0.25; }
+            50%  { opacity: 0.45; }
+            100% { opacity: 0.25; }
+          }
+          .danger-buffer-zone {
+            animation: dangerPulse 2.5s ease-in-out infinite;
+          }
+        `}</style>
         <MapContainer
           center={[
             (route.origin.lat + route.destination.lat) / 2,
@@ -150,6 +188,27 @@ export default function EmergencyRouteMap({ incidentLat, incidentLng }: { incide
               <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="&copy; Esri" />
             </LayersControl.BaseLayer>
           </LayersControl>
+
+          {/* ── 500m Danger Buffer Zone ─────────────────────────── */}
+          <Circle
+            center={[route.destination.lat, route.destination.lng]}
+            radius={DANGER_BUFFER_RADIUS}
+            pathOptions={{
+              color: '#dc2626',
+              weight: 2,
+              dashArray: '8 4',
+              fillColor: '#dc2626',
+              fillOpacity: 0.12,
+              className: 'danger-buffer-zone',
+            }}
+          >
+            <Tooltip direction="top" sticky>
+              <span style={{ fontWeight: 600, fontSize: '12px', color: '#991b1b' }}>
+                ⚠️ {DANGER_BUFFER_RADIUS}m Danger Zone
+              </span>
+            </Tooltip>
+          </Circle>
+
           <Marker position={[route.origin.lat, route.origin.lng]} icon={stationIcon}>
             <Popup>
               <strong>🚒 {route.origin.label}</strong><br/>
@@ -171,11 +230,18 @@ export default function EmergencyRouteMap({ incidentLat, incidentLng }: { incide
 
       {/* Map Legend */}
       <div style={{
-        display: 'flex', gap: '16px', marginTop: '8px', fontSize: '11px', color: '#6b7280',
+        display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px', fontSize: '11px', color: '#6b7280',
       }}>
         <span>🔴 BFP Station</span>
         <span>🟠 Incident</span>
         <span style={{ color: '#dc2626' }}>━━ Fastest Route</span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+          <span style={{
+            display: 'inline-block', width: '12px', height: '12px', borderRadius: '50%',
+            background: 'rgba(220,38,38,0.15)', border: '1.5px dashed #dc2626',
+          }} />
+          {DANGER_BUFFER_RADIUS}m Danger Zone
+        </span>
       </div>
 
       {/* Turn-by-Turn Directions */}
