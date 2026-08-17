@@ -7,7 +7,7 @@ export class ChatbotService {
 
   async chat(userMessage: string) {
     const apiKey = process.env.GROQ_API_KEY;
-    const model = process.env.GROQ_CHAT_MODEL || 'llama-3.3-70b-versatile';
+    const model = process.env.GROQ_CHAT_MODEL || 'openai/gpt-oss-120b';
 
     if (!apiKey) {
       throw new InternalServerErrorException('Missing GROQ_API_KEY in .env');
