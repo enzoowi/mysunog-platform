@@ -255,30 +255,49 @@ export default function AdminDashboard() {
                 <span className="text-sm font-medium">Generating AI insights based on current statistics...</span>
               </div>
             ) : (
-              <div className="text-gray-700 text-[15px] leading-relaxed font-medium space-y-1">
+              <div className="text-gray-700 text-[14px] leading-relaxed space-y-1">
                 {!aiInsight ? 'No AI insights available at the moment.' : 
                   aiInsight.split('\n').map((line, i) => {
-                    const isBullet = /^[-*•]\s+/.test(line);
-                    const content = line.replace(/^[-*•]\s+/, '');
-                    
-                    const parts = content.split(/(\*\*.*?\*\*)/g);
-                    const renderedLine = parts.map((part, j) => {
-                      if (part.startsWith('**') && part.endsWith('**')) {
-                        return <strong key={j} className="text-gray-900 font-bold">{part.slice(2, -2)}</strong>;
-                      }
-                      return part;
-                    });
+                    const trimmed = line.trim();
+                    if (!trimmed) return null;
 
-                    if (isBullet) {
+                    // Section header: line that starts AND ends with ** (e.g., **📊 Overview & Trend**)
+                    const sectionHeaderMatch = trimmed.match(/^\*\*(.+)\*\*$/);
+                    if (sectionHeaderMatch) {
                       return (
-                        <div key={i} className="ml-5 flex items-start gap-2.5 my-1.5">
-                          <span className="text-orange-500 mt-[8px] text-[8px]">●</span>
-                          <span className="flex-1">{renderedLine}</span>
+                        <div key={i} className="flex items-center gap-2 mt-4 mb-2 pb-1.5 border-b border-orange-200 first:mt-0">
+                          <span className="w-1 h-5 bg-orange-500 rounded-full flex-shrink-0"></span>
+                          <span className="font-bold text-gray-900 text-[15px]">{sectionHeaderMatch[1]}</span>
                         </div>
                       );
                     }
-                    
-                    return content.trim() ? <div key={i} className="mb-2">{renderedLine}</div> : null;
+
+                    // Bullet point line
+                    const isBullet = /^[-*•]\s+/.test(trimmed);
+                    const content = trimmed.replace(/^[-*•]\s+/, '');
+
+                    // Render inline bold within any line
+                    const renderInlineBold = (text: string, keyPrefix: number) =>
+                      text.split(/(\*\*.*?\*\*)/g).map((part, j) =>
+                        part.startsWith('**') && part.endsWith('**')
+                          ? <strong key={`${keyPrefix}-${j}`} className="text-gray-900 font-semibold">{part.slice(2, -2)}</strong>
+                          : part
+                      );
+
+                    if (isBullet) {
+                      return (
+                        <div key={i} className="ml-4 flex items-start gap-2 my-1">
+                          <span className="text-orange-500 mt-[7px] text-[7px] flex-shrink-0">●</span>
+                          <span className="flex-1">{renderInlineBold(content, i)}</span>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={i} className="ml-1 my-1 text-gray-700">
+                        {renderInlineBold(content, i)}
+                      </div>
+                    );
                   })
                 }
               </div>
@@ -286,6 +305,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+
 
       {/* Quick Actions */}
       <div className="flex justify-between items-center mb-3">

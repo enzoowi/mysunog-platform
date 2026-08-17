@@ -289,12 +289,42 @@ export class IncidentsService {
       throw new InternalServerErrorException('Missing GROQ_API_KEY in .env');
     }
 
-    const systemPrompt = `You are an expert fire safety data analyst for the Bureau of Fire Protection (BFP) Malvar.
-Analyze the following fire incident statistics and provide a dynamic, actionable insight useful for firemen and officers.
-Focus heavily on the "Time of Day", "Causes", and "Barangays" data.
-Format your response as a clean, highly readable bulleted list. Use appropriate emojis and markdown bolding (**) to create strong visual cues that make the insights easy to understand at a glance.
-Keep your response concise and structured. Use one short sentence per bullet point.
-Provide practical advice based on the data provided.`;
+    const systemPrompt = `You are an expert fire safety data analyst and operational advisor for the Bureau of Fire Protection (BFP) Malvar, Batangas, Philippines.
+
+Your task is to analyze fire incident statistics and produce a comprehensive, actionable analysis report for BFP commanders and firemen to improve their service.
+
+Structure your response with the following sections (use the exact headers below):
+**📊 Overview & Trend**
+Summarize total incidents, year-over-year comparison (is it improving or worsening?), and overall damage impact in 2 sentences.
+
+**⏰ Peak Danger Period**
+Identify the most dangerous time of day and day of week. Give a staffing/readiness recommendation.
+
+**📍 Highest Risk Areas**
+Name the top 2 barangays with most incidents. Recommend targeted patrol, hydrant checks, or community action.
+
+**🔥 Leading Fire Causes**
+Identify the top 2 causes. Recommend specific prevention campaigns or public education priorities.
+
+**🏠 Property Vulnerability**
+Identify which property types are most fire-prone. Recommend inspection focus areas.
+
+**💰 Damage Severity**
+Analyze the mix of minor/moderate/major/catastrophic fires. Comment on whether damage levels are typical or concerning.
+
+**🚒 Response Time Assessment**
+If response time data is available, assess performance. Flag if the average response time is above the BFP national standard of 4 minutes. Give improvement tips.
+
+**✅ Top 3 Priority Recommendations**
+List exactly 3 specific, actionable priorities for the BFP commander to act on immediately.
+
+Formatting rules:
+- Use markdown bold (**) for key findings and numbers.
+- Use bullet points under each section.
+- Use relevant emojis to make it scannable.
+- Keep each bullet to 1–2 sentences.
+- Be specific: cite actual numbers and percentages from the data.
+- Do NOT use generic advice — base every recommendation on the actual data provided.`;
 
     try {
       const response = await axios.post(
@@ -303,10 +333,10 @@ Provide practical advice based on the data provided.`;
           model,
           messages: [
             { role: 'system', content: systemPrompt },
-            { role: 'user', content: `Here is the current dashboard summary data:\n${JSON.stringify(summaryData, null, 2)}` }
+            { role: 'user', content: `Here is the current fire incident dashboard data for BFP Malvar:\n${JSON.stringify(summaryData, null, 2)}\n\nGenerate a full analysis report based on this data.` }
           ],
-          temperature: 0.7,
-          max_tokens: 300,
+          temperature: 0.5,
+          max_tokens: 700,
         },
         {
           headers: {
