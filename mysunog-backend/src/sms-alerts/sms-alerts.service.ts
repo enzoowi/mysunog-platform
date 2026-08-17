@@ -68,7 +68,7 @@ export class SmsAlertsService implements OnModuleInit {
     };
     const timeStr = dateObj.toLocaleTimeString('en-US', options) + ' PHT';
 
-    const smsBody = `🚨 MYSUNOG ALERT 🚨
+    const smsBody = `MYSUNOG ALERT
 ${typeLabel} DETECTED!
 Conf: ${confidencePct}%
 Cam: ${cameraName || event.cameraSource || 'Unknown'}
@@ -132,6 +132,34 @@ Please check the MySunog dashboard immediately.`;
       this.logger.log(`Successfully sent OTP to ${phoneNumber}. Response: ${JSON.stringify(response.data)}`);
     } catch (error) {
       this.logger.error(`Exception while sending OTP to ${phoneNumber}: ${error.response?.data?.error || error.message}`);
+    }
+  }
+
+  async sendTempPassword(phoneNumber: string, tempPassword: string): Promise<void> {
+    if (!this.iprogSmsToken) {
+      this.logger.warn(`IPROGSMS_API_TOKEN not configured. Logging temp password instead: ${tempPassword} for ${phoneNumber}`);
+      return;
+    }
+
+    const message = `Your MySunog temporary password is ${tempPassword}. Please log in and change your password immediately.`;
+
+    try {
+      const response = await axios.post(
+        this.iprogSmsEndpoint,
+        {
+          api_token: this.iprogSmsToken,
+          phone_number: phoneNumber,
+          message: message
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      this.logger.log(`Successfully sent temporary password to ${phoneNumber}. Response: ${JSON.stringify(response.data)}`);
+    } catch (error) {
+      this.logger.error(`Exception while sending temporary password to ${phoneNumber}: ${error.response?.data?.error || error.message}`);
     }
   }
 }

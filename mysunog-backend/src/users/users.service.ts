@@ -5,6 +5,7 @@ import { User, UserRole } from './user.entity';
 import { EmailService } from '../email/email.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import * as bcrypt from 'bcrypt';
+import { SmsAlertsService } from '../sms-alerts/sms-alerts.service';
 
 @Injectable()
 export class UsersService {
@@ -13,6 +14,7 @@ export class UsersService {
     private usersRepository: Repository<User>,
     private readonly emailService: EmailService,
     private readonly notificationsService: NotificationsService,
+    private readonly smsAlertsService: SmsAlertsService,
   ) {}
 
   async create(userData: Partial<User>) {
@@ -179,6 +181,11 @@ export class UsersService {
     user.passwordResetRequested = false;
     user.passwordResetRequestedAt = undefined;
     await this.usersRepository.save(user);
+
+    // Send temp password via SMS if user has a phone number
+    if (user.phone) {
+      await this.smsAlertsService.sendTempPassword(user.phone, tempPassword);
+    }
 
     // Instead of emailing, return the temp password to the admin
     return { 

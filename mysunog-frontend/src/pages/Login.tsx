@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { ShieldAlert, Flame, LogIn, Eye, EyeOff, Mail, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -14,6 +14,7 @@ export default function Login() {
     const [forgotEmail, setForgotEmail] = useState('');
     const [forgotSubmitted, setForgotSubmitted] = useState(false);
     const [forgotLoading, setForgotLoading] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
 
     // OTP state
@@ -21,7 +22,25 @@ export default function Login() {
     const [otpCode, setOtpCode] = useState('');
     const [pendingUserId, setPendingUserId] = useState<number | null>(null);
 
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('rememberMe_email');
+        const savedPassword = localStorage.getItem('rememberMe_password');
+        if (savedEmail && savedPassword) {
+            setEmail(savedEmail);
+            setPassword(savedPassword);
+            setRememberMe(true);
+        }
+    }, []);
+
     async function handleLoginSuccess(token: string) {
+        if (rememberMe) {
+            localStorage.setItem('rememberMe_email', email);
+            localStorage.setItem('rememberMe_password', password);
+        } else {
+            localStorage.removeItem('rememberMe_email');
+            localStorage.removeItem('rememberMe_password');
+        }
+
         localStorage.setItem('token', token);
         const me = await api.get('/auth/me');
         if (me.data.role === 'admin' || me.data.role === 'bfp_staff' || me.data.role === 'fire_investigator') {
@@ -191,13 +210,22 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            {/* Forgot password link */}
+                            {/* Remember me and Forgot password link */}
                             {!isForgotPassword && (
-                                <div className="flex justify-end">
+                                <div className="flex justify-between items-center mt-2">
+                                    <label className="flex items-center text-sm text-gray-600">
+                                        <input
+                                            type="checkbox"
+                                            checked={rememberMe}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
+                                            className="mr-2 h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                                        />
+                                        Remember Me
+                                    </label>
                                     <button
                                         type="button"
                                         onClick={() => { setIsForgotPassword(true); setError(''); setForgotSubmitted(false); setForgotEmail(''); }}
-                                        className="text-xs text-orange-600 hover:text-orange-700 hover:underline font-medium transition mt-1"
+                                        className="text-xs text-orange-600 hover:text-orange-700 hover:underline font-medium transition"
                                     >
                                         Forgot Password?
                                     </button>
