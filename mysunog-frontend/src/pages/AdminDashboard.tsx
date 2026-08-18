@@ -106,10 +106,10 @@ export default function AdminDashboard() {
         const summaryData = summaryRes.data;
         setSummary(summaryData);
 
-        // 2. Fetch AI insights using the fresh summary data
+        // 2. Fetch AI insights using the fresh summary data + current period
         //    (single call, no object-reference-change re-trigger)
         if (!controller.signal.aborted) {
-          const insightRes = await api.post('/incidents/ai-insights', summaryData);
+          const insightRes = await api.post('/incidents/ai-insights', { ...summaryData, period });
           if (!controller.signal.aborted) {
             setAiInsight(insightRes.data.insight);
           }
