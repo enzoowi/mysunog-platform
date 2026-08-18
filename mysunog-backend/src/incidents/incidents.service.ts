@@ -336,7 +336,7 @@ Formatting rules:
             { role: 'user', content: `Here is the current fire incident dashboard data for BFP Malvar:\n${JSON.stringify(summaryData, null, 2)}\n\nGenerate a full analysis report based on this data.` }
           ],
           temperature: 0.5,
-          max_tokens: 700,
+          max_tokens: 1200,
         },
         {
           headers: {

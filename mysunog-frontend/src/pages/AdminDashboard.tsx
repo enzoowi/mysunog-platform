@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { api } from '../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
@@ -78,43 +78,63 @@ export default function AdminDashboard() {
       });
   }, [navigate]);
 
+  // Ref to cancel in-flight AI insight requests when period changes
+  const aiAbortRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
     if (!authorized) return;
-    // Initial load: fetch both summary and response performance
-    Promise.all([
-      api.get(`/incidents/dashboard-summary?period=${period}`),
-      api.get('/incidents/response-performance'),
-    ])
-      .then(([summaryRes, perfRes]) => {
-        setSummary(summaryRes.data);
-        setResponsePerf(perfRes.data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, [authorized]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Re-fetch summary when period changes (after initial load)
-  useEffect(() => {
-    if (!authorized || loading) return;
-    setStatsLoading(true);
-    api.get(`/incidents/dashboard-summary?period=${period}`)
-      .then((res) => setSummary(res.data))
-      .catch((err) => console.error(err))
-      .finally(() => setStatsLoading(false));
-  }, [period]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Fetch response performance once (does not depend on period)
+    api.get('/incidents/response-performance')
+      .then((res) => setResponsePerf(res.data))
+      .catch((err) => console.error(err));
 
-  // Fetch AI Insights whenever the summary changes
-  useEffect(() => {
-    if (!summary) return;
-    setAiLoading(true);
-    api.post('/incidents/ai-insights', summary)
-      .then(res => setAiInsight(res.data.insight))
-      .catch(err => {
-        console.error('Failed to get AI insights:', err);
-        setAiInsight('AI insights are currently unavailable.');
-      })
-      .finally(() => setAiLoading(false));
-  }, [summary]);
+    // Fetch summary + AI insights together for the selected period
+    const fetchAll = async () => {
+      // Cancel any previous in-flight AI request
+      if (aiAbortRef.current) aiAbortRef.current.abort();
+      const controller = new AbortController();
+      aiAbortRef.current = controller;
+
+      setStatsLoading(true);
+      setAiLoading(true);
+      setAiInsight(null);
+
+      try {
+        // 1. Fetch summary data
+        const summaryRes = await api.get(`/incidents/dashboard-summary?period=${period}`);
+        const summaryData = summaryRes.data;
+        setSummary(summaryData);
+
+        // 2. Fetch AI insights using the fresh summary data
+        //    (single call, no object-reference-change re-trigger)
+        if (!controller.signal.aborted) {
+          const insightRes = await api.post('/incidents/ai-insights', summaryData);
+          if (!controller.signal.aborted) {
+            setAiInsight(insightRes.data.insight);
+          }
+        }
+      } catch (err: any) {
+        if (err?.name !== 'CanceledError' && err?.name !== 'AbortError') {
+          console.error('Dashboard fetch error:', err);
+          setAiInsight('AI insights are currently unavailable.');
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setStatsLoading(false);
+          setAiLoading(false);
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchAll();
+
+    return () => {
+      // Cleanup: cancel request if component unmounts or period changes
+      if (aiAbortRef.current) aiAbortRef.current.abort();
+    };
+  }, [authorized, period]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
