@@ -40,7 +40,7 @@ FIRE_V_MIN = 100      # Must be reasonably bright
 FIRE_H_HIGH_MIN, FIRE_H_HIGH_MAX = 165, 180
 
 # Minimum fraction of pixels in the bounding box that must match fire colors
-MIN_FIRE_COLOR_RATIO = 0.12  # 12% of pixels must be fire-colored
+MIN_FIRE_COLOR_RATIO = 0.18  # 18% of pixels must be fire-colored
 
 # ─── Smoke Color Thresholds (HSV) ────────────────────────────────────────────
 
