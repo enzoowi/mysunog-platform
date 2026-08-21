@@ -144,7 +144,7 @@ async def detect_frame(
         should_create  = (
             not snapshot.incident_reported
             and snapshot.consecutive_count >= MIN_INCIDENT_CONSECUTIVE
-            and sev.max_confidence >= settings.fire_confidence_threshold
+            and sev.max_confidence >= 0.70
         )
         should_update  = (
             snapshot.incident_reported

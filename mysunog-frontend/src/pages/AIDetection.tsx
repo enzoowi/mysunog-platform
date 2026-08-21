@@ -322,12 +322,14 @@ export default function AIDetection() {
               <Smartphone className="w-4 h-4" /> SMS Alerts
             </button>
           )}
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition"
-          >
-            <Plus className="w-4 h-4" /> Add Camera
-          </button>
+          {isAdmin && (
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-1.5 transition"
+            >
+              <Plus className="w-4 h-4" /> Add Camera
+            </button>
+          )}
         </div>
       </div>
 
@@ -337,12 +339,14 @@ export default function AIDetection() {
           <Tv2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p className="text-base font-semibold">No Cameras Configured</p>
           <p className="text-sm mt-1 mb-4">Add your CCTV RTSP/HTTP streams to begin continuous AI monitoring.</p>
-          <button 
-            onClick={() => setShowAddModal(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold inline-flex items-center gap-1.5 transition"
-          >
-            <Plus className="w-4 h-4" /> Add First Camera
-          </button>
+          {isAdmin && (
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold inline-flex items-center gap-1.5 transition"
+            >
+              <Plus className="w-4 h-4" /> Add First Camera
+            </button>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -394,13 +398,15 @@ export default function AIDetection() {
                 <div className="p-4 flex flex-col flex-1" onClick={(e) => e.stopPropagation()}>
                   <div className="flex justify-between items-start mb-1">
                     <h4 className="font-bold text-gray-800 text-sm cursor-pointer" onClick={() => setExpandedCamera(cam)}>{cam.name}</h4>
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleDeleteCamera(cam.id); }}
-                      className="text-gray-400 hover:text-red-500 transition p-1"
-                      title="Delete Camera"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {isAdmin && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); handleDeleteCamera(cam.id); }}
+                        className="text-gray-400 hover:text-red-500 transition p-1"
+                        title="Delete Camera"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                   <p className="text-xs text-gray-500 mb-3">{cam.location || (cam.latitude ? `Pinned at ${Number(cam.latitude).toFixed(4)}, ${Number(cam.longitude).toFixed(4)}` : 'No location set')}</p>
                   
