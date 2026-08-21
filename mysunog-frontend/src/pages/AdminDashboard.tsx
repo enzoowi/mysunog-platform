@@ -53,6 +53,7 @@ export default function AdminDashboard() {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [aiInsight, setAiInsight] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [showFullAiInsights, setShowFullAiInsights] = useState(false);
   const navigate = useNavigate();
 
   // Check if user is admin or bfp_staff
@@ -275,8 +276,9 @@ export default function AdminDashboard() {
                 <span className="text-sm font-medium">Generating AI insights based on current statistics...</span>
               </div>
             ) : (
-              <div className="text-gray-700 text-[14px] leading-relaxed space-y-1">
-                {!aiInsight ? 'No AI insights available at the moment.' : 
+              <>
+                <div className={`text-gray-700 text-[14px] leading-relaxed space-y-1 relative transition-all duration-300 ${!showFullAiInsights && aiInsight ? 'max-h-[180px] overflow-hidden' : ''}`}>
+                  {!aiInsight ? 'No AI insights available at the moment.' : 
                   aiInsight.split('\n').map((line, i) => {
                     const trimmed = line.trim();
                     if (!trimmed) return null;
@@ -320,7 +322,19 @@ export default function AdminDashboard() {
                     );
                   })
                 }
-              </div>
+                  {!showFullAiInsights && aiInsight && (
+                    <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-orange-50 to-transparent pointer-events-none"></div>
+                  )}
+                </div>
+                {aiInsight && (
+                  <button 
+                    onClick={() => setShowFullAiInsights(!showFullAiInsights)} 
+                    className="mt-3 text-orange-600 text-sm font-bold hover:text-orange-700 transition-colors flex items-center gap-1"
+                  >
+                    {showFullAiInsights ? 'Show less' : 'See more'}
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
