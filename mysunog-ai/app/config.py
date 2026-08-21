@@ -24,12 +24,12 @@ class Settings(BaseSettings):
     model_path: str = "models/best.pt"
     roboflow_api_key: str = "35aOIa2L6ELLV85wjxMu"
     roboflow_model_id: str = "fire-vqbia/1"
-    confidence_threshold: float = 0.30  # Base YOLO inference threshold
-    fire_confidence_threshold: float = 0.35   # Per-class: fire detections below this are rejected
-    smoke_confidence_threshold: float = 0.35  # Per-class: smoke detections below this are rejected
-    min_detection_area_pct: float = 0.1       # Reject bounding boxes smaller than this % of frame
+    confidence_threshold: float = 0.10  # Base YOLO inference threshold
+    fire_confidence_threshold: float = 0.10   # Per-class: fire detections below this are rejected
+    smoke_confidence_threshold: float = 0.10  # Per-class: smoke detections below this are rejected
+    min_detection_area_pct: float = 0.05      # Reject bounding boxes smaller than this % of frame
     color_validation_enabled: bool = False    # Disabled: new best.pt model is reliable enough
-    spatial_iou_threshold: float = 0.10       # IoU threshold for spatial consistency tracking
+    spatial_iou_threshold: float = 0.05       # IoU threshold for spatial consistency tracking
     frame_skip: int = 3
     consecutive_frames_required: int = 2  # 2 consecutive frames for video processing
 

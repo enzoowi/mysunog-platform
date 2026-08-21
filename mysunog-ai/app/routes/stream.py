@@ -472,13 +472,13 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
             det_type = "fire" if fire_area > 0 else "smoke"
             max_conf = max((d.confidence for d in result.detections), default=0)
             
-            if max_conf >= 0.70:
+            if max_conf >= settings.fire_confidence_threshold:
                 _broadcast_fire_alert(
                     camera_id=camera.camera_id,
                     camera_name=camera.camera_name,
                     detection_type=det_type,
                     confidence=float(max_conf),
-                    severity="critical" if max_conf > 0.8 else "high",
+                    severity="critical" if sev.level.value in ("critical", "high") else "high",
                     latitude=camera.latitude,
                     longitude=camera.longitude,
                 )
@@ -500,7 +500,7 @@ def _run_detection_on_camera(camera: CameraSource) -> None:
             should_create = (
                 not snapshot.incident_reported 
                 and snapshot.consecutive_count >= camera.MIN_INCIDENT_CONSECUTIVE
-                and max_conf >= 0.70
+                and max_conf >= settings.fire_confidence_threshold
             )
             should_update = (
                 snapshot.incident_reported 
