@@ -354,25 +354,6 @@ export default function App() {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-              {fireAlertToast.link && (
-                <button
-                  id="fire-alert-toast-view"
-                  onClick={() => { navigate(fireAlertToast.link!); dismissToast(); }}
-                  style={{
-                    flex: 1,
-                    padding: '7px 12px',
-                    borderRadius: '7px',
-                    background: '#ef4444',
-                    color: '#fff',
-                    fontWeight: 600,
-                    fontSize: '12px',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  View Incident
-                </button>
-              )}
               <button
                 id="fire-alert-toast-ai-advice"
                 onClick={async () => {
