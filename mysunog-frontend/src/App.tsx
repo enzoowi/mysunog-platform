@@ -608,15 +608,26 @@ export default function App() {
                 </div>
               )}
               
-              {/* Always show clock */}
-              <div className="hidden 2xl:flex items-center gap-2 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600 font-mono text-xs shadow-sm" title="Philippine Standard Time">
-                <Clock className="w-3.5 h-3.5 text-orange-500" />
-                {currentTime.toLocaleString('en-US', {
-                  timeZone: 'Asia/Manila',
-                  year: 'numeric', month: 'short', day: '2-digit',
-                  hour: '2-digit', minute: '2-digit', second: '2-digit',
-                  hour12: false
-                }).replace(',', '')}
+              {/* Always show clock — PST */}
+              <div className="flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-2 py-1.5 rounded-lg text-gray-600 font-mono shadow-sm" title="Philippine Standard Time (PST)">
+                <Clock className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                {/* Mobile: time only */}
+                <span className="text-[10px] 2xl:hidden">
+                  {currentTime.toLocaleTimeString('en-US', {
+                    timeZone: 'Asia/Manila',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    hour12: false
+                  })}
+                </span>
+                {/* Desktop (2xl+): full date + time */}
+                <span className="hidden 2xl:inline text-xs">
+                  {currentTime.toLocaleString('en-US', {
+                    timeZone: 'Asia/Manila',
+                    year: 'numeric', month: 'short', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit',
+                    hour12: false
+                  }).replace(',', '')}
+                </span>
               </div>
 
               <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden p-2 text-gray-600">
