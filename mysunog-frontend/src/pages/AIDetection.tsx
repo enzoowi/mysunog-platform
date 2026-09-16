@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDetectionSocket } from '../hooks/useDetectionSocket';
 import {
   ArrowLeft, Zap, Tv2, Plus, Trash2, X, RefreshCw, Maximize2, Loader,
-  Upload, Film, Square, Play, Smartphone, Edit2, Save
+  Upload, Film, Square, Play, Smartphone, Edit2, Save, FlameKindling
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../hooks/useAuth';
@@ -82,6 +82,18 @@ export default function AIDetection() {
   const [activeVideoName, setActiveVideoName] = useState<string | null>(null);
   const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+
+  // Per-camera AI detection toggle (true = detection ON, default)
+  const [detectionEnabled, setDetectionEnabled] = useState<Record<number, boolean>>({});
+
+  function isDetectionEnabled(camId: number): boolean {
+    return detectionEnabled[camId] !== false; // default ON
+  }
+
+  function toggleDetection(e: React.MouseEvent, camId: number) {
+    e.stopPropagation();
+    setDetectionEnabled(prev => ({ ...prev, [camId]: !isDetectionEnabled(camId) }));
+  }
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -353,13 +365,14 @@ export default function AIDetection() {
           {cameras.map(cam => {
             const status = streamStatuses[cam.id.toString()];
             const isLive = status?.connected === true;
+            const detectionOn = isDetectionEnabled(cam.id);
             return (
               <div key={cam.id} className="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col relative group cursor-pointer" onClick={() => setExpandedCamera(cam)}>
                 {/* Camera Viewer */}
                 <div className="bg-gray-950 aspect-video relative flex items-center justify-center">
                   {isLive && expandedCamera?.id !== cam.id ? (
                     <img 
-                      src={`${AI_SERVICE_URL}/stream/mjpeg/${cam.id}?detect=true&fps=10&quality=50`} 
+                      src={`${AI_SERVICE_URL}/stream/mjpeg/${cam.id}?detect=${detectionOn}&fps=10&quality=50`} 
                       className="w-full h-full object-contain"
                       alt={cam.name}
                       loading="lazy"
@@ -387,6 +400,19 @@ export default function AIDetection() {
                       {isLive ? 'Live AI' : 'Offline'}
                     </span>
                   </div>
+                  {/* AI Detection badge overlay */}
+                  {isLive && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+                        detectionOn
+                          ? 'bg-orange-500/90 text-white'
+                          : 'bg-gray-600/80 text-gray-300'
+                      }`}>
+                        <FlameKindling className="w-3 h-3" />
+                        {detectionOn ? 'AI ON' : 'AI OFF'}
+                      </span>
+                    </div>
+                  )}
                   {/* Hover Expand Icon */}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                     <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
@@ -410,6 +436,28 @@ export default function AIDetection() {
                   </div>
                   <p className="text-xs text-gray-500 mb-3">{cam.location || (cam.latitude ? `Pinned at ${Number(cam.latitude).toFixed(4)}, ${Number(cam.longitude).toFixed(4)}` : 'No location set')}</p>
                   
+                  {/* AI Detection Toggle */}
+                  <div className="flex items-center justify-between mb-3 bg-gray-50 border rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-2">
+                      <FlameKindling className={`w-4 h-4 ${detectionOn ? 'text-orange-500' : 'text-gray-400'}`} />
+                      <span className="text-xs font-semibold text-gray-700">AI Fire & Smoke Detection</span>
+                    </div>
+                    <button
+                      id={`ai-toggle-${cam.id}`}
+                      onClick={(e) => toggleDetection(e, cam.id)}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 ${
+                        detectionOn ? 'bg-orange-500' : 'bg-gray-300'
+                      }`}
+                      role="switch"
+                      aria-checked={detectionOn}
+                      title={detectionOn ? 'Disable AI Detection' : 'Enable AI Detection'}
+                    >
+                      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                        detectionOn ? 'translate-x-4' : 'translate-x-0.5'
+                      }`} />
+                    </button>
+                  </div>
+
                   <div className="mt-auto">
                     <div className="bg-gray-50 border rounded px-2.5 py-1.5 overflow-x-auto whitespace-nowrap scrollbar-hide text-[11px] font-mono text-gray-600">
                       {cam.streamUrl}
@@ -635,10 +683,37 @@ export default function AIDetection() {
               </button>
             </div>
             
+            {/* AI Detection Toggle in expanded modal */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <FlameKindling className={`w-4 h-4 ${isDetectionEnabled(expandedCamera.id) ? 'text-orange-400' : 'text-gray-500'}`} />
+                <span className="text-sm font-semibold text-gray-300">AI Fire & Smoke Detection</span>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                  isDetectionEnabled(expandedCamera.id) ? 'bg-orange-500/20 text-orange-400' : 'bg-gray-700 text-gray-400'
+                }`}>
+                  {isDetectionEnabled(expandedCamera.id) ? 'ON' : 'OFF'}
+                </span>
+              </div>
+              <button
+                id={`ai-toggle-expanded-${expandedCamera.id}`}
+                onClick={(e) => toggleDetection(e, expandedCamera.id)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 ${
+                  isDetectionEnabled(expandedCamera.id) ? 'bg-orange-500' : 'bg-gray-600'
+                }`}
+                role="switch"
+                aria-checked={isDetectionEnabled(expandedCamera.id)}
+                title={isDetectionEnabled(expandedCamera.id) ? 'Disable AI Detection' : 'Enable AI Detection'}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${
+                  isDetectionEnabled(expandedCamera.id) ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
+            </div>
+
             <div className="flex-1 bg-gray-950 rounded-2xl overflow-hidden border border-gray-800 shadow-2xl relative flex items-center justify-center">
               {streamStatuses[expandedCamera.id.toString()]?.connected ? (
                 <img 
-                  src={`${AI_SERVICE_URL}/stream/mjpeg/${expandedCamera.id}?detect=true&fps=15&quality=70`} 
+                  src={`${AI_SERVICE_URL}/stream/mjpeg/${expandedCamera.id}?detect=${isDetectionEnabled(expandedCamera.id)}&fps=15&quality=70`} 
                   className="w-full h-full object-contain"
                   alt={expandedCamera.name}
                 />
