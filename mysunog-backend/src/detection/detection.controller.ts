@@ -225,6 +225,7 @@ export class DetectionController {
     // Broadcast a fire alert event to all connected clients
     this.detectionGateway.server.emit('detection:fire-alert', {
       id: Date.now(),
+      cameraId: body.cameraId || null,
       detectionType: body.detectionType || 'fire',
       confidence: body.confidence || 0,
       severity: body.severity || 'high',

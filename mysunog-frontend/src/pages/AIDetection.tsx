@@ -83,8 +83,24 @@ export default function AIDetection() {
   const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  // Per-camera AI detection toggle (true = detection ON, default)
-  const [detectionEnabled, setDetectionEnabled] = useState<Record<number, boolean>>({});
+  // Per-camera AI detection toggle — persisted to localStorage so App.tsx
+  // can suppress notifications/sounds for disabled cameras.
+  const STORAGE_KEY = 'ai_detection_disabled_cameras';
+
+  function getDisabledCameraIds(): Set<string> {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch { return new Set(); }
+  }
+
+  const [detectionEnabled, setDetectionEnabled] = useState<Record<number, boolean>>(() => {
+    const disabled = getDisabledCameraIds();
+    // We'll populate real camera-specific entries once cameras load
+    const initial: Record<number, boolean> = {};
+    disabled.forEach(id => { initial[parseInt(id)] = false; });
+    return initial;
+  });
 
   function isDetectionEnabled(camId: number): boolean {
     return detectionEnabled[camId] !== false; // default ON
@@ -92,7 +108,17 @@ export default function AIDetection() {
 
   function toggleDetection(e: React.MouseEvent, camId: number) {
     e.stopPropagation();
-    setDetectionEnabled(prev => ({ ...prev, [camId]: !isDetectionEnabled(camId) }));
+    const nowEnabled = !isDetectionEnabled(camId);
+    setDetectionEnabled(prev => ({ ...prev, [camId]: nowEnabled }));
+
+    // Persist to localStorage
+    const disabled = getDisabledCameraIds();
+    if (!nowEnabled) {
+      disabled.add(String(camId));
+    } else {
+      disabled.delete(String(camId));
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(disabled)));
   }
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);

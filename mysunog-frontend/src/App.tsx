@@ -105,6 +105,17 @@ export default function App() {
     } catch { /* AudioContext may not be available */ }
   }, []);
 
+  /** Returns true if the camera with this ID has AI detection toggled OFF by the user. */
+  function isCameraDetectionDisabled(cameraId: string | number | null | undefined): boolean {
+    if (!cameraId) return false;
+    try {
+      const raw = localStorage.getItem('ai_detection_disabled_cameras');
+      if (!raw) return false;
+      const disabled: string[] = JSON.parse(raw);
+      return disabled.includes(String(cameraId));
+    } catch { return false; }
+  }
+
   // Close profile dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -237,6 +248,8 @@ export default function App() {
       // This fires instantly when fire/smoke is confirmed on a camera,
       // even before the full incident pipeline completes.
       socket.on('detection:fire-alert', (alert: any) => {
+        // Suppress if the user has toggled AI detection OFF for this camera
+        if (isCameraDetectionDisabled(alert.cameraId)) return;
         // Only notify when confidence is at or above 70%
         if ((alert.confidence || 0) < 0.70) return;
         const title = `🔥 ${(alert.detectionType || 'fire').toUpperCase()} DETECTED`;
@@ -258,6 +271,8 @@ export default function App() {
       // Full AI incident created (after temporal tracking + severity engine)
       // This may arrive a few seconds after detection:fire-alert with richer data
       socket.on('ai_incident:new', (incident: any) => {
+        // Suppress if the user has toggled AI detection OFF for this camera
+        if (isCameraDetectionDisabled(incident.cameraId)) return;
         // Only notify when confidence is at or above 70%
         if ((incident.detectionConfidence || 0) < 0.70) return;
         const title = `🔥 AI Detection: ${incident.priority || 'HIGH'} Priority`;

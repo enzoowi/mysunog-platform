@@ -81,6 +81,17 @@ export function useAiIncidents() {
       console.log('[useAiIncidents] Socket connected:', socket.id);
     });
 
+    // Helper: check if AI detection is toggled OFF for this camera
+    function isCameraDisabled(cameraId: string | null | undefined): boolean {
+      if (!cameraId) return false;
+      try {
+        const raw = localStorage.getItem('ai_detection_disabled_cameras');
+        if (!raw) return false;
+        const disabled: string[] = JSON.parse(raw);
+        return disabled.includes(String(cameraId));
+      } catch { return false; }
+    }
+
     // ── New incident created by AI service ──────────────────────────────
     socket.on('ai_incident:new', (incident: AiIncident) => {
       console.log('[useAiIncidents] ai_incident:new', incident.id, incident.priority);
@@ -92,8 +103,8 @@ export function useAiIncidents() {
         return [incident, ...filtered];
       });
 
-      // Sound alert for HIGH/CRITICAL
-      if (incident.priority === 'CRITICAL' || incident.priority === 'HIGH') {
+      // Sound alert for HIGH/CRITICAL — suppress if camera detection is OFF
+      if ((incident.priority === 'CRITICAL' || incident.priority === 'HIGH') && !isCameraDisabled((incident as any).cameraId)) {
         playAlert();
       }
     });
