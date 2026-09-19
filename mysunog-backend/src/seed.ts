@@ -41,6 +41,31 @@ async function bootstrap() {
     }
   }
 
+  // ─── 2. Seed Second BFP Admin User ────────────────────────────────────
+  console.log('Seeding Second BFP Admin User...');
+  const existingAdmin2 = await usersService.findByEmail('admin2@bfp.gov.ph');
+  if (!existingAdmin2) {
+    const hashedPassword2 = await bcrypt.hash('admin1234', 10);
+    await usersService.create({
+      email: 'admin2@bfp.gov.ph',
+      password: hashedPassword2,
+      role: UserRole.ADMIN,
+      firstName: 'BFP Deputy',
+      lastName: 'Administrator',
+      isVerified: true, // Admin is always verified
+    });
+    console.log('Second Admin user created: admin2@bfp.gov.ph / admin1234');
+  } else {
+    // Ensure existing second admin is always verified
+    if (!existingAdmin2.isVerified) {
+      existingAdmin2.isVerified = true;
+      await usersService.save(existingAdmin2);
+      console.log('Existing second admin account marked as verified.');
+    } else {
+      console.log('Second Admin user already exists.');
+    }
+  }
+
   // ─── 3. Seed 15 Fire Incidents ────────────────────────────────────────
   console.log('Seeding 15 Fire Incidents...');
   const mockIncidents = [
