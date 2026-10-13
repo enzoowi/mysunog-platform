@@ -19,7 +19,7 @@ export default function Reports() {
   const [showDeleted, setShowDeleted] = useState(false);
 
   // Excel import state
-  const userRole = localStorage.getItem('role');
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number; skipped: number; errors: string[] } | null>(null);
@@ -55,6 +55,13 @@ export default function Reports() {
     fetchIncidents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [barangay, startDate, endDate, showDeleted]);
+
+  // Fetch current user role from the API
+  useEffect(() => {
+    api.get('/auth/me')
+      .then((res) => setUserRole(res.data.role))
+      .catch(() => setUserRole(null));
+  }, []);
 
   async function handleDelete(id: number) {
     if (!window.confirm('Are you sure you want to move this incident record to the archive? This action will move it to Archived Records and will affect analytics.')) return;
