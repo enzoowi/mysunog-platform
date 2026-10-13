@@ -400,7 +400,7 @@ Formatting rules:
   async importFromExcel(buffer: Buffer): Promise<{ imported: number; skipped: number; errors: string[] }> {
     const workbook = new ExcelJS.Workbook();
     try {
-      await workbook.xlsx.load(buffer);
+      await workbook.xlsx.load(buffer as any);
     } catch {
       throw new BadRequestException('Invalid or unreadable Excel file.');
     }

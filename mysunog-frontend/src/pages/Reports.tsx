@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowLeft, Clock, MapPin, AlertCircle, TrendingDown, X, Download, Trash2, RotateCcw, Trash, Upload, FileSpreadsheet, CheckCircle } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -10,7 +10,6 @@ const BARANGAYS = [
 ];
 
 export default function Reports() {
-  const navigate = useNavigate();
   const [barangay, setBarangay] = useState('All');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
