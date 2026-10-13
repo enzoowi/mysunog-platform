@@ -6,8 +6,13 @@ import {
   Param,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { AuthGuard } from '@nestjs/passport';
 import { IncidentsService } from './incidents.service';
 import { CreateIncidentDto } from './dto/create-incident.dto';
@@ -24,6 +29,16 @@ export class IncidentsController {
   @Post()
   create(@Body() dto: CreateIncidentDto) {
     return this.incidentsService.create(dto);
+  }
+
+  /** POST /incidents/import-excel — Fire Investigator uploads an .xlsx file */
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.FIRE_INVESTIGATOR)
+  @Post('import-excel')
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  async importExcel(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('No file uploaded');
+    return this.incidentsService.importFromExcel(file.buffer);
   }
 
   // GET /incidents is guarded — incident data is confidential (bfp_staff+ only)

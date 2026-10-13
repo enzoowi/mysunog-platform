@@ -1,7 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not, IsNull } from 'typeorm';
 import axios from 'axios';
+import * as ExcelJS from 'exceljs';
 import { FireIncident } from './fire-incident.entity';
 import { CreateIncidentDto } from './dto/create-incident.dto';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -386,5 +387,107 @@ Formatting rules:
 
   async hardDelete(id: number) {
     return this.incidentsRepository.delete(id);
+  }
+
+  /**
+   * Parse an Excel (.xlsx) buffer and bulk-insert the rows as FireIncident records.
+   * Expected columns (case-insensitive header row):
+   * incidentDate | incidentTime | barangay | cause | latitude | longitude |
+   * estimatedDamage | casualties | injuries | propertyType | landmark |
+   * remarks | reporterName | reporterContact | fireInvestigator |
+   * alarmTime | responseTime | controlTime | fireOutTime
+   */
+  async importFromExcel(buffer: Buffer): Promise<{ imported: number; skipped: number; errors: string[] }> {
+    const workbook = new ExcelJS.Workbook();
+    try {
+      await workbook.xlsx.load(buffer);
+    } catch {
+      throw new BadRequestException('Invalid or unreadable Excel file.');
+    }
+
+    const sheet = workbook.worksheets[0];
+    if (!sheet) throw new BadRequestException('Excel file contains no worksheets.');
+
+    // Build a header-index map from the first row
+    const headerRow = sheet.getRow(1);
+    const headerMap: Record<string, number> = {};
+    headerRow.eachCell((cell, colIndex) => {
+      const key = String(cell.value ?? '').trim().toLowerCase().replace(/\s+/g, '');
+      if (key) headerMap[key] = colIndex;
+    });
+
+    const required = ['incidentdate', 'incidenttime', 'barangay'];
+    for (const req of required) {
+      if (!headerMap[req]) throw new BadRequestException(`Missing required column: "${req}" in the Excel header row.`);
+    }
+
+    const col = (name: string, row: ExcelJS.Row) => {
+      const idx = headerMap[name.toLowerCase().replace(/\s+/g, '')];
+      if (!idx) return undefined;
+      const cell = row.getCell(idx);
+      return cell.value !== null && cell.value !== undefined ? String(cell.value).trim() : undefined;
+    };
+
+    const incidents: Partial<FireIncident>[] = [];
+    const errors: string[] = [];
+
+    sheet.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // skip header
+      const incidentDate = col('incidentDate', row);
+      const incidentTime = col('incidentTime', row);
+      const barangay = col('barangay', row);
+
+      if (!incidentDate || !incidentTime || !barangay) {
+        errors.push(`Row ${rowNumber}: missing required field(s) — skipped.`);
+        return;
+      }
+
+      const lat = parseFloat(col('latitude', row) ?? '14.0477');
+      const lng = parseFloat(col('longitude', row) ?? '121.1541');
+
+      incidents.push({
+        incidentDate,
+        incidentTime,
+        barangay,
+        cause: col('cause', row),
+        latitude: isNaN(lat) ? 14.0477 : lat,
+        longitude: isNaN(lng) ? 121.1541 : lng,
+        estimatedDamage: parseFloat(col('estimatedDamage', row) ?? '0') || 0,
+        casualties: parseInt(col('casualties', row) ?? '0', 10) || 0,
+        injuries: parseInt(col('injuries', row) ?? '0', 10) || 0,
+        propertyType: col('propertyType', row),
+        landmark: col('landmark', row),
+        remarks: col('remarks', row),
+        reporterName: col('reporterName', row),
+        reporterContact: col('reporterContact', row),
+        fireInvestigator: col('fireInvestigator', row),
+        alarmTime: col('alarmTime', row),
+        responseTime: col('responseTime', row),
+        controlTime: col('controlTime', row),
+        fireOutTime: col('fireOutTime', row),
+      });
+    });
+
+    const saved = await this.incidentsRepository.save(
+      incidents.map((i) => this.incidentsRepository.create(i as CreateIncidentDto)),
+    );
+
+    // Notify BFP/Admin personnel about the bulk import
+    try {
+      const personnel = await this.usersService.findAdminsAndBfp();
+      for (const p of personnel) {
+        await this.notificationsService.createNotification(
+          p,
+          'Bulk Incident Import',
+          `${saved.length} fire incident(s) were imported via Excel upload.`,
+          'alert',
+          '/reports',
+        );
+      }
+    } catch (error) {
+      console.error('Error sending import notifications:', error);
+    }
+
+    return { imported: saved.length, skipped: errors.length, errors };
   }
 }
