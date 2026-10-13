@@ -66,7 +66,32 @@ async function bootstrap() {
     }
   }
 
-  // ─── 3. Seed 15 Fire Incidents ────────────────────────────────────────
+  // ─── 3. Seed Third BFP Admin User ─────────────────────────────────────
+  console.log('Seeding Third BFP Admin User...');
+  const existingAdmin3 = await usersService.findByEmail('bfpadmin@bfp.gov.ph');
+  if (!existingAdmin3) {
+    const hashedPassword3 = await bcrypt.hash('admin12345', 10);
+    await usersService.create({
+      email: 'bfpadmin@bfp.gov.ph',
+      password: hashedPassword3,
+      role: UserRole.ADMIN,
+      firstName: 'BFP Supervisor',
+      lastName: 'Administrator',
+      isVerified: true, // Admin is always verified
+    });
+    console.log('Third Admin user created: bfpadmin@bfp.gov.ph / admin12345');
+  } else {
+    // Ensure existing third admin is always verified
+    if (!existingAdmin3.isVerified) {
+      existingAdmin3.isVerified = true;
+      await usersService.save(existingAdmin3);
+      console.log('Existing third admin account marked as verified.');
+    } else {
+      console.log('Third Admin user already exists.');
+    }
+  }
+
+  // ─── 4. Seed 15 Fire Incidents ────────────────────────────────────────
   console.log('Seeding 15 Fire Incidents...');
   const mockIncidents = [
     {
@@ -391,7 +416,7 @@ async function bootstrap() {
   }
   console.log('Seeded 15 fire incidents.');
 
-  // ─── 4. Seed Education Hub Data ───────────────────────────────────────
+  // ─── 5. Seed Education Hub Data ───────────────────────────────────────
   console.log('Seeding Education Hub Data...');
 
   const educationArticles = [
@@ -432,7 +457,7 @@ async function bootstrap() {
   }
   console.log('Seeded 5 fire safety education articles.');
 
-  // ─── 5. Seed Emergency Hotlines Data ───────────────────────────────────────
+  // ─── 6. Seed Emergency Hotlines Data ───────────────────────────────────────
   console.log('Seeding Emergency Hotlines Data...');
 
   const mockHotlines = [
